@@ -1,0 +1,50 @@
+/**
+ * Enhanced Color System
+ */
+:root {
+    --primary-color: #6c63ff;
+    --secondary-color: #3f3d56;
+    --accent-color: #ff6f61;
+    --background-color: #f5f5f5;
+    --text-color: #333;
+}
+
+/**
+ * Gradients
+ */
+body {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+}
+
+/**
+ * Better Typography
+ */
+body {
+    font-family: 'Arial', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+}
+
+/**
+ * Smooth Transitions
+ */
+* {
+    transition: all 0.3s ease;
+}
+
+/**
+ * Improved Component Styling
+ */
+.button {
+    background-color: var(--primary-color);
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.button:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.05);
+}
