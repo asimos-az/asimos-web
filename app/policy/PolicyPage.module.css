@@ -1,0 +1,27 @@
+.layout {
+  background: #f5f7fb;
+  min-height: 100vh;
+}
+
+.content {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 40px 16px;
+}
+
+.card {
+  border-radius: 16px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+}
+
+.cardBody {
+  padding: 28px 24px;
+}
+
+.mainTitle {
+  margin-bottom: 6px !important;
+}
+
+.tightTitle {
+  margin-top: 0 !important;
+}

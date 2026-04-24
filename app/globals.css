@@ -1,93 +1,258 @@
-/* Enhanced Design System Styles */
-
 :root {
-    /* Extended Color Variables */
-    --primary-gradient: linear-gradient(90deg, #ff7e5f, #feb47b);
-    --secondary-gradient: linear-gradient(90deg, #6a11cb, #2575fc);
-    --accent-gradient: linear-gradient(90deg, #43e97b, #38f9d7);
-    --shadow-light: 0 4px 8px rgba(0, 0, 0, 0.1);
-    --shadow-medium: 0 8px 16px rgba(0, 0, 0, 0.2);
-    --shadow-dark: 0 16px 32px rgba(0, 0, 0, 0.3);
+  --primary-color: #3498db;
+  --secondary-color: #2ecc71;
+  --accent-color: #e74c3c;
+  --background-color: #f4f6f8;
+  --text-color: #34495e;
+  --heading-color: #2c3e50;
+  --card-background: #ffffff;
+  --border-color: #e0e0e0;
+  --shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+  --border-radius: 8px;
 }
 
 * {
-    transition: all 0.3s ease;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-/* Enhanced Button Styling */
-button {
-    background: var(--primary-gradient);
-    box-shadow: var(--shadow-medium);
-    transform: scale(1);
-    border: none;
-    border-radius: 5px;
-    padding: 10px 20px;
+body {
+  font-family: 'Poppins', sans-serif;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  line-height: 1.6;
 }
 
-button:hover {
-    transform: scale(1.05);
-    box-shadow: var(--shadow-dark);
+h1, h2, h3, h4, h5, h6 {
+  color: var(--heading-color);
+  margin-bottom: 1rem;
+  font-weight: 600;
 }
 
-/* Improved Form Elements */
-input, textarea {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    padding: 10px;
+.container {
+  width: min(94%, 1440px);
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 2rem 0;
 }
 
-input:focus, textarea:focus {
-    border-color: var(--primary-gradient);
-    box-shadow: 0 0 5px var(--primary-gradient);
+.btn-primary {
+  background-color: var(--primary-color);
+  color: #fff;
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
 
-/* Card Hover Animations */
+.btn-primary:hover {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: transparent;
+  color: var(--primary-color);
+  border: 1px solid var(--primary-color);
+  padding: 10px 20px;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-secondary:hover {
+  background-color: var(--primary-color);
+  color: #fff;
+}
+
+input, select, textarea {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  font-family: 'Poppins', sans-serif;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+input:focus, select:focus, textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2);
+}
+
 .card {
-    transition: transform 0.3s;
+  background-color: var(--card-background);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow);
+  padding: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-medium);
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
 }
 
-/* Typography Improvements */
-h1, h2, h3 {
-    font-family: 'Arial', sans-serif;
-    margin: 0;
-}
-h1 {
-    font-size: 2.5em;
-}
-h2 {
-    font-size: 2em;
-}
-h3 {
-    font-size: 1.5em;
+.notice {
+  padding: 1rem;
+  border-radius: var(--border-radius);
+  margin-bottom: 1.5rem;
 }
 
-/* Animated Notification Cards */
-.notification {
-    opacity: 0;
-    animation: fadeIn 0.5s forwards;
+.notice.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
-@keyframes fadeIn {
-    to {
-        opacity: 1;
-    }
+.notice.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
 }
 
-/* Enhanced Navigation Styling */
-.nav {
-    background: var(--secondary-gradient);
-    box-shadow: var(--shadow-light);
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
-/* Backdrop Effects */
-.backdrop {
-    backdrop-filter: blur(10px);
+.full-row {
+  grid-column: 1 / -1;
 }
 
-/* Preserve Existing Functionality */
-/* Continue using existing class names and JS functionality */
+.page-section {
+  padding: 3rem 0;
+}
+
+.section-head {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.section-head h2 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+.latest-jobs-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.job-listings-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+}
+
+.jobs-map-section {
+  padding-top: 0;
+}
+
+.jobs-map-head p {
+  max-width: 680px;
+  margin: 0 auto;
+  color: #5b6b7c;
+  font-size: 1rem;
+}
+
+.jobs-map-shell {
+  padding: 1rem;
+}
+
+.jobs-map-canvas {
+  width: 100%;
+  height: 520px;
+  border-radius: calc(var(--border-radius) + 4px);
+  overflow: hidden;
+}
+
+.jobs-map-empty {
+  margin-bottom: 1rem;
+  color: #5b6b7c;
+}
+
+.jobs-map-popup {
+  line-height: 1.5;
+}
+
+.jobs-map-popup__title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1f3550;
+  margin-bottom: 0.35rem;
+}
+
+.jobs-map-popup__company {
+  color: #2f4c6d;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.jobs-map-popup__meta,
+.jobs-map-popup__desc,
+.jobs-map-popup__nearby {
+  margin-top: 0.45rem;
+}
+
+.jobs-map-popup__desc {
+  color: #42576f;
+}
+
+.jobs-map-popup__nearby {
+  padding-top: 0.55rem;
+  border-top: 1px solid #dce5ee;
+}
+
+.jobs-map-marker-wrap {
+  background: transparent;
+  border: 0;
+}
+
+.jobs-map-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 50% 50% 50% 0;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+  border: 2px solid #fff;
+}
+
+.jobs-map-marker span {
+  transform: rotate(45deg);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+}
+
+.jobs-map-marker--job {
+  background: linear-gradient(135deg, #2f80ed, #1554c0);
+}
+
+.jobs-map-marker--university {
+  background: linear-gradient(135deg, #00a870, #0b7a57);
+}
+
+.jobs-map-marker--metro {
+  background: linear-gradient(135deg, #f76707, #d9480f);
+}
+
+@media (max-width: 900px) {
+  .jobs-map-canvas {
+    height: 420px;
+  }
+}
+
