@@ -12,35 +12,24 @@ import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 import JobsMap from "../components/JobsMap";
 import styles from "./HomePage.module.css";
 import AuthSection from "./components/AuthSection";
+import AppLaunchPanel from "./components/AppLaunchPanel";
 import HomeHero from "./components/HomeHero";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
 
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "İş elanları" },
-  { key: "terms", label: "Qaydalar" },
 ];
 
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "İş elanları" },
-  { key: "create", label: "Elan yarat" },
-  { key: "alerts", label: "Bildirişlər" },
-  { key: "notifications", label: "Push" },
-  { key: "profile", label: "Profil" },
-  { key: "support", label: "Dəstək" },
-  { key: "terms", label: "Qaydalar" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "Bazadakı işlər" },
   { key: "myJobs", label: "Mənim elanlarım" },
-  { key: "create", label: "Elan yarat" },
-  { key: "notifications", label: "Bildirişlər" },
-  { key: "profile", label: "Profil" },
-  { key: "support", label: "Dəstək" },
-  { key: "terms", label: "Qaydalar" },
 ];
 
 function normalizeRole(role) {
@@ -841,6 +830,7 @@ export default function HomePageClient() {
           </section>
 
           <JobsMap jobs={jobs} />
+          <AppLaunchPanel />
         </>
       ) : null}
 
