@@ -821,6 +821,8 @@ export default function HomePageClient() {
           <HomeHero
             search={search}
             setSearch={setSearch}
+            jobsCount={jobs.length}
+            categoriesCount={categories.length}
             onSubmit={(event) => {
               event.preventDefault();
               setActiveSection("jobs");
