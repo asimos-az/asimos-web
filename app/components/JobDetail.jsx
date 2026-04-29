@@ -1,7 +1,7 @@
 import React from 'react';
 import { Col, Row } from 'antd';
 
-const JobDetail = ({ job, onClose, mode = 'modal' }) => {
+const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
   if (!job) return null;
 
   const isPage = mode === 'page';
@@ -15,6 +15,10 @@ const JobDetail = ({ job, onClose, mode = 'modal' }) => {
     : "";
 
   const renderContact = () => {
+    if (!user && (job.link || job.whatsapp || job.phone)) {
+      return <span className="contact-locked">Əlaqə məlumatlarını görmək üçün daxil olun</span>;
+    }
+
     if (job.link) {
       return <a href={job.link} target="_blank" rel="noopener noreferrer">{job.link}</a>;
     }
@@ -49,9 +53,6 @@ const JobDetail = ({ job, onClose, mode = 'modal' }) => {
 
         <Row className="job-detail-body" gutter={[32, 32]}>
           <Col xs={24} lg={14} className="job-detail-main-content">
-            <h3 className="job-detail-section-title">İş haqqında məlumat</h3>
-            <p className="job-detail-description">{job.description}</p>
-
             <div className="job-detail-info-grid">
               <div className="info-item">
                 <span className="info-label">Maaş</span>
@@ -67,9 +68,18 @@ const JobDetail = ({ job, onClose, mode = 'modal' }) => {
               </div>
               <div className="info-item">
                 <span className="info-label">İş qrafiki</span>
-                <span className="info-value">{job.work_type || 'Tam ştat'}</span>
+                <span className="info-value">{job.start_time && job.end_time ? `${job.start_time} - ${job.end_time}` : job.work_type || 'Tam ştat'}</span>
               </div>
             </div>
+
+            <h3 className="job-detail-section-title">Təsvir</h3>
+            <p className="job-detail-description">{job.description}</p>
+
+            {!user && (job.link || job.whatsapp || job.phone) ? (
+              <div className="job-detail-lock-note">
+                WhatsApp, əlaqə nömrəsi və link yalnız daxil olmuş istifadəçilərə göstərilir.
+              </div>
+            ) : null}
           </Col>
 
           <Col xs={24} lg={10} className="job-detail-sidebar">

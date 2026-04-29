@@ -1,10 +1,11 @@
+import { cache } from "react";
 import JobDetailPageClient from "./JobDetailPageClient";
 
 export const dynamic = "force-dynamic";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
 
-async function getJob(id) {
+const getJob = cache(async function getJob(id) {
   const res = await fetch(`${API_BASE_URL}/jobs/${encodeURIComponent(String(id))}`, {
     cache: "no-store",
   });
@@ -14,7 +15,7 @@ async function getJob(id) {
   }
 
   return res.json();
-}
+});
 
 function buildJobMetadata(job, id) {
   const title = job?.title || `Elan #${id}`;

@@ -47,7 +47,7 @@ function PlusIcon() {
   );
 }
 
-const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut }) => {
+const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
@@ -96,7 +96,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
           ))}
         </nav>
         <div className="header-actions">
-          {user ? (
+          {user && canCreateJob ? (
             <button type="button" className={`create-action ${activeSection === "create" ? "active" : ""}`} onClick={() => handleNavigate("create")}>
               <PlusIcon />
               <span>Elan yarat</span>

@@ -2,9 +2,9 @@
   margin-top: 3rem;
   padding: 2rem 0 1.2rem;
   background:
-    radial-gradient(circle at top left, rgba(231, 111, 81, 0.08), transparent 22%),
-    radial-gradient(circle at top right, rgba(42, 157, 143, 0.08), transparent 24%),
-    linear-gradient(180deg, #fffaf5 0%, #f7f8f7 100%);
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 22%),
+    radial-gradient(circle at top right, rgba(15, 118, 110, 0.06), transparent 24%),
+    linear-gradient(180deg, #f8fafc 0%, #f4f7fb 100%);
   border-top: 1px solid rgba(154, 168, 189, 0.16);
 }
 
@@ -56,7 +56,7 @@
 }
 
 .footer-links a:hover {
-  color: #c15a3f;
+  color: #1d4ed8;
   transform: translateX(2px);
 }
 

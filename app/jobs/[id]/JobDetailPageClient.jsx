@@ -10,29 +10,16 @@ import JobDetail from "../../components/JobDetail";
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "İş elanları" },
-  { key: "terms", label: "Qaydalar" },
 ];
 
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "İş elanları" },
-  { key: "create", label: "Elan yarat" },
-  { key: "alerts", label: "Bildirişlər" },
-  { key: "notifications", label: "Push" },
-  { key: "profile", label: "Profil" },
-  { key: "support", label: "Dəstək" },
-  { key: "terms", label: "Qaydalar" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Bazadakı işlər" },
-  { key: "myJobs", label: "Mənim elanlar" },
-  { key: "create", label: "Elan yarat" },
-  { key: "notifications", label: "Bildirişlər" },
-  { key: "profile", label: "Profil" },
-  { key: "support", label: "Dəstək" },
-  { key: "terms", label: "Qaydalar" },
+  { key: "jobs", label: "İş elanları" },
 ];
 
 function normalizeRole(role) {
@@ -45,6 +32,8 @@ function normalizeRole(role) {
 export default function JobDetailPageClient({ job, error }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const roleName = normalizeRole(user?.role);
+  const canCreateJob = roleName === "employer";
 
   useEffect(() => {
     const saved = loadAuth();
@@ -54,9 +43,8 @@ export default function JobDetailPageClient({ job, error }) {
   }, []);
 
   const navItems = useMemo(() => {
-    const roleName = normalizeRole(user?.role);
     return roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;
-  }, [user]);
+  }, [roleName]);
 
   function handleNavigate(section) {
     if (section === "home") {
@@ -87,13 +75,14 @@ export default function JobDetailPageClient({ job, error }) {
         navItems={navItems}
         user={user}
         handleSignOut={handleSignOut}
+        canCreateJob={canCreateJob}
       />
       {error ? (
         <section className="container page-section">
           <p className="notice error">{error}</p>
         </section>
       ) : (
-        <JobDetail job={job} mode="page" />
+        <JobDetail job={job} mode="page" user={user} />
       )}
     </>
   );

@@ -2,8 +2,9 @@
 
 import Header from "../components/Header";
 import JobCard from "../components/JobCard";
+import LocationPicker from "../components/LocationPicker";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
@@ -28,8 +29,7 @@ const seekerNav = [
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Bazadakı işlər" },
-  { key: "myJobs", label: "Mənim elanlarım" },
+  { key: "jobs", label: "İş elanları" },
 ];
 
 function normalizeRole(role) {
@@ -64,8 +64,56 @@ function hasSavedLocation(candidateUser) {
   return Number.isFinite(latValue) && Number.isFinite(lngValue);
 }
 
+function buildJobDetailsText({
+  companyObject,
+  scheduleStart,
+  scheduleEnd,
+  publishMode,
+  publishAt,
+  durationLabel,
+  description,
+}) {
+  const details = [];
+
+  if (companyObject) details.push(`Şirkət / obyekt: ${companyObject}`);
+  if (scheduleStart || scheduleEnd) details.push(`İş qrafiki: ${scheduleStart || "--:--"} - ${scheduleEnd || "--:--"}`);
+  if (durationLabel) details.push(`Müddət: ${durationLabel}`);
+  if (publishMode === "scheduled" && publishAt) details.push(`Planlı yayım: ${publishAt}`);
+
+  return [description.trim(), details.length ? "" : null, ...details].filter(Boolean).join("\n");
+}
+
+function extractWageNumber(wageText) {
+  if (!wageText) return null;
+  const match = String(wageText).replace(",", ".").match(/(\d+(?:\.\d+)?)/);
+  if (!match) return null;
+  const value = Number(match[1]);
+  return Number.isFinite(value) ? value : null;
+}
+
+function getJobStatus(job) {
+  return String(job?.status || job?.jobStatus || "open").toLowerCase();
+}
+
+function toDateTimeLocal(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset();
+  const local = new Date(date.getTime() - offset * 60 * 1000);
+  return local.toISOString().slice(0, 16);
+}
+
+function formatTimeFromDateTime(value) {
+  if (!value) return null;
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return null;
+  return date.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" });
+}
+
 export default function HomePageClient() {
   const router = useRouter();
+  const prefetchedJobIds = useRef(new Set());
   const [booting, setBooting] = useState(true);
   const [activeSection, setActiveSection] = useState("home");
 
@@ -112,17 +160,29 @@ export default function HomePageClient() {
   const [category, setCategory] = useState("");
   const [jobType, setJobType] = useState("");
   const [dailyOnly, setDailyOnly] = useState(false);
+  const [jobsMode, setJobsMode] = useState("all");
+  const [minWage, setMinWage] = useState("");
+  const [maxWage, setMaxWage] = useState("");
+  const [radiusM, setRadiusM] = useState("0");
+  const [myJobsStatus, setMyJobsStatus] = useState("open");
+  const [editingJobId, setEditingJobId] = useState(null);
 
   const [title, setTitle] = useState("");
+  const [companyObject, setCompanyObject] = useState("");
   const [wage, setWage] = useState("");
   const [description, setDescription] = useState("");
   const [whatsapp, setWhatsapp] = useState("+994");
   const [contactPhone, setContactPhone] = useState("+994");
   const [link, setLink] = useState("");
   const [voen, setVoen] = useState("");
-  const [workType, setWorkType] = useState("full_time");
+  const [workType, setWorkType] = useState("permanent");
+  const [durationPreset, setDurationPreset] = useState("1");
+  const [customDurationDays, setCustomDurationDays] = useState("");
   const [durationDays, setDurationDays] = useState("1");
-  const [notifyRadiusM, setNotifyRadiusM] = useState("500");
+  const [scheduleStart, setScheduleStart] = useState("");
+  const [scheduleEnd, setScheduleEnd] = useState("");
+  const [publishMode, setPublishMode] = useState("instant");
+  const [publishAt, setPublishAt] = useState("");
   const [locationText, setLocationText] = useState("");
   const [lat, setLat] = useState("40.4093");
   const [lng, setLng] = useState("49.8671");
@@ -142,6 +202,7 @@ export default function HomePageClient() {
   const [roleSwitchStatus, setRoleSwitchStatus] = useState(null);
 
   const roleName = normalizeRole(user?.role);
+  const canCreateJob = roleName === "employer";
   const navItems = roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;
 
   const navTitle = roleName === "employer" ? "İşçi axtaran" : roleName === "seeker" ? "İş axtaran" : "Qonaq";
@@ -151,6 +212,12 @@ export default function HomePageClient() {
       setActiveSection("auth");
     }
   }, [user, activeSection]);
+
+  useEffect(() => {
+    if (activeSection === "create" && roleName !== "employer") {
+      setActiveSection(user ? "profile" : "auth");
+    }
+  }, [activeSection, roleName, user]);
 
   useEffect(() => {
     const saved = loadAuth();
@@ -193,8 +260,13 @@ export default function HomePageClient() {
       api
         .listJobsWithSearch({
           q: search,
-          daily: dailyOnly || undefined,
+          lat: user?.location?.lat,
+          lng: user?.location?.lng,
+          radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
+          daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: jobType || undefined,
+          minWage: minWage || undefined,
+          maxWage: maxWage || undefined,
           categories: category || undefined,
         })
         .catch(() => ({ items: [] })),
@@ -250,8 +322,13 @@ export default function HomePageClient() {
   async function refreshJobs() {
     const res = await api.listJobsWithSearch({
       q: search,
-      daily: dailyOnly || undefined,
+      lat: user?.location?.lat,
+      lng: user?.location?.lng,
+      radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
+      daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: jobType || undefined,
+      minWage: minWage || undefined,
+      maxWage: maxWage || undefined,
       categories: category || undefined,
     });
     setJobs(normalizeList(res));
@@ -512,15 +589,84 @@ export default function HomePageClient() {
     setOk("Hesabdan çıxış edildi");
   }
 
+  function resetJobForm() {
+    setEditingJobId(null);
+    setTitle("");
+    setCompanyObject("");
+    setWage("");
+    setDescription("");
+    setLink("");
+    setVoen("");
+    setScheduleStart("");
+    setScheduleEnd("");
+    setDurationPreset("1");
+    setCustomDurationDays("");
+    setDurationDays("1");
+    setPublishMode("instant");
+    setPublishAt("");
+  }
+
+  function startEditJob(job) {
+    if (!job) return;
+
+    const nextJobType = job.jobType || job.job_type || (job.isDaily ? "temporary" : "permanent");
+    const nextDuration = Number(job.durationDays ?? job.duration_days ?? 1);
+    const nextDurationPreset = [1, 3, 10].includes(nextDuration) ? String(nextDuration) : "other";
+    const nextPublishAt = job.publishedAt || job.published_at || "";
+
+    setEditingJobId(job.id);
+    setTitle(job.title || "");
+    setCompanyObject(job.companyName || job.company_name || "");
+    setWage(job.wage || "");
+    setCategory(job.category || "");
+    setWhatsapp(job.whatsapp || "+994");
+    setContactPhone(job.phone || "+994");
+    setLink(job.link || "");
+    setVoen(job.voen || "");
+    setDescription(job.description || "");
+    setJobType(nextJobType || "permanent");
+    setDurationPreset(nextDurationPreset);
+    setCustomDurationDays(nextDurationPreset === "other" ? String(nextDuration || "") : "");
+    setDurationDays(String(nextDuration || "1"));
+    setWorkType(job.work_type || "full_time");
+    setPublishMode(nextPublishAt ? "scheduled" : "instant");
+    setPublishAt(toDateTimeLocal(nextPublishAt));
+
+    if (job.location) {
+      setLocationText(job.location.address || "");
+      setLat(String(job.location.lat || "40.4093"));
+      setLng(String(job.location.lng || "49.8671"));
+    }
+
+    setActiveSection("create");
+    setOk("Elan redaktə rejimində açıldı");
+  }
+
   async function handleCreateJob(e) {
     e.preventDefault();
     if (!user?.id) return;
+    if (roleName !== "employer") {
+      setError("Elan yaratmaq yalnız işçi axtaran profili üçün aktivdir");
+      setActiveSection("profile");
+      return;
+    }
 
     setLoading(true);
     setError("");
     setOk("");
 
     try {
+      const resolvedDuration =
+        jobType === "temporary"
+          ? durationPreset === "other"
+            ? customDurationDays
+            : durationPreset
+          : "";
+      const durationLabel = jobType === "temporary" ? `${resolvedDuration} gün` : "";
+      if (publishMode === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
+        throw new Error("Planlı yayım üçün gələcək tarix və saat seçin");
+      }
+
       const payload = {
         title,
         wage,
@@ -529,14 +675,26 @@ export default function HomePageClient() {
         phone: contactPhone,
         link,
         voen,
-        description,
+        description: buildJobDetailsText({
+          companyObject,
+          scheduleStart,
+          scheduleEnd,
+          publishMode,
+          publishAt,
+          durationLabel,
+          description,
+        }),
         companyName: roleName === "employer" ? companyName || user?.companyName : undefined,
         createdBy: user.id,
-        jobType: roleName === "seeker" ? "seeker" : jobType || "permanent",
-        isDaily: roleName === "seeker" ? false : jobType === "temporary",
-        durationDays: roleName === "employer" && jobType === "temporary" ? Number(durationDays) : undefined,
-        work_type: roleName === "employer" ? workType : undefined,
-        notifyRadiusM: roleName === "seeker" ? 0 : Number(notifyRadiusM || 0),
+        jobType: jobType || (roleName === "seeker" ? "seeker" : "permanent"),
+        isDaily: jobType === "temporary",
+        durationDays: jobType === "temporary" ? Number(resolvedDuration || 0) : undefined,
+        work_type: workType || undefined,
+        start_time: formatTimeFromDateTime(scheduleStart),
+        end_time: formatTimeFromDateTime(scheduleEnd),
+        notifyRadiusM: Number(radiusM) > 0 ? Number(radiusM) : 500,
+        publishMode,
+        publishedAt: publishMode === "scheduled" ? new Date(publishAt).toISOString() : null,
         location: {
           address: locationText || "Bakı",
           lat: Number(lat),
@@ -544,18 +702,19 @@ export default function HomePageClient() {
         },
       };
 
-      await api.createJob(payload);
-      setOk("Elan yaradıldı");
+      if (editingJobId) {
+        await api.updateJob(editingJobId, payload);
+        setOk("Elan yeniləndi");
+      } else {
+        await api.createJob(payload);
+        setOk("Elan yaradıldı");
+      }
 
-      setTitle("");
-      setWage("");
-      setDescription("");
-      setLink("");
-      setVoen("");
+      resetJobForm();
 
       await loadAuthedData();
       await refreshJobs();
-      if (roleName === "employer") setActiveSection("myJobs");
+      if (roleName === "employer") setActiveSection("profile");
     } catch (err) {
       setError(err.message || "Elan yaradılmadı");
     } finally {
@@ -757,21 +916,38 @@ export default function HomePageClient() {
   }
 
   const filteredJobs = useMemo(() => {
+    const minN = minWage ? Number(minWage) : null;
+    const maxN = maxWage ? Number(maxWage) : null;
+
     return jobs.filter((job) => {
       const matchSearch = !search || String(job?.title || "").toLowerCase().includes(search.toLowerCase());
       const matchCategory = !category || String(job?.category || "").toLowerCase().includes(category.toLowerCase());
-      const matchDaily = !dailyOnly || job?.isDaily;
-      return matchSearch && matchCategory && matchDaily;
+      const matchDaily = jobsMode !== "daily" || job?.isDaily || job?.jobType === "temporary";
+      const wageNumber = extractWageNumber(job?.wage);
+      const matchMin = minN === null || !Number.isFinite(minN) || (wageNumber !== null && wageNumber >= minN);
+      const matchMax = maxN === null || !Number.isFinite(maxN) || (wageNumber !== null && wageNumber <= maxN);
+      return matchSearch && matchCategory && matchDaily && matchMin && matchMax;
     });
-  }, [jobs, search, category, dailyOnly]);
+  }, [jobs, search, category, jobsMode, minWage, maxWage]);
 
-  const shownJobs =
-    activeSection === "daily"
-      ? filteredJobs.filter((job) => job?.isDaily || job?.jobType === "temporary")
-      : filteredJobs;
+  const shownJobs = filteredJobs;
+  const profileJobs = useMemo(() => {
+    return myJobs.filter((job) => {
+      const status = getJobStatus(job);
+      if (myJobsStatus === "pending") return status === "pending" || status === "scheduled";
+      return status === myJobsStatus;
+    });
+  }, [myJobs, myJobsStatus]);
 
   function openJobDetail(jobId) {
     router.push(`/jobs/${jobId}`);
+  }
+
+  function prefetchJobDetail(jobId) {
+    if (!jobId || prefetchedJobIds.current.has(jobId)) return;
+
+    prefetchedJobIds.current.add(jobId);
+    router.prefetch(`/jobs/${jobId}`);
   }
 
   if (booting) {
@@ -794,6 +970,7 @@ export default function HomePageClient() {
         navItems={navItems}
         user={user}
         handleSignOut={handleSignOut}
+        canCreateJob={canCreateJob}
       />
       <LocationPermissionPrompt
         isOpen={locationPromptOpen}
@@ -824,7 +1001,7 @@ export default function HomePageClient() {
             </header>
             <div className={`cards-grid ${styles.latestJobsGrid}`}>
               {jobs.slice(0, 6).map((job) => (
-                <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} />
+                <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
               ))}
             </div>
           </section>
@@ -836,44 +1013,105 @@ export default function HomePageClient() {
 
       {activeSection === "jobs" ? (
         <section className="container page-section">
-          <header className="section-head">
-            <h2>İş elanları</h2>
+          <header className="mobile-web-head">
+            <div>
+              <span className="mobile-web-kicker">Asimos</span>
+              <h2>{jobsMode === "daily" ? "Gündəlik işlər" : "İş elanları"}</h2>
+              <p>{jobsMode === "daily" ? "Yalnız müvəqqəti və günlük elanlar" : "Mobil tətbiqdəki Jobs axınına uyğun axtarış"}</p>
+            </div>
+            <div className="mobile-web-actions">
+              {user ? <button type="button" className="icon-action" onClick={() => setActiveSection("notifications")}>{unread || ""}</button> : null}
+              <button type="button" className="icon-action" onClick={() => setActiveSection("jobs")}>⌕</button>
+            </div>
           </header>
 
+          <div className="segmented-tabs">
+            <button type="button" className={jobsMode === "all" ? "active" : ""} onClick={() => setJobsMode("all")}>
+              Jobs
+            </button>
+            <button type="button" className={jobsMode === "daily" ? "active" : ""} onClick={() => setJobsMode("daily")}>
+              Daily
+            </button>
+          </div>
+
           <form
-            className="filter-row"
+            className="filter-panel"
             onSubmit={(e) => {
               e.preventDefault();
               refreshJobs();
             }}
           >
-            <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Başlığa görə axtar" />
-            <select value={category} onChange={(e) => setCategory(e.target.value)}>
-              <option value="">Bütün kateqoriyalar</option>
-              {categories.map((cat) => (
-                <option key={cat} value={cat}>
-                  {cat}
-                </option>
-              ))}
-            </select>
-            <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
-              <option value="">Növ fərq etmir</option>
-              <option value="permanent">Daimi</option>
-              <option value="temporary">Müvəqqəti</option>
-              <option value="seeker">İş axtaran elanı</option>
-            </select>
-            <label className="checkbox-inline">
-              <input type="checkbox" checked={dailyOnly} onChange={(e) => setDailyOnly(e.target.checked)} />
-              Günlük işlər
+            <label>
+              Açar sözlər
+              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Məs: ofisiant, kuryer" />
             </label>
-            <button type="submit" className="btn-primary">
-              Tətbiq et
-            </button>
+            <label>
+              Kateqoriya
+              <select value={category} onChange={(e) => setCategory(e.target.value)}>
+                <option value="">İstənilən kateqoriya</option>
+                {categories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label>
+              İş rejimi
+              <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
+                <option value="">Fərqi yoxdur</option>
+                <option value="permanent">Daimi</option>
+                <option value="temporary">Müvəqqəti</option>
+                <option value="seeker">İş axtaran elanı</option>
+              </select>
+            </label>
+            <label>
+              Min maaş
+              <input value={minWage} onChange={(e) => setMinWage(e.target.value)} inputMode="numeric" placeholder="məs: 400" />
+            </label>
+            <label>
+              Max maaş
+              <input value={maxWage} onChange={(e) => setMaxWage(e.target.value)} inputMode="numeric" placeholder="məs: 1200" />
+            </label>
+            <label>
+              Məsafə
+              <select value={radiusM} onChange={(e) => setRadiusM(e.target.value)}>
+                <option value="0">Ölkə üzrə</option>
+                <option value="1000">1 km</option>
+                <option value="5000">5 km</option>
+                <option value="10000">10 km</option>
+              </select>
+            </label>
+            <div className="filter-actions">
+              <button type="submit" className="btn-primary">Axtar</button>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => {
+                  setSearch("");
+                  setCategory("");
+                  setJobType("");
+                  setMinWage("");
+                  setMaxWage("");
+                  setRadiusM("0");
+                  setJobsMode("all");
+                }}
+              >
+                Sıfırla
+              </button>
+            </div>
           </form>
 
-          <div className="cards-grid">
+          <div className="mobile-job-list">
             {shownJobs.map((job) => (
-              <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} />
+              <JobCard
+                key={job.id}
+                job={job}
+                onClick={() => openJobDetail(job.id)}
+                onPrefetch={() => prefetchJobDetail(job.id)}
+                showEdit={(job?.createdBy || job?.created_by) === user?.id}
+                onEdit={() => startEditJob(job)}
+              />
             ))}
           </div>
 
@@ -882,39 +1120,11 @@ export default function HomePageClient() {
         </section>
       ) : null}
 
-      {activeSection === "myJobs" ? (
+      {activeSection === "create" && canCreateJob ? (
         <section className="container page-section">
           <header className="section-head">
-            <h2>Mənim elanlarım</h2>
-          </header>
-          <div className="cards-grid">
-            {myJobs.map((job) => (
-              <article key={job.id} className="job-card">
-                <h3>{job.title || "Adsız elan"}</h3>
-                <p>{job.description || "Təsvir yoxdur"}</p>
-                <div className="meta-row">
-                  <span>{job.status || "active"}</span>
-                  <span>{job.jobType || "permanent"}</span>
-                </div>
-                <div className="actions-row">
-                  <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
-                    Bağla
-                  </button>
-                  <button type="button" className="btn-secondary" onClick={() => handleReopenJob(job.id)}>
-                    Yenidən aç
-                  </button>
-                </div>
-              </article>
-            ))}
-          </div>
-          {myJobs.length === 0 ? <p className="muted">Heç bir elanınız yoxdur.</p> : null}
-        </section>
-      ) : null}
-
-      {activeSection === "create" ? (
-        <section className="container page-section">
-          <header className="section-head">
-            <h2>{roleName === "seeker" ? "İş axtaran elanı yarat" : "İş elanı yarat"}</h2>
+            <h2>{editingJobId ? "Elanı redaktə et" : "İşçi axtaran profili üçün elan yarat"}</h2>
+            <p>{editingJobId ? "Məlumatları yeniləyin və yenidən yadda saxlayın." : "Elan məlumatlarını doldurun, xəritədə ünvan seçin və yayımlanma formasını müəyyən edin."}</p>
           </header>
 
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
@@ -922,25 +1132,85 @@ export default function HomePageClient() {
           {user ? (
             <form className="form-grid" onSubmit={handleCreateJob}>
               <label>
-                Başlıq
+                Elanın adı
                 <input value={title} onChange={(e) => setTitle(e.target.value)} required />
               </label>
 
               <label>
-                Maa$
-                <input value={wage} onChange={(e) => setWage(e.target.value)} />
+                Şirkət / obyekt
+                <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Direkt və ya obyekt adı" />
+              </label>
+
+              <label>
+                İş növü
+                <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
+                  <option value="permanent">Daimi iş</option>
+                  <option value="temporary">Müvəqqəti iş</option>
+                </select>
               </label>
 
               <label>
                 Kateqoriya
-                <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                  <option value="">Secin</option>
+                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
+                  <option value="">Seçin</option>
                   {categories.map((cat) => (
                     <option key={cat} value={cat}>
                       {cat}
                     </option>
                   ))}
                 </select>
+              </label>
+
+              {jobType === "temporary" ? (
+                <>
+                  <label>
+                    Müddət
+                    <select
+                      value={durationPreset}
+                      onChange={(e) => {
+                        setDurationPreset(e.target.value);
+                        setDurationDays(e.target.value);
+                      }}
+                    >
+                      <option value="1">1 gün</option>
+                      <option value="3">3 gün</option>
+                      <option value="10">10 gün</option>
+                      <option value="other">Digər</option>
+                    </select>
+                  </label>
+
+                  {durationPreset === "other" ? (
+                    <label>
+                      Gün sayı
+                      <input value={customDurationDays} onChange={(e) => setCustomDurationDays(e.target.value)} placeholder="Məsələn 7" />
+                    </label>
+                  ) : null}
+                </>
+              ) : null}
+
+              <label>
+                Maaş
+                <input value={wage} onChange={(e) => setWage(e.target.value)} />
+              </label>
+
+              <label>
+                Başlama saatı
+                <input type="datetime-local" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} />
+              </label>
+
+              <label>
+                Bitmə saatı
+                <input type="datetime-local" value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} />
+              </label>
+
+              <label>
+                Link əlavə et
+                <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://..." />
+              </label>
+
+              <label>
+                VOEN
+                <input value={voen} onChange={(e) => setVoen(e.target.value)} />
               </label>
 
               <label>
@@ -953,73 +1223,52 @@ export default function HomePageClient() {
                 <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
               </label>
 
-              {roleName === "employer" ? (
-                <>
-                  <label>
-                    Link
-                    <input value={link} onChange={(e) => setLink(e.target.value)} />
-                  </label>
+              <label>
+                Elanın yayımı
+                <select value={publishMode} onChange={(e) => setPublishMode(e.target.value)}>
+                  <option value="instant">Dərhal</option>
+                  <option value="scheduled">Planlı</option>
+                </select>
+              </label>
 
-                  <label>
-                    VOEN
-                    <input value={voen} onChange={(e) => setVoen(e.target.value)} />
-                  </label>
-
-                  <label>
-                    İş növü
-                    <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
-                      <option value="permanent">Daimi</option>
-                      <option value="temporary">Müvəqqəti</option>
-                    </select>
-                  </label>
-
-                  {jobType === "temporary" ? (
-                    <label>
-                      Müddət (gün)
-                      <input value={durationDays} onChange={(e) => setDurationDays(e.target.value)} />
-                    </label>
-                  ) : null}
-
-                  <label>
-                    İş qrafiki
-                    <select value={workType} onChange={(e) => setWorkType(e.target.value)}>
-                      <option value="full_time">Tam ştat</option>
-                      <option value="part_time">Yarım ştat</option>
-                      <option value="agreement">Razılaşma</option>
-                    </select>
-                  </label>
-
-                  <label>
-                    Bildiriş radiusu
-                    <input value={notifyRadiusM} onChange={(e) => setNotifyRadiusM(e.target.value)} />
-                  </label>
-                </>
+              {publishMode === "scheduled" ? (
+                <label>
+                  Tarix və saat
+                  <input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} />
+                </label>
               ) : null}
-
-              <label>
-                Ünvan
-                <input value={locationText} onChange={(e) => setLocationText(e.target.value)} />
-              </label>
-
-              <label>
-                Lat
-                <input value={lat} onChange={(e) => setLat(e.target.value)} />
-              </label>
-
-              <label>
-                Lng
-                <input value={lng} onChange={(e) => setLng(e.target.value)} />
-              </label>
 
               <label className="full-row">
                 Təsvir
                 <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={6} required />
               </label>
 
+              <div className="full-row create-map-shell">
+                <div className="create-map-head">
+                  <strong>Lokasiya</strong>
+                  <span>Azərbaycan xəritəsi üzərində ünvan axtarın və ya xəritədən birbaşa seçin.</span>
+                </div>
+                <LocationPicker
+                  lat={lat}
+                  lng={lng}
+                  address={locationText}
+                  onChange={({ lat: nextLat, lng: nextLng, address: nextAddress }) => {
+                    setLat(nextLat);
+                    setLng(nextLng);
+                    setLocationText(nextAddress);
+                  }}
+                />
+              </div>
+
               <div className="full-row">
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  Elanı yadda saxla
+                  {editingJobId ? "Dəyişiklikləri saxla" : "Elanı yadda saxla"}
                 </button>
+                {editingJobId ? (
+                  <button type="button" className="btn-secondary" onClick={resetJobForm}>
+                    Redaktəni ləğv et
+                  </button>
+                ) : null}
               </div>
             </form>
           ) : null}
@@ -1114,71 +1363,165 @@ export default function HomePageClient() {
       ) : null}
 
       {activeSection === "profile" ? (
-        <section className="container page-section">
-          <header className="section-head">
-            <h2>Profil</h2>
+        <section className="container page-section profile-page">
+          <header className="profile-hero">
+            <div className="profile-identity">
+              <div className="profile-avatar">{String(editingName || user?.fullName || user?.companyName || "A").trim()[0]?.toUpperCase()}</div>
+              <div>
+                <span className="profile-eyebrow">{roleName === "employer" ? "İşçi axtaran profil" : "İş axtaran profil"}</span>
+                <h2>{editingName || user?.fullName || user?.companyName || "Profil"}</h2>
+                <p>{editingPhone || user?.phone || "Telefon qeyd edilməyib"}</p>
+              </div>
+            </div>
+            <div className="profile-stats">
+              <div>
+                <span>{roleName === "employer" ? myJobs.length : alerts.length}</span>
+                <small>{roleName === "employer" ? "Elan" : "Bildiriş"}</small>
+              </div>
+              <div>
+                <span>{unread}</span>
+                <small>Oxunmamış</small>
+              </div>
+              <div>
+                <span>{hasSavedLocation(user) ? "Aktiv" : "Yoxdur"}</span>
+                <small>Lokasiya</small>
+              </div>
+            </div>
           </header>
 
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
 
           {user ? (
-            <>
-              <form className="form-grid" onSubmit={handleProfileSave}>
-                <label>
-                  Ad Soyad
-                  <input value={editingName} onChange={(e) => setEditingName(e.target.value)} required />
-                </label>
+            <div className="profile-layout">
+              <div className="profile-main-column">
+                <form className="profile-panel profile-form" onSubmit={handleProfileSave}>
+                  <div className="profile-panel-head">
+                    <div>
+                      <span>Hesab məlumatları</span>
+                      <h3>Profil detalları</h3>
+                    </div>
+                    <small>Görünən ad, telefon və əsas lokasiya</small>
+                  </div>
 
-                <label>
-                  Telefon
-                  <input value={editingPhone} onChange={(e) => setEditingPhone(e.target.value)} required />
-                </label>
-
-                <label>
-                  Ünvan
-                  <input value={locationText} onChange={(e) => setLocationText(e.target.value)} />
-                </label>
-
-                <label>
-                  Lat
-                  <input value={lat} onChange={(e) => setLat(e.target.value)} />
-                </label>
-
-                <label>
-                  Lng
-                  <input value={lng} onChange={(e) => setLng(e.target.value)} />
-                </label>
-
-                <div className="full-row actions-row">
-                  <button type="submit" className="btn-primary" disabled={loading}>
-                    Profili yenilə
-                  </button>
-                  <button type="button" className="btn-danger" onClick={handleDeleteAccount}>
-                    Hesabı sil
-                  </button>
-                </div>
-              </form>
-
-              <form className="switch-box" onSubmit={handleRoleSwitch}>
-                <h3>Rol dəyişikliyi</h3>
-                {roleName === "seeker" ? (
-                  <>
+                  <div className="profile-fields">
                     <label>
-                      Şirkət adı
-                      <input value={switchCompany} onChange={(e) => setSwitchCompany(e.target.value)} required />
+                      Ad Soyad
+                      <input value={editingName} onChange={(e) => setEditingName(e.target.value)} required />
                     </label>
+
                     <label>
-                      VOEN
-                      <input value={switchVoen} onChange={(e) => setSwitchVoen(e.target.value)} />
+                      Telefon
+                      <input value={editingPhone} onChange={(e) => setEditingPhone(e.target.value)} required />
                     </label>
-                  </>
+
+                    <label className="full-row">
+                      Ünvan
+                      <input value={locationText} onChange={(e) => setLocationText(e.target.value)} />
+                    </label>
+
+                    <label>
+                      Lat
+                      <input value={lat} onChange={(e) => setLat(e.target.value)} />
+                    </label>
+
+                    <label>
+                      Lng
+                      <input value={lng} onChange={(e) => setLng(e.target.value)} />
+                    </label>
+                  </div>
+
+                  <div className="profile-actions">
+                    <button type="submit" className="btn-primary" disabled={loading}>
+                      Profili yenilə
+                    </button>
+                    <button type="button" className="btn-danger" onClick={handleDeleteAccount}>
+                      Hesabı sil
+                    </button>
+                  </div>
+                </form>
+
+                {roleName === "employer" ? (
+                  <section className="profile-panel profile-jobs-section">
+                    <div className="profile-panel-head">
+                      <div>
+                        <span>İdarəetmə</span>
+                        <h3>Mənim elanlarım</h3>
+                      </div>
+                      <small>{myJobs.length} aktiv və ya arxiv elan</small>
+                    </div>
+
+                    <div className="status-tabs">
+                      {[
+                        ["open", "Aktiv"],
+                        ["pending", "Gözləyən"],
+                        ["rejected", "Rədd edilib"],
+                        ["closed", "Deaktiv"],
+                      ].map(([value, label]) => (
+                        <button key={value} type="button" className={myJobsStatus === value ? "active" : ""} onClick={() => setMyJobsStatus(value)}>
+                          {label}
+                        </button>
+                      ))}
+                    </div>
+
+                    <div className="profile-jobs-list">
+                      {profileJobs.map((job) => (
+                        <article key={job.id} className="profile-job-card">
+                          <div>
+                            <h3>{job.title || "Adsız elan"}</h3>
+                            <p>{job.description || "Təsvir yoxdur"}</p>
+                            <div className="meta-row">
+                              <span>{getJobStatus(job)}</span>
+                              <span>{job.jobType || "permanent"}</span>
+                            </div>
+                          </div>
+                          <div className="profile-job-actions">
+                            <button type="button" className="btn-secondary" onClick={() => startEditJob(job)}>
+                              Redaktə et
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
+                              Bağla
+                            </button>
+                            <button type="button" className="btn-secondary" onClick={() => handleReopenJob(job.id)}>
+                              Yenidən aç
+                            </button>
+                          </div>
+                        </article>
+                      ))}
+                    </div>
+                    {profileJobs.length === 0 ? <p className="muted">Bu statusda elan yoxdur.</p> : null}
+                  </section>
                 ) : null}
-                <button type="submit" className="btn-secondary" disabled={loading}>
-                  Sorğu göndər
-                </button>
-                {roleSwitchStatus ? <p className="muted">Cari status: {roleSwitchStatus.status}</p> : null}
-              </form>
-            </>
+              </div>
+
+              <aside className="profile-side-column">
+                <form className="profile-panel role-panel" onSubmit={handleRoleSwitch}>
+                  <div className="profile-panel-head">
+                    <div>
+                      <span>Rol</span>
+                      <h3>Rol dəyişikliyi</h3>
+                    </div>
+                    <small>{roleSwitchStatus ? `Status: ${roleSwitchStatus.status}` : "Yeni sorğu göndərin"}</small>
+                  </div>
+                  {roleName === "seeker" ? (
+                    <div className="profile-fields single">
+                      <label>
+                        Şirkət adı
+                        <input value={switchCompany} onChange={(e) => setSwitchCompany(e.target.value)} required />
+                      </label>
+                      <label>
+                        VOEN
+                        <input value={switchVoen} onChange={(e) => setSwitchVoen(e.target.value)} />
+                      </label>
+                    </div>
+                  ) : (
+                    <p className="muted">Hazırda işçi axtaran profili ilə istifadə edirsiniz.</p>
+                  )}
+                  <button type="submit" className="btn-secondary" disabled={loading}>
+                    Sorğu göndər
+                  </button>
+                </form>
+              </aside>
+            </div>
           ) : null}
         </section>
       ) : null}
