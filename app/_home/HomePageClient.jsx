@@ -14,22 +14,47 @@ import JobsMap from "../components/JobsMap";
 import styles from "./HomePage.module.css";
 import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
-import HomeHero from "./components/HomeHero";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
 
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Xidmətlər" },
+  { key: "daily", label: "Gündəlik işlər" },
+  { key: "terms", label: "Resurslar" },
+  { key: "support", label: "Əlaqə" },
 ];
 
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Xidmətlər" },
+  { key: "daily", label: "Gündəlik işlər" },
+  { key: "notifications", label: "Bildirişlər" },
+  { key: "support", label: "Əlaqə" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Xidmətlər" },
+  { key: "daily", label: "Gündəlik işlər" },
+  { key: "alerts", label: "Namizədlər" },
+  { key: "support", label: "Əlaqə" },
+];
+
+const employerSupportCategories = [
+  "Elan yükləyə bilmirəm",
+  "Namizədlərlə əlaqə problemi",
+  "Ödəniş problemi",
+  "Hesab ilə bağlı problem",
+  "Təklif və İradlar",
+  "Digər",
+];
+
+const seekerSupportCategories = [
+  "İşə müraciət edə bilmirəm",
+  "Profilimi tamamlaya bilmirəm",
+  "Hesab ilə bağlı problem",
+  "Təklif və İradlar",
+  "Digər",
 ];
 
 function normalizeRole(role) {
@@ -109,6 +134,28 @@ function formatTimeFromDateTime(value) {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return null;
   return date.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" });
+}
+
+function getTicketSubject(ticket) {
+  return ticket?.subject || ticket?.category || "Müraciət";
+}
+
+function getTicketMessages(ticket) {
+  const source = Array.isArray(ticket?.support_messages)
+    ? ticket.support_messages
+    : Array.isArray(ticket?.replies)
+      ? ticket.replies
+      : [];
+
+  return source
+    .map((item, index) => ({
+      id: item.id || `${ticket?.id || "ticket"}-${index}`,
+      message: item.message || item.body || "",
+      created_at: item.created_at || item.createdAt || item.created_at,
+      is_admin: Boolean(item.is_admin || item.isAdmin || item.admin),
+    }))
+    .filter((item) => item.message)
+    .sort((a, b) => new Date(a.created_at || 0) - new Date(b.created_at || 0));
 }
 
 export default function HomePageClient() {
@@ -191,9 +238,12 @@ export default function HomePageClient() {
   const [alertRadius, setAlertRadius] = useState("500");
   const [alertKeywords, setAlertKeywords] = useState("");
 
-  const [ticketCategory, setTicketCategory] = useState("general");
+  const [ticketCategory, setTicketCategory] = useState("");
   const [ticketMessage, setTicketMessage] = useState("");
   const [ticketReply, setTicketReply] = useState({});
+  const [supportModalOpen, setSupportModalOpen] = useState(false);
+  const [supportMode, setSupportMode] = useState("list");
+  const [activeTicketId, setActiveTicketId] = useState(null);
 
   const [editingName, setEditingName] = useState("");
   const [editingPhone, setEditingPhone] = useState("");
@@ -206,12 +256,22 @@ export default function HomePageClient() {
   const navItems = roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;
 
   const navTitle = roleName === "employer" ? "İşçi axtaran" : roleName === "seeker" ? "İş axtaran" : "Qonaq";
+  const supportCategories = roleName === "employer" ? employerSupportCategories : seekerSupportCategories;
+  const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) || null;
 
   useEffect(() => {
-    if (!user && activeSection !== "home" && activeSection !== "jobs" && activeSection !== "terms" && activeSection !== "auth") {
+    if (!user && activeSection !== "home" && activeSection !== "jobs" && activeSection !== "daily" && activeSection !== "terms" && activeSection !== "auth") {
       setActiveSection("auth");
     }
   }, [user, activeSection]);
+
+  useEffect(() => {
+    if (activeSection === "daily") {
+      setJobsMode("daily");
+    } else if (activeSection === "jobs") {
+      setJobsMode("all");
+    }
+  }, [activeSection]);
 
   useEffect(() => {
     if (activeSection === "create" && roleName !== "employer") {
@@ -589,6 +649,34 @@ export default function HomePageClient() {
     setOk("Hesabdan çıxış edildi");
   }
 
+  async function openSupportModal() {
+    if (!user) {
+      setActiveSection("auth");
+      return;
+    }
+
+    setSupportModalOpen(true);
+    setSupportMode("list");
+    setActiveTicketId(null);
+    if (!ticketCategory) setTicketCategory((roleName === "employer" ? employerSupportCategories : seekerSupportCategories)[0] || "");
+    await loadAuthedData(user);
+  }
+
+  function closeSupportModal() {
+    setSupportModalOpen(false);
+    setSupportMode("list");
+    setActiveTicketId(null);
+  }
+
+  async function openTicketDetail(ticket) {
+    setActiveTicketId(ticket.id);
+    setSupportMode("detail");
+    if (ticket.is_answered || ticket.status === "replied") {
+      await api.markTicketRead(ticket.id).catch(() => null);
+      await loadAuthedData();
+    }
+  }
+
   function resetJobForm() {
     setEditingJobId(null);
     setTitle("");
@@ -812,8 +900,10 @@ export default function HomePageClient() {
     try {
       await api.createTicket({ category: ticketCategory, message: ticketMessage });
       setTicketMessage("");
+      setTicketCategory(supportCategories[0] || "");
       setOk("Dəstək bileti yaradıldı");
       await loadAuthedData();
+      setSupportMode("list");
     } catch (err) {
       setError(err.message || "Bilet yaradılmadı");
     } finally {
@@ -830,6 +920,7 @@ export default function HomePageClient() {
       setTicketReply((prev) => ({ ...prev, [ticketId]: "" }));
       setOk("Cavab göndərildi");
       await loadAuthedData();
+      setActiveTicketId(ticketId);
     } catch (err) {
       setError(err.message || "Cavab göndərilmədi");
     }
@@ -838,8 +929,10 @@ export default function HomePageClient() {
   async function handleDeleteTicket(ticketId) {
     try {
       await api.deleteTicket(ticketId);
-      setOk("Bilet silindi");
+      setOk("Müraciət sonlandırıldı");
       await loadAuthedData();
+      setSupportMode("list");
+      setActiveTicketId(null);
     } catch (err) {
       setError(err.message || "Bilet silinmedi");
     }
@@ -971,6 +1064,7 @@ export default function HomePageClient() {
         user={user}
         handleSignOut={handleSignOut}
         canCreateJob={canCreateJob}
+        onOpenSupport={openSupportModal}
       />
       <LocationPermissionPrompt
         isOpen={locationPromptOpen}
@@ -982,19 +1076,156 @@ export default function HomePageClient() {
       {error ? <div className="container notice error">{error}</div> : null}
       {ok ? <div className="container notice success">{ok}</div> : null}
 
+      {supportModalOpen ? (
+        <div className="support-modal-backdrop" role="dialog" aria-modal="true" aria-label="Dəstək müraciətləri" onMouseDown={closeSupportModal}>
+          <div className="support-modal" onMouseDown={(event) => event.stopPropagation()}>
+            <header className="support-modal-header">
+              <button
+                type="button"
+                className="support-back-button"
+                onClick={() => {
+                  if (supportMode === "list") closeSupportModal();
+                  else {
+                    setSupportMode("list");
+                    setActiveTicketId(null);
+                  }
+                }}
+                aria-label="Geri"
+              >
+                ‹
+              </button>
+              <div>
+                <h2>{supportMode === "create" ? "Yeni Müraciət" : supportMode === "detail" ? "Adminlə Əlaqə" : "Dəstək"}</h2>
+                <p>{supportMode === "list" ? "Müraciətləriniz və cavablarınız" : "Asimos dəstək komandası ilə yazışma"}</p>
+              </div>
+              <button type="button" className="support-close-button" onClick={closeSupportModal} aria-label="Bağla">
+                ×
+              </button>
+            </header>
+
+            {supportMode === "list" ? (
+              <div className="support-modal-body">
+                <button
+                  type="button"
+                  className="btn-primary support-new-ticket"
+                  onClick={() => {
+                    setTicketCategory(supportCategories[0] || "");
+                    setTicketMessage("");
+                    setSupportMode("create");
+                  }}
+                >
+                  + Yeni Müraciət
+                </button>
+
+                <div className="support-ticket-list">
+                  {tickets.map((ticket) => {
+                    const status = String(ticket.status || "open").toLowerCase();
+                    const hasReply = status === "replied" || ticket.is_answered;
+                    return (
+                      <button key={ticket.id} type="button" className="support-ticket-card" onClick={() => openTicketDetail(ticket)}>
+                        <div className="support-ticket-card-head">
+                          <strong>{getTicketSubject(ticket)}</strong>
+                          <span className={`support-ticket-status ${status === "closed" ? "closed" : hasReply ? "replied" : ""}`}>
+                            {status === "closed" ? "Bağlı" : hasReply ? "Cavab var" : "Açıq"}
+                          </span>
+                        </div>
+                        <p>{ticket.message || "Mesaj yoxdur"}</p>
+                        <small>{ticket.created_at || ticket.createdAt ? new Date(ticket.created_at || ticket.createdAt).toLocaleDateString("az-AZ") : ""}</small>
+                      </button>
+                    );
+                  })}
+                  {tickets.length === 0 ? (
+                    <div className="support-empty">
+                      <strong>Sualınız var?</strong>
+                      <p>Bizə yazın, ən qısa zamanda cavablandıraq.</p>
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            ) : null}
+
+            {supportMode === "create" ? (
+              <form className="support-modal-body support-create-form" onSubmit={handleCreateTicket}>
+                <label>
+                  Mövzu
+                  <select value={ticketCategory} onChange={(event) => setTicketCategory(event.target.value)} required>
+                    <option value="">Mövzunu seçin</option>
+                    {supportCategories.map((item) => (
+                      <option key={item} value={item}>
+                        {item}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label>
+                  Mesajınız
+                  <textarea
+                    value={ticketMessage}
+                    onChange={(event) => setTicketMessage(event.target.value)}
+                    rows={6}
+                    placeholder="Problemi ətraflı təsvir edin..."
+                    required
+                  />
+                </label>
+                <button type="submit" className="btn-primary" disabled={loading}>
+                  Müraciəti Göndər
+                </button>
+              </form>
+            ) : null}
+
+            {supportMode === "detail" && activeTicket ? (
+              <div className="support-detail">
+                <div className="support-ticket-banner">
+                  <strong>{getTicketSubject(activeTicket)}</strong>
+                  <span>{String(activeTicket.status || "open").toLowerCase() === "closed" ? "BAĞLANDI" : "AÇIQ"}</span>
+                </div>
+
+                <div className="support-chat">
+                  <div className="support-message user">
+                    <p>{activeTicket.message}</p>
+                    <small>{activeTicket.created_at || activeTicket.createdAt ? new Date(activeTicket.created_at || activeTicket.createdAt).toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" }) : ""}</small>
+                  </div>
+                  {getTicketMessages(activeTicket).map((message) => (
+                    <div key={message.id} className={`support-message ${message.is_admin ? "admin" : "user"}`}>
+                      {message.is_admin ? <strong>ASIMOS DƏSTƏK</strong> : null}
+                      <p>{message.message}</p>
+                      <small>{message.created_at ? new Date(message.created_at).toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" }) : ""}</small>
+                    </div>
+                  ))}
+                </div>
+
+                {String(activeTicket.status || "open").toLowerCase() !== "closed" ? (
+                  <div className="support-chat-footer">
+                    <textarea
+                      value={ticketReply[activeTicket.id] || ""}
+                      onChange={(event) => setTicketReply((prev) => ({ ...prev, [activeTicket.id]: event.target.value }))}
+                      placeholder="Mesaj yazın..."
+                      rows={2}
+                    />
+                    <button type="button" className="btn-primary" onClick={() => handleReply(activeTicket.id)} disabled={loading || !ticketReply[activeTicket.id]?.trim()}>
+                      Göndər
+                    </button>
+                  </div>
+                ) : (
+                  <p className="support-closed-note">Bu müraciət artıq bağlanıb.</p>
+                )}
+
+                <div className="support-detail-actions">
+                  <button type="button" className="btn-danger" onClick={() => handleDeleteTicket(activeTicket.id)} disabled={loading}>
+                    Müraciəti sonlandır
+                  </button>
+                  <button type="button" className="btn-secondary" onClick={() => setSupportMode("create")}>
+                    Yeni müraciət yarat
+                  </button>
+                </div>
+              </div>
+            ) : null}
+          </div>
+        </div>
+      ) : null}
+
       {activeSection === "home" ? (
         <>
-          <HomeHero
-            search={search}
-            setSearch={setSearch}
-            jobsCount={jobs.length}
-            categoriesCount={categories.length}
-            onSubmit={(event) => {
-              event.preventDefault();
-              setActiveSection("jobs");
-            }}
-          />
-
           <section className="container page-section">
             <header className="section-head">
               <h2>Son elanlar</h2>
@@ -1011,7 +1242,7 @@ export default function HomePageClient() {
         </>
       ) : null}
 
-      {activeSection === "jobs" ? (
+      {activeSection === "jobs" || activeSection === "daily" ? (
         <section className="container page-section">
           <header className="mobile-web-head">
             <div>

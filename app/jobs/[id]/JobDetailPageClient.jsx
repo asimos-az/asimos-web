@@ -3,7 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 import Header from "../../components/Header";
-import { clearAuthToken } from "../../../lib/api";
+import { api, clearAuthToken } from "../../../lib/api";
 import { clearAuth, loadAuth } from "../../../lib/auth-store";
 import JobDetail from "../../components/JobDetail";
 
@@ -41,6 +41,22 @@ export default function JobDetailPageClient({ job, error }) {
       setUser(saved.user);
     }
   }, []);
+
+  useEffect(() => {
+    const jobId = job?.id;
+    if (!jobId || error || typeof window === "undefined") return;
+
+    const storageKey = `job-view:${jobId}`;
+    const lastTrackedAt = Number(window.sessionStorage.getItem(storageKey) || 0);
+    const now = Date.now();
+
+    if (lastTrackedAt && now - lastTrackedAt < 15 * 60 * 1000) return;
+
+    window.sessionStorage.setItem(storageKey, String(now));
+    api.registerJobView(jobId).catch(() => {
+      window.sessionStorage.removeItem(storageKey);
+    });
+  }, [job?.id, error]);
 
   const navItems = useMemo(() => {
     return roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;

@@ -1,11 +1,8 @@
 .site-footer {
   margin-top: 3rem;
   padding: 2rem 0 1.2rem;
-  background:
-    radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 22%),
-    radial-gradient(circle at top right, rgba(15, 118, 110, 0.06), transparent 24%),
-    linear-gradient(180deg, #f8fafc 0%, #f4f7fb 100%);
-  border-top: 1px solid rgba(154, 168, 189, 0.16);
+  background: #ffffff;
+  border-top: 1px solid rgba(226, 232, 240, 0.95);
 }
 
 .footer-shell {
@@ -56,7 +53,7 @@
 }
 
 .footer-links a:hover {
-  color: #1d4ed8;
+  color: #0f172a;
   transform: translateX(2px);
 }
 

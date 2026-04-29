@@ -47,7 +47,16 @@ function PlusIcon() {
   );
 }
 
-const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false }) => {
+function ArrowUpRightIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M7 17 17 7" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7h8v8" />
+    </svg>
+  );
+}
+
+const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const accountMenuRef = useRef(null);
@@ -64,6 +73,20 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
   }, []);
 
   function handleNavigate(section) {
+    if (section === "daily") {
+      setActiveSection("daily");
+      setMenuOpen(false);
+      setAccountMenuOpen(false);
+      return;
+    }
+
+    if (section === "support" && typeof onOpenSupport === "function") {
+      onOpenSupport();
+      setMenuOpen(false);
+      setAccountMenuOpen(false);
+      return;
+    }
+
     setActiveSection(section);
     setMenuOpen(false);
     setAccountMenuOpen(false);
@@ -77,24 +100,13 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
 
   return (
     <header className="site-header">
-      <div className="container header-inner">
-        <div className="brand">
-          <Link href="/">
-            <img src="/logo.svg" alt="Asimos loqosu" />
-          </Link>
-        </div>
-        <nav className={`main-nav ${menuOpen ? "open" : ""}`}>
-          {navItems.map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              className={`${activeSection === item.key ? "active" : ""} ${item.key === "create" ? "nav-cta" : ""}`.trim()}
-              onClick={() => handleNavigate(item.key)}
-            >
-              {item.label}
-            </button>
-          ))}
-        </nav>
+      <div className="site-header-top">
+        <div className="container header-inner">
+          <div className="brand">
+            <Link href="/">
+              <img src="/logo.svg" alt="Asimos loqosu" />
+            </Link>
+          </div>
         <div className="header-actions">
           {user && canCreateJob ? (
             <button type="button" className={`create-action ${activeSection === "create" ? "active" : ""}`} onClick={() => handleNavigate("create")}>
@@ -132,9 +144,9 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
                 ) : null}
               </div>
             ) : (
-              <button type="button" className="btn-secondary" onClick={() => handleNavigate("auth")}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-                Daxil ol
+              <button type="button" className="login-action" onClick={() => handleNavigate("auth")}>
+                <span>Daxil ol</span>
+                <ArrowUpRightIcon />
               </button>
             )}
           </div>
@@ -146,6 +158,21 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
             </svg>
           </button>
         </div>
+        </div>
+      </div>
+      <div className="site-header-nav">
+        <nav className={`container main-nav ${menuOpen ? "open" : ""}`}>
+          {navItems.map((item) => (
+            <button
+              key={item.key}
+              type="button"
+              className={`${activeSection === item.key ? "active" : ""} ${item.key === "create" ? "nav-cta" : ""}`.trim()}
+              onClick={() => handleNavigate(item.key)}
+            >
+              {item.label}
+            </button>
+          ))}
+        </nav>
       </div>
     </header>
   );
