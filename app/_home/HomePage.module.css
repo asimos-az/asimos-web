@@ -2,6 +2,185 @@
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+.heroSearchSection {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+  padding: 18px 0 10px;
+  background:
+    radial-gradient(circle at 0% 10%, rgba(60, 125, 240, 0.14), transparent 32%),
+    radial-gradient(circle at 100% 0%, rgba(15, 23, 42, 0.08), transparent 30%),
+    linear-gradient(180deg, #ffffff 0%, #f5f8fd 100%);
+  border-bottom: 1px solid #eef2f7;
+}
+
+.heroSearchInner {
+  display: grid;
+  gap: 14px;
+}
+
+.heroSearchCopy {
+  display: grid;
+  gap: 8px;
+}
+
+.heroSearchKicker {
+  display: inline-flex;
+  width: fit-content;
+  min-height: 28px;
+  align-items: center;
+  padding: 0 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(60, 125, 240, 0.18);
+  background: rgba(60, 125, 240, 0.08);
+  color: #2d63c5;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.heroSearchTitle {
+  margin: 0;
+  max-width: 680px;
+  font-size: clamp(1.6rem, 3.5vw, 3rem);
+  line-height: 1.02;
+  color: #10233d;
+}
+
+.heroSearchTitleText {
+  display: inline-block;
+  opacity: 0;
+  transform: translateX(-42px);
+  animation: heroSlideText 0.95s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.heroSearchDescription {
+  margin: 0;
+  max-width: 560px;
+  color: #5f7188;
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.heroSearchForm {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.92);
+  border: 1px solid #e9eef5;
+  box-shadow: 0 18px 50px rgba(15, 23, 42, 0.07);
+  backdrop-filter: blur(10px);
+}
+
+.heroSearchModes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.heroSearchMode,
+.heroSearchModeActive {
+  min-height: 38px;
+  padding: 0 14px;
+  border-radius: 999px;
+  border: 1px solid #dce5f2;
+  background: #f8fafc;
+  color: #4d627d;
+  font-size: 0.82rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+}
+
+.heroSearchModeActive {
+  border-color: #3c7df0;
+  background: #3c7df0;
+  color: #ffffff;
+}
+
+.heroSearchControls {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+}
+
+.heroSearchInputWrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: 54px;
+  border-radius: 18px;
+  border: 1px solid #e0e8f3;
+  background: #ffffff;
+  overflow: hidden;
+}
+
+.heroSearchInputIcon {
+  width: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #3c7df0;
+  flex-shrink: 0;
+}
+
+.heroSearchInputIcon svg {
+  width: 18px;
+  height: 18px;
+}
+
+.heroSearchInputWrap input {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  outline: 0;
+  padding: 0 14px 0 0;
+  font-size: 0.94rem;
+  color: #10233d;
+  background: transparent;
+}
+
+.heroSearchInputWrap input::placeholder {
+  color: #8a98ab;
+}
+
+.heroSearchSubmit {
+  min-width: 164px;
+  min-height: 54px;
+  padding: 0 18px;
+  border: 1px solid #3c7df0;
+  border-radius: 18px;
+  background: #3c7df0;
+  color: #ffffff;
+  font-size: 0.86rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.heroSearchSubmit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(60, 125, 240, 0.24);
+}
+
+.heroSearchSubmit:disabled {
+  cursor: wait;
+  opacity: 0.8;
+}
+
+@keyframes heroSlideText {
+  from {
+    opacity: 0;
+    transform: translateX(-42px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 .handwrittenSection {
   position: relative;
   padding: 48px 24px;
@@ -202,9 +381,35 @@
     grid-template-columns: 1fr;
   }
 
+  .heroSearchControls {
+    grid-template-columns: 1fr;
+  }
+
+  .heroSearchSubmit {
+    width: 100%;
+  }
+
 }
 
 @media (max-width: 640px) {
+  .heroSearchSection {
+    padding: 14px 0 8px;
+  }
+
+  .heroSearchForm {
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .heroSearchTitle {
+    font-size: clamp(1.45rem, 8vw, 2.05rem);
+  }
+
+  .heroSearchInputWrap,
+  .heroSearchSubmit {
+    min-height: 50px;
+  }
+
   .launchShell {
     padding: 18px 14px;
     border-radius: 22px;

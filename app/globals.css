@@ -1031,6 +1031,27 @@ textarea:focus {
   background: #475569;
 }
 
+.jobs-map-marker--active {
+  background: #3c7df0;
+  border-color: #dbeafe;
+  box-shadow: 0 0 0 8px rgba(60, 125, 240, 0.18), 0 14px 30px rgba(60, 125, 240, 0.35);
+  animation: jobsMapMarkerPulse 1.4s ease-in-out infinite;
+}
+
+@keyframes jobsMapMarkerPulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0.24), 0 14px 30px rgba(60, 125, 240, 0.35);
+  }
+
+  70% {
+    box-shadow: 0 0 0 10px rgba(60, 125, 240, 0), 0 16px 34px rgba(60, 125, 240, 0.4);
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0), 0 14px 30px rgba(60, 125, 240, 0.35);
+  }
+}
+
 @media (max-width: 1080px) {
   .filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));

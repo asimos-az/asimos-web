@@ -204,6 +204,8 @@ export default function HomePageClient() {
   const [unread, setUnread] = useState(0);
 
   const [search, setSearch] = useState("");
+  const [searchSurface, setSearchSurface] = useState("global");
+  const [focusedMapJobId, setFocusedMapJobId] = useState(null);
   const [category, setCategory] = useState("");
   const [jobType, setJobType] = useState("");
   const [dailyOnly, setDailyOnly] = useState(false);
@@ -391,7 +393,49 @@ export default function HomePageClient() {
       maxWage: maxWage || undefined,
       categories: category || undefined,
     });
-    setJobs(normalizeList(res));
+    const nextJobs = normalizeList(res);
+    setJobs(nextJobs);
+    return nextJobs;
+  }
+
+  async function handleHeroSearchSubmit(event) {
+    event.preventDefault();
+    setError("");
+
+    try {
+      setLoading(true);
+      const nextJobs = await refreshJobs();
+
+      if (searchSurface === "map") {
+        const normalizedSearch = String(search || "").trim().toLowerCase();
+        const matchedJob = nextJobs.find((job) => {
+          const hasCoords = Number.isFinite(Number(job?.location?.lat)) && Number.isFinite(Number(job?.location?.lng));
+          if (!hasCoords) return false;
+          if (!normalizedSearch) return true;
+          const haystack = [job?.title, job?.companyName, job?.company_name, job?.category, job?.description]
+            .filter(Boolean)
+            .join(" ")
+            .toLowerCase();
+          return haystack.includes(normalizedSearch);
+        }) || null;
+
+        const fallbackJob = matchedJob || nextJobs.find(
+          (job) => Number.isFinite(Number(job?.location?.lat)) && Number.isFinite(Number(job?.location?.lng))
+        ) || null;
+
+        setFocusedMapJobId(fallbackJob?.id || null);
+        const mapSection = document.getElementById("home-jobs-map");
+        mapSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+
+      setFocusedMapJobId(null);
+      setActiveSection(search.toLowerCase().includes("gündəlik") ? "daily" : "jobs");
+    } catch (e) {
+      setError(e.message || "Axtarış zamanı xəta baş verdi");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function reverseGeocode(latValue, lngValue) {
@@ -1066,6 +1110,60 @@ export default function HomePageClient() {
         canCreateJob={canCreateJob}
         onOpenSupport={openSupportModal}
       />
+      {activeSection === "home" ? (
+        <section className={styles.heroSearchSection}>
+          <div className={`container ${styles.heroSearchInner}`}>
+            <div className={styles.heroSearchCopy}>
+              <span className={styles.heroSearchKicker}>ASIMOS PLATFORMASI</span>
+              <h1 className={styles.heroSearchTitle}>
+                <span className={styles.heroSearchTitleText}>Yaxınındakı işi, xidməti və günlük fürsətləri tək axtarışla tap.</span>
+              </h1>
+              <p className={styles.heroSearchDescription}>
+                Açar söz yaz, sonra ümumi siyahıda bax və ya nəticələri birbaşa xəritə üzərində araşdır.
+              </p>
+            </div>
+
+            <form className={styles.heroSearchForm} onSubmit={handleHeroSearchSubmit}>
+              <div className={styles.heroSearchModes} role="tablist" aria-label="Axtarış görünüşü">
+                <button
+                  type="button"
+                  className={searchSurface === "global" ? styles.heroSearchModeActive : styles.heroSearchMode}
+                  onClick={() => setSearchSurface("global")}
+                >
+                  Ümumi axtarış
+                </button>
+                <button
+                  type="button"
+                  className={searchSurface === "map" ? styles.heroSearchModeActive : styles.heroSearchMode}
+                  onClick={() => setSearchSurface("map")}
+                >
+                  Xəritə üzrə axtarış
+                </button>
+              </div>
+
+              <div className={styles.heroSearchControls}>
+                <label className={styles.heroSearchInputWrap}>
+                  <span className={styles.heroSearchInputIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <input
+                    value={search}
+                    onChange={(event) => setSearch(event.target.value)}
+                    placeholder={searchSurface === "map" ? "Məs: kuryer, restoran, təmir xidməti" : "Məs: ofisiant, dizayner, günlük iş"}
+                  />
+                </label>
+
+                <button type="submit" className={styles.heroSearchSubmit} disabled={loading}>
+                  {loading ? "Axtarılır..." : searchSurface === "map" ? "Xəritədə bax" : "Elanlarda axtar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </section>
+      ) : null}
       <LocationPermissionPrompt
         isOpen={locationPromptOpen}
         user={user}
@@ -1237,7 +1335,9 @@ export default function HomePageClient() {
             </div>
           </section>
 
-          <JobsMap jobs={jobs} />
+          <div id="home-jobs-map">
+            <JobsMap jobs={jobs} focusedJobId={focusedMapJobId} />
+          </div>
           <AppLaunchPanel />
         </>
       ) : null}

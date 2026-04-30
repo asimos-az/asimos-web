@@ -224,12 +224,13 @@ async function fetchPoiData(signal) {
   throw lastError || new Error("POI data could not be loaded");
 }
 
-function createMarkerIcon(L, kind, label) {
+function createMarkerIcon(L, kind, label, isActive = false) {
   const safeLabel = escapeHtml(label);
+  const activeClass = isActive ? " jobs-map-marker--active" : "";
 
   return L.divIcon({
     className: "jobs-map-marker-wrap",
-    html: `<div class="jobs-map-marker jobs-map-marker--${kind}"><span>${safeLabel}</span></div>`,
+    html: `<div class="jobs-map-marker jobs-map-marker--${kind}${activeClass}"><span>${safeLabel}</span></div>`,
     iconSize: [34, 34],
     iconAnchor: [17, 17],
     popupAnchor: [0, -14],
@@ -275,7 +276,7 @@ function buildJobPopup(job, nearestUniversity, nearestMetro) {
   `;
 }
 
-export default function JobsMap({ jobs }) {
+export default function JobsMap({ jobs, focusedJobId = null }) {
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layersRef = useRef(null);
@@ -351,10 +352,10 @@ export default function JobsMap({ jobs }) {
 
     const L = window.L;
     const { jobs: jobsLayer, universities: universitiesLayer, metros: metrosLayer } = layersRef.current;
-    const jobIcon = createMarkerIcon(L, "job", "IS");
     const universityIcon = createMarkerIcon(L, "university", "U");
     const metroIcon = createMarkerIcon(L, "metro", "M");
     const bounds = [];
+    let focusedMarker = null;
 
     jobsLayer.clearLayers();
     universitiesLayer.clearLayers();
@@ -377,12 +378,22 @@ export default function JobsMap({ jobs }) {
     jobsWithCoordinates.forEach((job) => {
       const nearestUniversity = findNearestPoint(job, poiData.universities);
       const nearestMetro = findNearestPoint(job, poiData.metros);
+      const isFocused = focusedJobId !== null && String(job.id) === String(focusedJobId);
 
-      L.marker([job.lat, job.lng], { icon: jobIcon })
+      const marker = L.marker([job.lat, job.lng], { icon: createMarkerIcon(L, "job", "IS", isFocused) })
         .bindPopup(buildJobPopup(job, nearestUniversity, nearestMetro), { maxWidth: 340 })
         .addTo(jobsLayer);
+
+      if (isFocused) focusedMarker = marker;
       bounds.push([job.lat, job.lng]);
     });
+
+    if (focusedMarker) {
+      const focusLatLng = focusedMarker.getLatLng();
+      mapRef.current.setView(focusLatLng, 15, { animate: true });
+      focusedMarker.openPopup();
+      return;
+    }
 
     if (!bounds.length) {
       mapRef.current.setView(DEFAULT_CENTER, 7);
@@ -395,7 +406,7 @@ export default function JobsMap({ jobs }) {
     }
 
     mapRef.current.fitBounds(bounds, { padding: [36, 36] });
-  }, [jobsWithCoordinates, poiData]);
+  }, [jobsWithCoordinates, poiData, focusedJobId]);
 
   return (
     <section className="container page-section jobs-map-section">
