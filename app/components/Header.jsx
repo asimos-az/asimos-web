@@ -59,7 +59,18 @@ function ArrowUpRightIcon() {
 const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
   const accountMenuRef = useRef(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 86);
+    };
+
+    handleScroll();
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event) {
@@ -100,7 +111,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
   ];
 
   return (
-    <header className="site-header">
+    <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`.trim()}>
       <div className="site-header-top">
         <div className="container header-inner">
           <div className="brand">

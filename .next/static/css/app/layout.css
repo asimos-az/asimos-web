@@ -1256,6 +1256,86 @@ textarea:focus {
   }
 }
 
+/* Asimos motion layer */
+@media (prefers-reduced-motion: no-preference) {
+  .page-section,
+  .heroSearchSection,
+  .handwrittenSection,
+  .seo-landing,
+  .auth-page,
+  .profile-section,
+  .support-section {
+    animation: asimosSectionIn 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .page-section:nth-of-type(2) { animation-delay: 0.06s; }
+  .page-section:nth-of-type(3) { animation-delay: 0.12s; }
+
+  .card,
+  .job-card,
+  .jobs-map-shell,
+  .auth-form,
+  .notification-card,
+  .seo-card,
+  .profile-card {
+    animation: asimosCardIn 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .cards-grid > *,
+  .job-listings-grid > * {
+    animation: asimosCardIn 0.56s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .cards-grid > *:nth-child(2),
+  .job-listings-grid > *:nth-child(2) { animation-delay: 0.05s; }
+  .cards-grid > *:nth-child(3),
+  .job-listings-grid > *:nth-child(3) { animation-delay: 0.1s; }
+  .cards-grid > *:nth-child(4),
+  .job-listings-grid > *:nth-child(4) { animation-delay: 0.15s; }
+  .cards-grid > *:nth-child(5),
+  .job-listings-grid > *:nth-child(5) { animation-delay: 0.2s; }
+  .cards-grid > *:nth-child(6),
+  .job-listings-grid > *:nth-child(6) { animation-delay: 0.25s; }
+
+  .btn-primary,
+  .btn-secondary,
+  .heroSearchSubmit,
+  .heroSearchMode,
+  .heroSearchModeActive,
+  .icon-action {
+    will-change: transform;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .heroSearchSubmit:hover,
+  .icon-action:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes asimosSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes asimosCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
 /*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/_home/components/AuthSection.css ***!
   \**********************************************************************************************************************************************************************************************************************************************************************************/
@@ -2242,18 +2322,41 @@ textarea:focus {
   position: -webkit-sticky;
   position: sticky;
   top: 0;
-  z-index: 40;
-  background: #ffffff;
+  z-index: 3000;
+  background: rgba(255, 255, 255, 0.98);
   border-bottom: 1px solid #f0f1f4;
+  isolation: isolate;
+  transform: translateZ(0);
+  transition: background-color 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, -webkit-backdrop-filter 0.28s ease;
+  transition: background-color 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, backdrop-filter 0.28s ease;
+  transition: background-color 0.28s ease, box-shadow 0.28s ease, border-color 0.28s ease, backdrop-filter 0.28s ease, -webkit-backdrop-filter 0.28s ease;
+}
+
+.site-header.is-scrolled {
+  background: rgba(255, 255, 255, 0.88);
+  border-bottom-color: rgba(203, 213, 225, 0.72);
+  box-shadow: 0 18px 44px rgba(15, 23, 42, 0.1);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
 }
 
 .site-header-top {
-  background: #ffffff;
-  border-bottom: 1px solid #f1f2f5;
+  background: transparent;
+  border-bottom: 1px solid rgba(241, 242, 245, 0.9);
+  transition: border-color 0.28s ease;
+}
+
+.site-header.is-scrolled .site-header-top {
+  border-bottom-color: rgba(226, 232, 240, 0.72);
 }
 
 .site-header-nav {
-  background: #ffffff;
+  background: transparent;
+  transition: transform 0.28s ease, opacity 0.28s ease;
+}
+
+.site-header.is-scrolled .site-header-nav {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
 .header-inner {
@@ -2263,6 +2366,11 @@ textarea:focus {
   gap: 22px;
   min-height: 74px;
   position: relative;
+  transition: min-height 0.28s ease;
+}
+
+.site-header.is-scrolled .header-inner {
+  min-height: 64px;
 }
 
 .brand {
@@ -2274,10 +2382,22 @@ textarea:focus {
 
 .brand a {
   display: inline-flex;
+  align-items: center;
+  transition: transform 0.24s ease, filter 0.24s ease;
+}
+
+.brand a:hover {
+  transform: translateY(-1px) scale(1.02);
+  filter: drop-shadow(0 10px 18px rgba(20, 184, 166, 0.18));
 }
 
 .brand img {
   height: 36px;
+  transition: height 0.28s ease;
+}
+
+.site-header.is-scrolled .brand img {
+  height: 32px;
 }
 
 .main-nav {
@@ -2290,6 +2410,11 @@ textarea:focus {
   border: 0;
   box-shadow: none;
   min-height: 66px;
+  transition: min-height 0.28s ease;
+}
+
+.site-header.is-scrolled .main-nav {
+  min-height: 54px;
 }
 
 .main-nav button {
@@ -2302,7 +2427,11 @@ textarea:focus {
   padding: 21px 0;
   font-size: clamp(0.9rem, 0.95vw, 1.02rem);
   border-radius: 0;
-  transition: color 0.24s ease, background-color 0.24s ease, transform 0.24s ease;
+  transition: color 0.24s ease, background-color 0.24s ease, transform 0.24s ease, padding 0.28s ease;
+}
+
+.site-header.is-scrolled .main-nav button {
+  padding: 16px 0;
 }
 
 .main-nav button.active,
@@ -2313,6 +2442,23 @@ textarea:focus {
   transform: none;
 }
 
+.main-nav button::before {
+  content: "";
+  position: absolute;
+  inset: 13px -12px;
+  z-index: -1;
+  border-radius: 999px;
+  background: rgba(60, 125, 240, 0.08);
+  opacity: 0;
+  transform: scale(0.88);
+  transition: opacity 0.24s ease, transform 0.24s ease;
+}
+
+.main-nav button:hover::before {
+  opacity: 1;
+  transform: scale(1);
+}
+
 .main-nav button.active::after {
   content: "";
   position: absolute;
@@ -2321,7 +2467,14 @@ textarea:focus {
   bottom: 12px;
   height: 3px;
   border-radius: 10px;
-  background: #3b7bf0;
+  background: linear-gradient(90deg, #3b7bf0, #14b8a6);
+  box-shadow: 0 8px 18px rgba(60, 125, 240, 0.28);
+  animation: navUnderline 0.34s ease both;
+}
+
+@keyframes navUnderline {
+  from { transform: scaleX(0.4); opacity: 0; }
+  to { transform: scaleX(1); opacity: 1; }
 }
 
 .header-actions {
@@ -2347,7 +2500,7 @@ textarea:focus {
   font-weight: 800;
   text-transform: uppercase;
   cursor: pointer;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
 }
 
 .create-action:hover,
@@ -2355,6 +2508,7 @@ textarea:focus {
 .login-action:hover {
   transform: translateY(-1px);
   box-shadow: 0 14px 34px rgba(60, 125, 240, 0.28);
+  background: #336fe0;
 }
 
 .create-action svg,
@@ -2398,13 +2552,14 @@ textarea:focus {
   color: #fff;
   box-shadow: none;
   cursor: pointer;
-  transition: transform 0.22s ease, box-shadow 0.22s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
 }
 
 .account-trigger:hover,
 .account-trigger.open {
   transform: translateY(-1px);
   box-shadow: 0 14px 34px rgba(60, 125, 240, 0.28);
+  background: #336fe0;
 }
 
 .account-trigger svg {
@@ -2416,12 +2571,21 @@ textarea:focus {
   position: absolute;
   top: calc(100% + 10px);
   right: 0;
+  z-index: 3010;
   min-width: 210px;
   padding: 10px;
   border-radius: 24px;
-  background: #ffffff;
+  background: rgba(255, 255, 255, 0.96);
   border: 1px solid #edf0f5;
   box-shadow: 0 24px 70px rgba(15, 23, 42, 0.14);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  animation: dropdownIn 0.22s ease both;
+}
+
+@keyframes dropdownIn {
+  from { opacity: 0; transform: translateY(-8px) scale(0.98); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .account-dropdown-item {
@@ -2476,10 +2640,14 @@ textarea:focus {
   border-radius: 999px;
   cursor: pointer;
   color: #132238;
+  transition: transform 0.22s ease, background-color 0.22s ease, box-shadow 0.22s ease;
 }
 
+.menu-toggle:hover,
 .menu-toggle.open {
   background: #f1f5f9;
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
 }
 
 @media (max-width: 768px) {
@@ -2495,13 +2663,21 @@ textarea:focus {
     min-height: 0;
     border-radius: 20px;
     padding: 12px;
-    background: #ffffff;
+    background: rgba(255, 255, 255, 0.98);
     border: 1px solid #edf0f5;
     box-shadow: 0 22px 60px rgba(15, 23, 42, 0.12);
+    backdrop-filter: blur(14px);
+    -webkit-backdrop-filter: blur(14px);
   }
 
   .main-nav.open {
     display: flex;
+    animation: mobileNavIn 0.24s ease both;
+  }
+
+  @keyframes mobileNavIn {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   .main-nav button {
@@ -2515,6 +2691,10 @@ textarea:focus {
     display: none;
   }
 
+  .main-nav button::before {
+    inset: 6px 0;
+  }
+
   .menu-toggle {
     display: inline-flex;
   }
@@ -2526,7 +2706,12 @@ textarea:focus {
     gap: 12px;
   }
 
-  .brand img {
+  .site-header.is-scrolled .header-inner {
+    min-height: 60px;
+  }
+
+  .brand img,
+  .site-header.is-scrolled .brand img {
     height: 32px;
   }
 
@@ -3176,6 +3361,47 @@ textarea:focus {
   color: #0f766e;
 }
 
+/* Keep Leaflet below sticky header and add smooth map reveal */
+.jobs-map-section,
+#home-jobs-map {
+  position: relative;
+  z-index: 0;
+  scroll-margin-top: 150px;
+}
+
+.jobs-map-shell {
+  position: relative;
+  z-index: 0;
+  animation: asimosMapReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.jobs-map-canvas,
+.jobs-map-canvas .leaflet-container,
+.leaflet-container {
+  position: relative;
+  z-index: 0 !important;
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control-container {
+  z-index: 1 !important;
+}
+
+@keyframes asimosMapReveal {
+  from {
+    opacity: 0;
+    transform: translateY(28px) scale(0.985);
+    filter: blur(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
 /*!*******************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/LocationPicker.css ***!
   \*******************************************************************************************************************************************************************************************************************************************************************************/
@@ -3278,6 +3504,10 @@ textarea:focus {
   grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-gap: 18px;
   gap: 18px;
+}
+
+.footer-links--compact {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
 .footer-links h3 {

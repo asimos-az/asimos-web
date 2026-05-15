@@ -1221,3 +1221,83 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
+
+/* Asimos motion layer */
+@media (prefers-reduced-motion: no-preference) {
+  .page-section,
+  .heroSearchSection,
+  .handwrittenSection,
+  .seo-landing,
+  .auth-page,
+  .profile-section,
+  .support-section {
+    animation: asimosSectionIn 0.68s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .page-section:nth-of-type(2) { animation-delay: 0.06s; }
+  .page-section:nth-of-type(3) { animation-delay: 0.12s; }
+
+  .card,
+  .job-card,
+  .jobs-map-shell,
+  .auth-form,
+  .notification-card,
+  .seo-card,
+  .profile-card {
+    animation: asimosCardIn 0.62s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .cards-grid > *,
+  .job-listings-grid > * {
+    animation: asimosCardIn 0.56s cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+
+  .cards-grid > *:nth-child(2),
+  .job-listings-grid > *:nth-child(2) { animation-delay: 0.05s; }
+  .cards-grid > *:nth-child(3),
+  .job-listings-grid > *:nth-child(3) { animation-delay: 0.1s; }
+  .cards-grid > *:nth-child(4),
+  .job-listings-grid > *:nth-child(4) { animation-delay: 0.15s; }
+  .cards-grid > *:nth-child(5),
+  .job-listings-grid > *:nth-child(5) { animation-delay: 0.2s; }
+  .cards-grid > *:nth-child(6),
+  .job-listings-grid > *:nth-child(6) { animation-delay: 0.25s; }
+
+  .btn-primary,
+  .btn-secondary,
+  .heroSearchSubmit,
+  .heroSearchMode,
+  .heroSearchModeActive,
+  .icon-action {
+    will-change: transform;
+  }
+
+  .btn-primary:hover,
+  .btn-secondary:hover,
+  .heroSearchSubmit:hover,
+  .icon-action:hover {
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes asimosSectionIn {
+  from {
+    opacity: 0;
+    transform: translateY(26px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes asimosCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
