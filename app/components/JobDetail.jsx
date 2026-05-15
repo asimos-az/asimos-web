@@ -1,5 +1,4 @@
 import React from 'react';
-import { Col, Row } from 'antd';
 
 const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
   if (!job) return null;
@@ -51,8 +50,8 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
           ) : null}
         </div>
 
-        <Row className="job-detail-body" gutter={[32, 32]}>
-          <Col xs={24} lg={14} className="job-detail-main-content">
+        <div className="job-detail-body">
+          <div className="job-detail-main-content">
             <div className="job-detail-info-grid">
               <div className="info-item">
                 <span className="info-label">Maaş</span>
@@ -80,9 +79,9 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
                 WhatsApp, əlaqə nömrəsi və link yalnız daxil olmuş istifadəçilərə göstərilir.
               </div>
             ) : null}
-          </Col>
+          </div>
 
-          <Col xs={24} lg={10} className="job-detail-sidebar">
+          <div className="job-detail-sidebar">
             {hasLocation ? (
               <div className="job-detail-map-card">
                 <h3 className="job-detail-section-title">Xəritədə ünvan</h3>
@@ -119,8 +118,8 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
                 </span>
               </div>
             </div>
-          </Col>
-        </Row>
+          </div>
+        </div>
       </div>
     </div>
   );

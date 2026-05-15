@@ -25,3 +25,30 @@
 .tightTitle {
   margin-top: 0 !important;
 }
+
+
+.muted {
+  margin: 0;
+  color: #64748b;
+}
+
+.divider {
+  border: 0;
+  border-top: 1px solid #e5e7eb;
+  margin: 24px 0;
+}
+
+.paragraph {
+  margin: 0 0 16px;
+  color: #334155;
+  line-height: 1.75;
+}
+
+.paragraph ul {
+  margin: 10px 0 0 20px;
+  padding: 0;
+}
+
+.paragraph li {
+  margin: 6px 0;
+}

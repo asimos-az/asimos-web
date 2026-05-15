@@ -1,5 +1,3 @@
-import styles from "../HomePage.module.css";
-
 function PlayStoreIcon() {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -34,15 +32,15 @@ const storeLinks = [
 
 export default function AppLaunchPanel() {
   return (
-    <section className={`container page-section ${styles.launchSection}`}>
-      <div className={styles.launchShell}>
-        <div className={styles.launchCopy}>
-          <h2 className={styles.launchTitle}>Asimos tezliklə Play Store və App Store-da</h2>
-          <div className={styles.launchButtons}>
+    <section className="container page-section launch-section">
+      <div className="launch-shell">
+        <div className="launch-copy">
+          <h2 className="launch-title">Asimos tezliklə Play Store və App Store-da</h2>
+          <div className="launch-buttons">
             {storeLinks.map((item) => (
-              <a key={item.title} className={styles.launchButton} href={item.href} target="_blank" rel="noreferrer">
-                <span className={styles.launchButtonIcon}>{item.icon}</span>
-                <span className={styles.launchButtonLabel}>{item.title}</span>
+              <a key={item.title} className="launch-button" href={item.href} target="_blank" rel="noreferrer">
+                <span className="launch-button-icon">{item.icon}</span>
+                <span className="launch-button-label">{item.title}</span>
               </a>
             ))}
           </div>

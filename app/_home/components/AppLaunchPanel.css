@@ -1,0 +1,94 @@
+
+.launch-section {
+  padding-top: 0.5rem;
+}
+
+.launch-shell {
+  position: relative;
+  padding: 24px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: #ffffff;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: 0 16px 34px rgba(31, 42, 68, 0.05);
+}
+
+.launch-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.launch-title {
+  margin: 0 0 14px;
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  line-height: 1.05;
+  color: #21324d;
+}
+
+.launch-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.launch-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 210px;
+  padding: 14px 18px;
+  border-radius: 16px;
+  background: #f8fafc;
+  border: 1px solid rgba(226, 232, 240, 0.95);
+  box-shadow: none;
+  text-decoration: none;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+}
+
+.launch-button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(15, 23, 42, 0.18);
+  box-shadow: 0 16px 30px rgba(31, 42, 68, 0.08);
+}
+
+.launch-button-icon {
+  width: 42px;
+  height: 42px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 13px;
+  background: #0f172a;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.launch-button-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+.launch-button-label {
+  color: #21324d;
+  font-size: 0.98rem;
+  font-weight: 800;
+}
+
+@media (max-width: 640px) {
+  .launch-shell {
+    padding: 18px 14px;
+    border-radius: 22px;
+  }
+
+  .launch-title {
+    font-size: clamp(1.2rem, 8vw, 1.65rem);
+  }
+
+  .launch-buttons {
+    flex-direction: column;
+  }
+
+  .launch-button {
+    width: 100%;
+  }
+}

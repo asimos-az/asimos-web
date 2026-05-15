@@ -27,7 +27,7 @@ html {
 
 body {
   min-height: 100vh;
-  font-family: "Manrope", sans-serif;
+  font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   background: var(--background-color);
   color: var(--text-color);
   line-height: 1.6;
@@ -45,7 +45,7 @@ h5,
 h6 {
   color: var(--heading-color);
   margin-bottom: 1rem;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: inherit;
   font-weight: 700;
   letter-spacing: 0;
 }
@@ -374,60 +374,6 @@ textarea:focus {
   line-height: 1.6;
 }
 
-.location-picker {
-  display: grid;
-  gap: 12px;
-}
-
-.location-search {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-}
-
-.location-search-results {
-  display: grid;
-  gap: 8px;
-}
-
-.location-search-result {
-  width: 100%;
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.86);
-  color: var(--text-color);
-  padding: 11px 12px;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
-}
-
-.location-search-result:hover {
-  transform: translateY(-1px);
-  border-color: rgba(37, 99, 235, 0.22);
-  background: #fff;
-}
-
-.location-meta {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  color: var(--text-secondary);
-  font-size: 0.88rem;
-}
-
-.location-meta small {
-  color: #8a96ad;
-}
-
-.location-map-canvas {
-  width: 100%;
-  height: 340px;
-  border-radius: 18px;
-  overflow: hidden;
-  border: 1px solid rgba(135, 151, 175, 0.18);
-}
-
 .full-row {
   grid-column: 1 / -1;
 }
@@ -516,7 +462,7 @@ textarea:focus {
   place-items: center;
   background: var(--primary-color);
   color: #fff;
-  font-family: "Space Grotesk", sans-serif;
+  font-family: inherit;
   font-size: 2rem;
   font-weight: 800;
   box-shadow: 0 16px 30px rgba(15, 23, 42, 0.16);
@@ -564,7 +510,7 @@ textarea:focus {
 .profile-stats span {
   display: block;
   color: var(--secondary-color);
-  font-family: "Space Grotesk", sans-serif;
+  font-family: inherit;
   font-size: 1.25rem;
   font-weight: 800;
   line-height: 1.1;
@@ -932,126 +878,6 @@ textarea:focus {
   color: var(--text-secondary);
 }
 
-.jobs-map-section {
-  padding-top: 0;
-}
-
-.jobs-map-head p {
-  max-width: 680px;
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.jobs-map-shell {
-  padding: 1rem;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  box-shadow: var(--shadow);
-}
-
-.jobs-map-canvas {
-  width: 100%;
-  height: 520px;
-  border-radius: 22px;
-  overflow: hidden;
-}
-
-.jobs-map-empty {
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-}
-
-.jobs-map-popup {
-  line-height: 1.5;
-}
-
-.jobs-map-popup__title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--heading-color);
-  margin-bottom: 0.35rem;
-}
-
-.jobs-map-popup__company {
-  color: #2f4c6d;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.jobs-map-popup__meta,
-.jobs-map-popup__desc,
-.jobs-map-popup__nearby {
-  margin-top: 0.45rem;
-}
-
-.jobs-map-popup__desc {
-  color: #42576f;
-}
-
-.jobs-map-popup__nearby {
-  padding-top: 0.55rem;
-  border-top: 1px solid #dce5ee;
-}
-
-.jobs-map-marker-wrap {
-  background: transparent;
-  border: 0;
-}
-
-.jobs-map-marker {
-  width: 34px;
-  height: 34px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
-  border: 2px solid #fff;
-}
-
-.jobs-map-marker span {
-  transform: rotate(45deg);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-}
-
-.jobs-map-marker--job {
-  background: #0f172a;
-}
-
-.jobs-map-marker--university {
-  background: #365314;
-}
-
-.jobs-map-marker--metro {
-  background: #475569;
-}
-
-.jobs-map-marker--active {
-  background: #3c7df0;
-  border-color: #dbeafe;
-  box-shadow: 0 0 0 8px rgba(60, 125, 240, 0.18), 0 14px 30px rgba(60, 125, 240, 0.35);
-  animation: jobsMapMarkerPulse 1.4s ease-in-out infinite;
-}
-
-@keyframes jobsMapMarkerPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0.24), 0 14px 30px rgba(60, 125, 240, 0.35);
-  }
-
-  70% {
-    box-shadow: 0 0 0 10px rgba(60, 125, 240, 0), 0 16px 34px rgba(60, 125, 240, 0.4);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0), 0 14px 30px rgba(60, 125, 240, 0.35);
-  }
-}
-
 @media (max-width: 1080px) {
   .filter-row {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -1077,9 +903,6 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 
-  .jobs-map-canvas {
-    height: 420px;
-  }
 }
 
 @media (max-width: 640px) {
@@ -1187,5 +1010,17 @@ textarea:focus {
 
   .support-message {
     max-width: 92%;
+  }
+}
+
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }

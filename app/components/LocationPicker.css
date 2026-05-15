@@ -1,0 +1,53 @@
+.location-picker {
+  display: grid;
+  gap: 12px;
+}
+
+.location-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.location-search-results {
+  display: grid;
+  gap: 8px;
+}
+
+.location-search-result {
+  width: 100%;
+  border: 1px solid rgba(135, 151, 175, 0.16);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.86);
+  color: var(--text-color);
+  padding: 11px 12px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.location-search-result:hover {
+  transform: translateY(-1px);
+  border-color: rgba(37, 99, 235, 0.22);
+  background: #fff;
+}
+
+.location-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  color: var(--text-secondary);
+  font-size: 0.88rem;
+}
+
+.location-meta small {
+  color: #8a96ad;
+}
+
+.location-map-canvas {
+  width: 100%;
+  height: 340px;
+  border-radius: 18px;
+  overflow: hidden;
+  border: 1px solid rgba(135, 151, 175, 0.18);
+}

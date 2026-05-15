@@ -6,15 +6,30 @@ import LocationPicker from "../components/LocationPicker";
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
+import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
 import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 
-import JobsMap from "../components/JobsMap";
 import styles from "./HomePage.module.css";
 import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
+
+const JobsMap = dynamic(() => import("../components/JobsMap"), {
+  ssr: false,
+  loading: () => (
+    <section className="container page-section jobs-map-section">
+      <header className="section-head jobs-map-head">
+        <h2>Elanların xəritədə görünüşü</h2>
+        <p>Xəritə yüklənir...</p>
+      </header>
+      <div className="jobs-map-shell card">
+        <p className="jobs-map-empty">Xəritə modulu hazırlanır.</p>
+      </div>
+    </section>
+  ),
+});
 
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
@@ -407,25 +422,44 @@ export default function HomePageClient() {
       const nextJobs = await refreshJobs();
 
       if (searchSurface === "map") {
+        const jobsWithCoords = nextJobs.filter((job) => {
+          const latValue = Number(job?.location?.lat ?? job?.lat);
+          const lngValue = Number(job?.location?.lng ?? job?.lng ?? job?.lon);
+          return Number.isFinite(latValue) && Number.isFinite(lngValue);
+        });
+
+        if (!jobsWithCoords.length) {
+          setFocusedMapJobId(null);
+          setError("Bu axtarış üzrə xəritədə göstəriləcək koordinatlı elan tapılmadı.");
+          return;
+        }
+
         const normalizedSearch = String(search || "").trim().toLowerCase();
-        const matchedJob = nextJobs.find((job) => {
-          const hasCoords = Number.isFinite(Number(job?.location?.lat)) && Number.isFinite(Number(job?.location?.lng));
-          if (!hasCoords) return false;
-          if (!normalizedSearch) return true;
-          const haystack = [job?.title, job?.companyName, job?.company_name, job?.category, job?.description]
-            .filter(Boolean)
-            .join(" ")
-            .toLowerCase();
-          return haystack.includes(normalizedSearch);
-        }) || null;
+        const matchedJob =
+          jobsWithCoords.find((job) => {
+            if (!normalizedSearch) return true;
 
-        const fallbackJob = matchedJob || nextJobs.find(
-          (job) => Number.isFinite(Number(job?.location?.lat)) && Number.isFinite(Number(job?.location?.lng))
-        ) || null;
+            const haystack = [
+              job?.title,
+              job?.companyName,
+              job?.company_name,
+              job?.category,
+              job?.description,
+              job?.location?.address,
+              job?.address,
+            ]
+              .filter(Boolean)
+              .join(" ")
+              .toLowerCase();
 
-        setFocusedMapJobId(fallbackJob?.id || null);
-        const mapSection = document.getElementById("home-jobs-map");
-        mapSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+            return haystack.includes(normalizedSearch);
+          }) || jobsWithCoords[0];
+
+        setFocusedMapJobId(matchedJob.id);
+        window.setTimeout(() => {
+          const mapSection = document.getElementById("home-jobs-map");
+          mapSection?.scrollIntoView({ behavior: "smooth", block: "start" });
+        }, 80);
         return;
       }
 

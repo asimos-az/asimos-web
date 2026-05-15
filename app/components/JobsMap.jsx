@@ -277,12 +277,14 @@ function buildJobPopup(job, nearestUniversity, nearestMetro) {
 }
 
 export default function JobsMap({ jobs, focusedJobId = null }) {
+  const sectionRef = useRef(null);
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layersRef = useRef(null);
   const [loadError, setLoadError] = useState("");
   const [poiError, setPoiError] = useState("");
   const [poiData, setPoiData] = useState({ universities: [], metros: [] });
+  const [shouldLoadMap, setShouldLoadMap] = useState(false);
 
   const jobsWithCoordinates = useMemo(
     () => (Array.isArray(jobs) ? jobs.map(getJobCoordinates).filter(Boolean) : []),
@@ -290,6 +292,31 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
   );
 
   useEffect(() => {
+    if (shouldLoadMap) return;
+
+    const node = sectionRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") {
+      const timer = window.setTimeout(() => setShouldLoadMap(true), 800);
+      return () => window.clearTimeout(timer);
+    }
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries.some((entry) => entry.isIntersecting)) {
+          setShouldLoadMap(true);
+          observer.disconnect();
+        }
+      },
+      { rootMargin: "320px 0px" }
+    );
+
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [shouldLoadMap]);
+
+  useEffect(() => {
+    if (!shouldLoadMap) return;
+
     const controller = new AbortController();
 
     fetchPoiData(controller.signal)
@@ -303,9 +330,11 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
       });
 
     return () => controller.abort();
-  }, []);
+  }, [shouldLoadMap]);
 
   useEffect(() => {
+    if (!shouldLoadMap) return;
+
     let cancelled = false;
 
     ensureLeafletCss();
@@ -345,10 +374,10 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
         layersRef.current = null;
       }
     };
-  }, []);
+  }, [shouldLoadMap]);
 
   useEffect(() => {
-    if (!mapRef.current || !layersRef.current || !window.L) return;
+    if (!shouldLoadMap || !mapRef.current || !layersRef.current || !window.L) return;
 
     const L = window.L;
     const { jobs: jobsLayer, universities: universitiesLayer, metros: metrosLayer } = layersRef.current;
@@ -406,10 +435,10 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
     }
 
     mapRef.current.fitBounds(bounds, { padding: [36, 36] });
-  }, [jobsWithCoordinates, poiData, focusedJobId]);
+  }, [jobsWithCoordinates, poiData, focusedJobId, shouldLoadMap]);
 
   return (
-    <section className="container page-section jobs-map-section">
+    <section ref={sectionRef} className="container page-section jobs-map-section">
       <header className="section-head jobs-map-head">
         <h2>Elanların xəritədə görünüşü</h2>
         <p>

@@ -1,21 +1,34 @@
 "use client";
 
-import { Card, Divider, Layout, Typography } from "antd";
 import styles from "./PolicyPage.module.css";
 
-const { Content } = Layout;
-const { Title, Paragraph, Text } = Typography;
+function Title({ level = 1, className = "", children }) {
+  const Tag = `h${level}`;
+  return <Tag className={className}>{children}</Tag>;
+}
+
+function Paragraph({ children }) {
+  return <div className={styles.paragraph}>{children}</div>;
+}
+
+function Text({ children }) {
+  return <p className={styles.muted}>{children}</p>;
+}
+
+function Divider() {
+  return <hr className={styles.divider} />;
+}
 
 export default function PolicyPageClient() {
   return (
-    <Layout className={styles.layout}>
-      <Content className={styles.content}>
-        <Card className={styles.card}>
+    <main className={styles.layout}>
+      <div className={styles.content}>
+        <article className={styles.card}>
           <div className={styles.cardBody}>
             <Title level={2} className={styles.mainTitle}>
               Xidmət Şərtləri və Məxfilik Siyasəti
             </Title>
-            <Text type="secondary">Son yenilənmə: Fevral 2026</Text>
+            <Text>Son yenilənmə: Fevral 2026</Text>
 
             <Divider />
 
@@ -271,8 +284,8 @@ export default function PolicyPageClient() {
               <a href="mailto:asimos.org@gmail.com">asimos.org@gmail.com</a>
             </Paragraph>
           </div>
-        </Card>
-      </Content>
-    </Layout>
+        </article>
+      </div>
+    </main>
   );
 }

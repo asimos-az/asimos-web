@@ -108,6 +108,9 @@
 }
 
 .job-detail-body {
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(320px, 0.85fr);
+  gap: 32px;
   padding: 2rem 0 0;
   align-items: flex-start;
   min-width: 0;
@@ -118,11 +121,6 @@
 }
 
 .job-detail-sidebar {
-  min-width: 0;
-}
-
-.job-detail-sidebar > .ant-col,
-.job-detail-main-content > .ant-col {
   min-width: 0;
 }
 
@@ -246,6 +244,8 @@
   }
 
   .job-detail-body {
+    grid-template-columns: 1fr;
+    gap: 1.25rem;
     padding: 1.25rem 0 0;
   }
 
