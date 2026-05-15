@@ -10,6 +10,7 @@ import './components/JobsMap.css';
 import './components/LocationPicker.css';
 import './components/Footer.css';
 import './components/SplashScreen.css';
+import './mobile-app-responsive.css';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
 

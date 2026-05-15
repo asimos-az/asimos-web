@@ -80,9 +80,9 @@ export default function AuthSection({
             </div>
             <div className="auth-intro">
               <span className="auth-eyebrow">Asimos hesabı</span>
-              <h2>Karyeranızı daha ağıllı idarə edin</h2>
+              <h2>Asimos hesabına xoş gəldiniz</h2>
               <p>
-                Bir neçə saniyəyə daxil olun, uyğun vakansiyaları kəşf edin və hesabınızı lokasiya ilə daha dəqiq fərdiləşdirin.
+                Yaxınlıqdakı iş elanlarını, gündəlik fürsətləri və profil bildirişlərini daha rahat idarə edin.
               </p>
             </div>
 
@@ -268,21 +268,21 @@ export default function AuthSection({
           <div className="auth-branding-glow auth-branding-glow-top" />
           <div className="auth-branding-glow auth-branding-glow-bottom" />
           <div className="auth-branding-content">
-            <span className="auth-brand-chip">Ağıllı iş axını</span>
-            <h2>asimos</h2>
-            <p>Karyeranızda növbəti addımı daha sürətli, daha dəqiq və daha peşəkar formada atın.</p>
+            <span className="auth-brand-chip">Asimos platforması</span>
+            <h2>İş imkanları bir hesabda</h2>
+            <p>Daxil olun, profilinizi tamamlayın və sizə yaxın elanları daha sürətli kəşf edin.</p>
             <div className="auth-brand-points">
               <div className="auth-brand-point">
-                <strong>Sürətli giriş</strong>
-                <span>Bir neçə saniyədə hesabınıza daxil olun və elanlara baxın.</span>
+                <strong>Rahat giriş</strong>
+                <span>Hesabınıza daxil olun, elanlara baxın və profilinizi bir yerdən idarə edin.</span>
               </div>
               <div className="auth-brand-point">
                 <strong>Lokasiya əsaslı uyğunluq</strong>
                 <span>Yaxınlıqdakı vakansiyalar və bildirişlər sizə daha düzgün təqdim olunur.</span>
               </div>
               <div className="auth-brand-point">
-                <strong>Təmiz idarə paneli</strong>
-                <span>Profil, bildiriş və elan axınını bir yerdən idarə edin.</span>
+                <strong>Sadə profil idarəsi</strong>
+                <span>Bildirişləri, lokasiyanı və rol məlumatlarını sadə paneldə izləyin.</span>
               </div>
             </div>
             <div className="auth-brand-stats">

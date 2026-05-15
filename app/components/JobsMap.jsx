@@ -402,6 +402,11 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
     metrosLayer.clearLayers();
     userLayer?.clearLayers();
 
+    if (!jobsWithCoordinates.length) {
+      mapRef.current.setView(DEFAULT_CENTER, 7);
+      return;
+    }
+
     poiData.universities.forEach((poi) => {
       L.marker([poi.lat, poi.lng], { icon: universityIcon })
         .bindPopup(buildPoiPopup(poi, "Universitet"))
@@ -463,7 +468,9 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
       <header className="section-head jobs-map-head">
         <h2>Elanların xəritədə görünüşü</h2>
         <p>
-          Xəritədə {jobsWithCoordinates.length} iş elanı, {poiData.universities.length} universitet, {poiData.metros.length} metro və cihaz lokasiyanız marker kimi göstərilir.
+          {jobsWithCoordinates.length
+            ? `Xəritədə ${jobsWithCoordinates.length} iş elanı, ${poiData.universities.length} universitet, ${poiData.metros.length} metro və cihaz lokasiyanız marker kimi göstərilir.`
+            : "Real iş elanı olduqda xəritədə markerlər görünəcək."}
         </p>
       </header>
 

@@ -40,15 +40,12 @@ const seekerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "Elanlar" },
   { key: "daily", label: "Gündəlik işlər" },
-  { key: "support", label: "Əlaqə" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "Elanlar" },
   { key: "daily", label: "Gündəlik işlər" },
-  { key: "alerts", label: "Namizədlər" },
-  { key: "support", label: "Əlaqə" },
 ];
 
 const employerSupportCategories = [
@@ -158,6 +155,20 @@ function extractWageNumber(wageText) {
 
 function getJobStatus(job) {
   return String(job?.status || job?.jobStatus || "open").toLowerCase();
+}
+
+function isPublicHomeJob(job) {
+  if (!job?.id || !String(job?.title || "").trim()) return false;
+
+  const status = getJobStatus(job);
+  return !["closed", "deleted", "inactive", "rejected", "draft"].includes(status);
+}
+
+function hasJobCoordinates(job) {
+  const lat = Number(job?.location?.lat ?? job?.lat);
+  const lng = Number(job?.location?.lng ?? job?.lng ?? job?.lon);
+
+  return Number.isFinite(lat) && Number.isFinite(lng);
 }
 
 function toDateTimeLocal(value) {
@@ -305,6 +316,15 @@ export default function HomePageClient() {
   const supportCategories = roleName === "employer" ? employerSupportCategories : seekerSupportCategories;
   const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) || null;
   const effectiveLocation = user?.location || deviceLocation || null;
+  const homeJobs = useMemo(() => jobs.filter(isPublicHomeJob), [jobs]);
+  const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
+  const unreadNotifications = useMemo(
+    () => notifications.filter((item) => !Boolean(item.readAt || item.read_at)),
+    [notifications]
+  );
+  const activeUnreadCount = unreadNotifications.length;
+  const hasHomeJobs = homeJobs.length > 0;
+  const hasHomeMapJobs = homeMapJobs.length > 0;
 
   useEffect(() => {
     if (!user && activeSection !== "home" && activeSection !== "about" && activeSection !== "auth") {
@@ -1022,6 +1042,14 @@ export default function HomePageClient() {
   async function handleMarkAllRead() {
     try {
       await api.markAllNotificationsRead();
+      setNotifications((items) =>
+        items.map((item) => ({
+          ...item,
+          readAt: item.readAt || new Date().toISOString(),
+          read_at: item.read_at || new Date().toISOString(),
+        }))
+      );
+      setUnread(0);
       setOk("Bütün bildirişlər oxundu kimi işarələndi");
       await loadAuthedData();
     } catch (err) {
@@ -1032,12 +1060,28 @@ export default function HomePageClient() {
   async function handleOpenNotification(notification) {
     try {
       await api.markNotificationRead(notification.id);
+      const wasUnread = !Boolean(notification.readAt || notification.read_at);
+      const readTime = new Date().toISOString();
+
+      setNotifications((items) =>
+        items.map((item) =>
+          item.id === notification.id
+            ? { ...item, readAt: item.readAt || readTime, read_at: item.read_at || readTime }
+            : item
+        )
+      );
+
+      if (wasUnread) {
+        setUnread((count) => Math.max(0, Number(count || 0) - 1));
+      }
+
       const jobId = getNotificationJobId(notification);
       if (jobId) {
         router.push(`/jobs/${jobId}`);
         return;
       }
-      await loadAuthedData();
+
+      setOk("Bildiriş oxundu");
     } catch (err) {
       setError(err.message || "Bildiriş açılmadı");
     }
@@ -1469,20 +1513,24 @@ export default function HomePageClient() {
 
       {activeSection === "home" ? (
         <>
-          <section className="container page-section">
-            <header className="section-head">
-              <h2>Son elanlar</h2>
-            </header>
-            <div className={`cards-grid ${styles.latestJobsGrid}`}>
-              {jobs.slice(0, 6).map((job) => (
-                <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
-              ))}
-            </div>
-          </section>
+          {hasHomeJobs ? (
+            <section className="container page-section">
+              <header className="section-head">
+                <h2>Son elanlar</h2>
+              </header>
+              <div className={`cards-grid ${styles.latestJobsGrid}`}>
+                {homeJobs.slice(0, 6).map((job) => (
+                  <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
+                ))}
+              </div>
+            </section>
+          ) : null}
 
-          <div id="home-jobs-map">
-            <JobsMap jobs={jobs} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
-          </div>
+          {hasHomeMapJobs ? (
+            <div id="home-jobs-map">
+              <JobsMap jobs={homeMapJobs} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
+            </div>
+          ) : null}
           <AppLaunchPanel />
         </>
       ) : null}
@@ -1762,8 +1810,8 @@ export default function HomePageClient() {
 
             <div className="notifications-hero-actions">
               <div className="notifications-stat-card primary">
-                <span>{unread}</span>
-                <small>Oxunmamış</small>
+                <span>{activeUnreadCount}</span>
+                <small>Aktiv</small>
               </div>
               <div className="notifications-stat-card">
                 <span>{notifications.length}</span>
@@ -1899,8 +1947,8 @@ export default function HomePageClient() {
 
             <div className="notifications-hero-actions">
               <div className="notifications-stat-card primary">
-                <span>{unread}</span>
-                <small>Oxunmamış</small>
+                <span>{activeUnreadCount}</span>
+                <small>Aktiv</small>
               </div>
               <div className="notifications-stat-card">
                 <span>{notifications.length}</span>
@@ -1912,16 +1960,16 @@ export default function HomePageClient() {
           <div className="notifications-toolbar">
             <div>
               <strong>Son yeniliklər</strong>
-              <p>{notifications.length ? "Bildirişə klikləyərək bağlı elana keçə bilərsən." : "Yeni bildiriş gəldikdə burada görünəcək."}</p>
+              <p>{activeUnreadCount ? "Oxunmamış bildirişlər burada aktiv görünür. Kliklədikdə oxundu sayılır və siyahıdan bağlanır." : "Yeni oxunmamış bildiriş gəldikdə burada görünəcək."}</p>
             </div>
-            <button type="button" className="btn-secondary notifications-read-button" onClick={handleMarkAllRead} disabled={!notifications.length}>
+            <button type="button" className="btn-secondary notifications-read-button" onClick={handleMarkAllRead} disabled={!activeUnreadCount}>
               Hamısını oxundu et
             </button>
           </div>
 
-          {notifications.length ? (
+          {activeUnreadCount ? (
             <div className="notifications-list">
-              {notifications.map((item) => {
+              {unreadNotifications.map((item) => {
                 const isRead = Boolean(item.readAt || item.read_at);
                 const jobId = getNotificationJobId(item);
                 const tone = getNotificationTone(item);
@@ -1957,8 +2005,8 @@ export default function HomePageClient() {
           ) : (
             <div className="notifications-empty">
               <div className="notifications-empty-icon">🔕</div>
-              <h3>Hələ bildiriş yoxdur</h3>
-              <p>Yaxınlığında yeni elan və ya hesabında vacib yenilik olduqda burada görünəcək.</p>
+              <h3>Aktiv bildiriş yoxdur</h3>
+              <p>Oxunmamış bildirişlər burada görünəcək. Oxuduğun bildirişlər avtomatik siyahıdan bağlanır.</p>
             </div>
           )}
         </section>
@@ -1981,8 +2029,8 @@ export default function HomePageClient() {
                 <small>{roleName === "employer" ? "Elan" : "Bildiriş"}</small>
               </div>
               <div>
-                <span>{unread}</span>
-                <small>Oxunmamış</small>
+                <span>{activeUnreadCount}</span>
+                <small>Aktiv</small>
               </div>
               <div>
                 <span>{hasSavedLocation(user) ? "Aktiv" : "Yoxdur"}</span>
