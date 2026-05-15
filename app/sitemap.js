@@ -1,4 +1,4 @@
-const SITE_URL = 'https://asimos.az';
+import { seoPageList, SITE_URL } from '../lib/seo-pages';
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://asimos-backend.onrender.com').replace(/\/+$/, '');
 
 async function getJobsForSitemap() {
@@ -27,6 +27,13 @@ async function getJobsForSitemap() {
 }
 
 export default async function sitemap() {
+  const seoRoutes = seoPageList.map((page) => ({
+    url: `${SITE_URL}/${page.slug}`,
+    lastModified: new Date(),
+    changeFrequency: 'weekly',
+    priority: page.slug === 'is-elanlari' || page.slug === 'vakansiyalar' ? 0.92 : 0.86,
+  }));
+
   const staticRoutes = [
     {
       url: SITE_URL,
@@ -43,5 +50,5 @@ export default async function sitemap() {
   ];
 
   const jobRoutes = await getJobsForSitemap();
-  return [...staticRoutes, ...jobRoutes];
+  return [...staticRoutes, ...seoRoutes, ...jobRoutes];
 }

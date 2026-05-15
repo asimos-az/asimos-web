@@ -17,7 +17,17 @@ export default function Footer() {
           <div>
             <h3>Naviqasiya</h3>
             <Link href="/">Ana səhifə</Link>
+            <Link href="/is-elanlari">İş elanları</Link>
+            <Link href="/vakansiyalar">Vakansiyalar</Link>
             <Link href="/policy">Qaydalar</Link>
+          </div>
+          <div>
+            <h3>SEO bölmələri</h3>
+            <Link href="/bakida-is-elanlari">Bakıda iş elanları</Link>
+            <Link href="/gundelik-isler">Gündəlik işlər</Link>
+            <Link href="/xeritede-is-elanlari">Xəritədə iş elanları</Link>
+            <Link href="/is-axtaranlar">İş axtaranlar</Link>
+            <Link href="/isci-axtaranlar">İşçi axtaranlar</Link>
           </div>
           <div>
             <h3>Platforma</h3>
