@@ -33,23 +33,19 @@ const JobsMap = dynamic(() => import("../components/JobsMap"), {
 
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Xidmətlər" },
-  { key: "daily", label: "Gündəlik işlər" },
-  { key: "terms", label: "Resurslar" },
-  { key: "support", label: "Əlaqə" },
+  { key: "about", label: "Haqqımızda" },
 ];
 
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Xidmətlər" },
+  { key: "jobs", label: "Elanlar" },
   { key: "daily", label: "Gündəlik işlər" },
-  { key: "notifications", label: "Bildirişlər" },
   { key: "support", label: "Əlaqə" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Xidmətlər" },
+  { key: "jobs", label: "Elanlar" },
   { key: "daily", label: "Gündəlik işlər" },
   { key: "alerts", label: "Namizədlər" },
   { key: "support", label: "Əlaqə" },
@@ -77,6 +73,35 @@ function normalizeRole(role) {
   if (["seeker", "is axtaran", "alici", "jobseeker"].includes(raw)) return "seeker";
   if (["employer", "isci axtaran", "satici", "hirer", "company"].includes(raw)) return "employer";
   return null;
+}
+
+function formatNotificationTime(value) {
+  if (!value) return "Yeni";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Yeni";
+
+  return new Intl.DateTimeFormat("az-AZ", {
+    day: "2-digit",
+    month: "short",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function getNotificationJobId(notification) {
+  return notification?.data?.jobId || notification?.data?.job_id || notification?.jobId || notification?.job_id || null;
+}
+
+function getNotificationCreatedAt(notification) {
+  return notification?.createdAt || notification?.created_at || notification?.date || notification?.updatedAt || notification?.updated_at || null;
+}
+
+function getNotificationTone(notification) {
+  const text = `${notification?.title || ""} ${notification?.body || ""} ${notification?.message || ""}`.toLowerCase();
+  if (text.includes("yaxın") || text.includes("near")) return "near";
+  if (text.includes("müraciət") || text.includes("apply")) return "apply";
+  if (text.includes("elan")) return "job";
+  return "general";
 }
 
 function normalizeList(data) {
@@ -188,6 +213,7 @@ export default function HomePageClient() {
   const [error, setError] = useState("");
   const [ok, setOk] = useState("");
   const [locationPromptOpen, setLocationPromptOpen] = useState(false);
+  const [deviceLocation, setDeviceLocation] = useState(null);
 
   const [mode, setMode] = useState("login");
   const [otpPayload, setOtpPayload] = useState(null);
@@ -267,17 +293,21 @@ export default function HomePageClient() {
   const [switchCompany, setSwitchCompany] = useState("");
   const [switchVoen, setSwitchVoen] = useState("");
   const [roleSwitchStatus, setRoleSwitchStatus] = useState(null);
+  const [roleSwitchConfirmOpen, setRoleSwitchConfirmOpen] = useState(false);
 
   const roleName = normalizeRole(user?.role);
   const canCreateJob = roleName === "employer";
   const navItems = roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;
 
   const navTitle = roleName === "employer" ? "İşçi axtaran" : roleName === "seeker" ? "İş axtaran" : "Qonaq";
+  const nextRoleName = roleName === "seeker" ? "employer" : roleName === "employer" ? "seeker" : null;
+  const nextRoleLabel = nextRoleName === "employer" ? "İşçi axtaran" : nextRoleName === "seeker" ? "İş axtaran" : "Yeni rol";
   const supportCategories = roleName === "employer" ? employerSupportCategories : seekerSupportCategories;
   const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) || null;
+  const effectiveLocation = user?.location || deviceLocation || null;
 
   useEffect(() => {
-    if (!user && activeSection !== "home" && activeSection !== "jobs" && activeSection !== "daily" && activeSection !== "terms" && activeSection !== "auth") {
+    if (!user && activeSection !== "home" && activeSection !== "about" && activeSection !== "auth") {
       setActiveSection("auth");
     }
   }, [user, activeSection]);
@@ -297,6 +327,21 @@ export default function HomePageClient() {
   }, [activeSection, roleName, user]);
 
   useEffect(() => {
+    const savedDeviceLocation = (() => {
+      try {
+        return JSON.parse(window.localStorage.getItem("asimos_device_location") || "null");
+      } catch {
+        return null;
+      }
+    })();
+
+    if (savedDeviceLocation?.lat && savedDeviceLocation?.lng) {
+      setDeviceLocation(savedDeviceLocation);
+      setLat(String(savedDeviceLocation.lat));
+      setLng(String(savedDeviceLocation.lng));
+      setLocationText(savedDeviceLocation.address || "Cari məkan");
+    }
+
     const saved = loadAuth();
     if (saved?.token) {
       setToken(saved.token);
@@ -329,6 +374,11 @@ export default function HomePageClient() {
     });
 
     setBooting(false);
+
+    const hasAnyLocation = hasSavedLocation(saved?.user) || Boolean(savedDeviceLocation?.lat && savedDeviceLocation?.lng);
+    if (!hasAnyLocation && typeof navigator !== "undefined" && navigator.geolocation) {
+      window.setTimeout(() => setLocationPromptOpen(true), 500);
+    }
   }, []);
 
   async function loadBaseData() {
@@ -337,8 +387,8 @@ export default function HomePageClient() {
       api
         .listJobsWithSearch({
           q: search,
-          lat: user?.location?.lat,
-          lng: user?.location?.lng,
+          lat: effectiveLocation?.lat,
+          lng: effectiveLocation?.lng,
           radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
           daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: jobType || undefined,
@@ -372,7 +422,25 @@ export default function HomePageClient() {
     setNotifications(normalizeList(notificationsRes));
     setUnread(Number(unreadRes?.unread || 0));
     setTickets(normalizeList(ticketsRes));
-    setRoleSwitchStatus(switchRes?.request || null);
+
+    const latestRoleRequest = switchRes?.request || null;
+    setRoleSwitchStatus(latestRoleRequest);
+
+    const approvedRole = normalizeRole(latestRoleRequest?.status === "approved" ? latestRoleRequest?.to_role : null);
+    const currentRole = normalizeRole(currentUser?.role);
+
+    if (approvedRole && approvedRole !== currentRole) {
+      const nextUser = {
+        ...(currentUser || {}),
+        role: approvedRole,
+        companyName: approvedRole === "employer" ? latestRoleRequest?.company_name || currentUser?.companyName : null,
+        company_name: approvedRole === "employer" ? latestRoleRequest?.company_name || currentUser?.company_name : null,
+      };
+
+      setUser(nextUser);
+      saveAuth({ token, refreshToken, user: nextUser });
+      setOk(`Rolunuz admin tərəfindən təsdiqləndi və profil ${approvedRole === "employer" ? "İşçi axtaran" : "İş axtaran"} olaraq yeniləndi`);
+    }
   }
 
   useEffect(() => {
@@ -394,13 +462,13 @@ export default function HomePageClient() {
     return () => {
       alive = false;
     };
-  }, [booting, user]);
+  }, [booting, user, effectiveLocation?.lat, effectiveLocation?.lng]);
 
   async function refreshJobs() {
     const res = await api.listJobsWithSearch({
       q: search,
-      lat: user?.location?.lat,
-      lng: user?.location?.lng,
+      lat: effectiveLocation?.lat,
+      lng: effectiveLocation?.lng,
       radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
       daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: jobType || undefined,
@@ -487,9 +555,9 @@ export default function HomePageClient() {
     }
   }
 
-  function maybeOpenLocationPrompt(nextUser) {
+  function maybeOpenLocationPrompt(nextUser = user) {
     if (typeof window === "undefined" || !navigator.geolocation) return;
-    if (hasSavedLocation(nextUser)) return;
+    if (hasSavedLocation(nextUser) || deviceLocation) return;
     setLocationPromptOpen(true);
   }
 
@@ -517,19 +585,27 @@ export default function HomePageClient() {
           setLat(String(nextLat));
           setLng(String(nextLng));
           setLocationText(address);
-          setUser(userWithLocation);
+          setDeviceLocation(userWithLocation.location);
+          window.localStorage.setItem("asimos_device_location", JSON.stringify(userWithLocation.location));
+          if (nextUser) {
+            setUser(userWithLocation);
+            saveAuth({
+              token: authTokenValue || null,
+              refreshToken: refreshTokenValue || null,
+              user: userWithLocation,
+            });
+          }
           setLocationPromptOpen(false);
-          saveAuth({
-            token: authTokenValue || null,
-            refreshToken: refreshTokenValue || null,
-            user: userWithLocation,
-          });
 
-          try {
-            await api.updateMyLocation(userWithLocation.location);
-            setOk("Lokasiya uğurla aktivləşdirildi");
-          } catch (locationError) {
-            setError(locationError.message || "Lokasiya yenilənmədi");
+          if (nextUser) {
+            try {
+              await api.updateMyLocation(userWithLocation.location);
+              setOk("Lokasiya uğurla aktivləşdirildi");
+            } catch (locationError) {
+              setError(locationError.message || "Lokasiya yenilənmədi");
+            }
+          } else {
+            setOk("Cihaz lokasiyası aktivləşdirildi");
           }
 
           resolve(true);
@@ -548,8 +624,6 @@ export default function HomePageClient() {
   }
 
   async function handleLocationActivation() {
-    if (!user) return;
-
     setLocationLoading(true);
     setError("");
 
@@ -958,7 +1032,7 @@ export default function HomePageClient() {
   async function handleOpenNotification(notification) {
     try {
       await api.markNotificationRead(notification.id);
-      const jobId = notification?.data?.jobId;
+      const jobId = getNotificationJobId(notification);
       if (jobId) {
         router.push(`/jobs/${jobId}`);
         return;
@@ -1059,26 +1133,63 @@ export default function HomePageClient() {
     }
   }
 
-  async function handleRoleSwitch(e) {
+  function handleRoleSwitch(e) {
     e.preventDefault();
+    setError("");
+    setOk("");
+
+    if (!nextRoleName) {
+      setError("Rol dəyişikliyi üçün əvvəlcə hesabınıza daxil olun");
+      return;
+    }
+
+    if (roleName === "seeker" && !switchCompany.trim()) {
+      setError("İşçi axtaran profilinə keçmək üçün şirkət adını yazın");
+      return;
+    }
+
+    setRoleSwitchConfirmOpen(true);
+  }
+
+  async function confirmRoleSwitchRequest() {
+    const currentRole = normalizeRole(user?.role);
+    setRoleSwitchConfirmOpen(false);
     setLoading(true);
     setError("");
     setOk("");
 
     try {
-      if (roleName === "seeker") {
-        await api.requestRoleSwitch({
+      let res;
+
+      if (currentRole === "seeker") {
+        res = await api.requestRoleSwitch({
           toRole: "employer",
           companyName: switchCompany,
           voen: switchVoen || undefined,
           category: category || undefined,
         });
       } else {
-        await api.requestRoleSwitch({ toRole: "seeker" });
+        res = await api.requestRoleSwitch({ toRole: "seeker" });
       }
 
-      setOk("Rol dəyişikliyi sorğusu göndərildi");
-      await loadAuthedData();
+      if (res?.newRole || res?.immediate) {
+        const updatedRole = normalizeRole(res?.newRole) || "seeker";
+        const nextUser = {
+          ...(user || {}),
+          role: updatedRole,
+          companyName: updatedRole === "employer" ? user?.companyName : null,
+          company_name: updatedRole === "employer" ? user?.company_name : null,
+        };
+
+        setUser(nextUser);
+        saveAuth({ token, refreshToken, user: nextUser });
+        setOk(`Rol uğurla dəyişdirildi. Profiliniz ${updatedRole === "employer" ? "İşçi axtaran" : "İş axtaran"} oldu.`);
+        await loadAuthedData(nextUser);
+        return;
+      }
+
+      setOk("Sorğu adminə göndərildi. Təsdiqdən sonra rolunuz avtomatik yenilənəcək.");
+      await loadAuthedData(user);
     } catch (err) {
       setError(err.message || "Rol dəyişikliyi alınmadı");
     } finally {
@@ -1206,7 +1317,7 @@ export default function HomePageClient() {
         onDismiss={() => setLocationPromptOpen(false)}
       />
       {error ? <div className="container notice error">{error}</div> : null}
-      {ok ? <div className="container notice success">{ok}</div> : null}
+      {ok ? <div className="toast-notice success" role="status">{ok}</div> : null}
 
       {supportModalOpen ? (
         <div className="support-modal-backdrop" role="dialog" aria-modal="true" aria-label="Dəstək müraciətləri" onMouseDown={closeSupportModal}>
@@ -1370,7 +1481,7 @@ export default function HomePageClient() {
           </section>
 
           <div id="home-jobs-map">
-            <JobsMap jobs={jobs} focusedJobId={focusedMapJobId} />
+            <JobsMap jobs={jobs} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
           </div>
           <AppLaunchPanel />
         </>
@@ -1641,15 +1752,90 @@ export default function HomePageClient() {
       ) : null}
 
       {activeSection === "alerts" ? (
-        <section className="container page-section">
-          <header className="section-head">
-            <h2>İş bildirişləri</h2>
-          </header>
+        <section className="container page-section notifications-page">
+          <div className="notifications-hero">
+            <div className="notifications-hero-content">
+              <span className="notifications-eyebrow">Asimos iş bildirişləri</span>
+              <h2>İş bildirişləri</h2>
+              <p>Yaxınlığındakı yeni elanları, müraciət yeniliklərini və vacib hesab məlumatlarını bir yerdə izlə.</p>
+            </div>
+
+            <div className="notifications-hero-actions">
+              <div className="notifications-stat-card primary">
+                <span>{unread}</span>
+                <small>Oxunmamış</small>
+              </div>
+              <div className="notifications-stat-card">
+                <span>{notifications.length}</span>
+                <small>Ümumi bildiriş</small>
+              </div>
+            </div>
+          </div>
 
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
 
           {user ? (
             <>
+              <div className="notifications-toolbar">
+                <div>
+                  <strong>Son yeniliklər</strong>
+                  <p>{notifications.length ? "Bütün bildirişlər default olaraq burada görünür. Bildirişə klikləyərək bağlı elana keçə bilərsən." : "Yeni bildiriş gəldikdə burada görünəcək."}</p>
+                </div>
+                <button type="button" className="btn-secondary notifications-read-button" onClick={handleMarkAllRead} disabled={!notifications.length}>
+                  Hamısını oxundu et
+                </button>
+              </div>
+
+              {notifications.length ? (
+                <div className="notifications-list">
+                  {notifications.map((item) => {
+                    const isRead = Boolean(item.readAt || item.read_at);
+                    const jobId = getNotificationJobId(item);
+                    const tone = getNotificationTone(item);
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        className={`notification-card ${isRead ? "read" : "unread"} tone-${tone}`}
+                        onClick={() => handleOpenNotification(item)}
+                      >
+                        <span className="notification-icon" aria-hidden="true">
+                          {tone === "near" ? "📍" : tone === "apply" ? "💼" : tone === "job" ? "✨" : "🔔"}
+                        </span>
+
+                        <span className="notification-content">
+                          <span className="notification-title-row">
+                            <strong>{item.title || "Bildiriş"}</strong>
+                            {!isRead ? <span className="notification-unread-dot">Yeni</span> : null}
+                          </span>
+                          <span className="notification-message">{item.body || item.message || "Mesaj yoxdur"}</span>
+                          <span className="notification-meta">
+                            <span>{formatNotificationTime(getNotificationCreatedAt(item))}</span>
+                            {jobId ? <span>Elana keçid aktivdir</span> : <span>Ümumi məlumat</span>}
+                          </span>
+                        </span>
+
+                        <span className="notification-arrow" aria-hidden="true">→</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="notifications-empty">
+                  <div className="notifications-empty-icon">🔕</div>
+                  <h3>Hələ bildiriş yoxdur</h3>
+                  <p>Yaxınlığında yeni elan və ya hesabında vacib yenilik olduqda burada görünəcək.</p>
+                </div>
+              )}
+
+              <div className="notifications-toolbar alerts-create-toolbar">
+                <div>
+                  <strong>Yeni bildiriş kriteriyası yarat</strong>
+                  <p>Kateqoriya, radius və açar söz seçərək gələcək elanlar üçün ayrıca xəbərdarlıq qura bilərsən.</p>
+                </div>
+              </div>
+
               <form className="form-grid compact" onSubmit={handleCreateAlert}>
                 <label>
                   Kateqoriya
@@ -1680,50 +1866,101 @@ export default function HomePageClient() {
                 </div>
               </form>
 
-              <div className="stack-list">
-                {alerts.map((item) => (
-                  <div key={item.id} className="line-item">
-                    <div>
-                      <strong>{item.category || "Ümumi"}</strong>
-                      <p>
-                        Radius: {item.radius_m || item.radius || "-"}m | Söz: {item.q || item.query || "-"}
-                      </p>
+              {alerts.length ? (
+                <div className="stack-list alerts-rules-list">
+                  {alerts.map((item) => (
+                    <div key={item.id} className="line-item">
+                      <div>
+                        <strong>{item.category || "Ümumi"}</strong>
+                        <p>
+                          Radius: {item.radius_m || item.radius || "-"}m | Söz: {item.q || item.query || "-"}
+                        </p>
+                      </div>
+                      <button type="button" className="btn-secondary" onClick={() => handleDeleteAlert(item.id)}>
+                        Sil
+                      </button>
                     </div>
-                    <button type="button" className="btn-secondary" onClick={() => handleDeleteAlert(item.id)}>
-                      Sil
-                    </button>
-                  </div>
-                ))}
-                {alerts.length === 0 ? <p className="muted">Heç bir bildiriş yoxdur.</p> : null}
-              </div>
+                  ))}
+                </div>
+              ) : null}
             </>
           ) : null}
         </section>
       ) : null}
 
       {activeSection === "notifications" ? (
-        <section className="container page-section">
-          <header className="section-head">
-            <h2>Bildirişlər</h2>
-            <button type="button" className="btn-secondary" onClick={handleMarkAllRead}>
+        <section className="container page-section notifications-page">
+          <div className="notifications-hero">
+            <div className="notifications-hero-content">
+              <span className="notifications-eyebrow">Asimos iş bildirişləri</span>
+              <h2>İş bildirişləri</h2>
+              <p>Yaxınlığındakı yeni elanları, müraciət yeniliklərini və vacib hesab məlumatlarını bir yerdə izlə.</p>
+            </div>
+
+            <div className="notifications-hero-actions">
+              <div className="notifications-stat-card primary">
+                <span>{unread}</span>
+                <small>Oxunmamış</small>
+              </div>
+              <div className="notifications-stat-card">
+                <span>{notifications.length}</span>
+                <small>Ümumi bildiriş</small>
+              </div>
+            </div>
+          </div>
+
+          <div className="notifications-toolbar">
+            <div>
+              <strong>Son yeniliklər</strong>
+              <p>{notifications.length ? "Bildirişə klikləyərək bağlı elana keçə bilərsən." : "Yeni bildiriş gəldikdə burada görünəcək."}</p>
+            </div>
+            <button type="button" className="btn-secondary notifications-read-button" onClick={handleMarkAllRead} disabled={!notifications.length}>
               Hamısını oxundu et
             </button>
-          </header>
-
-          <div className="stack-list">
-            {notifications.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`notification-card ${item.readAt || item.read_at ? "read" : ""}`}
-                onClick={() => handleOpenNotification(item)}
-              >
-                <strong>{item.title || "Bildiriş"}</strong>
-                <p>{item.body || item.message || "Mesaj yoxdur"}</p>
-              </button>
-            ))}
-            {notifications.length === 0 ? <p className="muted">Bildiriş yoxdur.</p> : null}
           </div>
+
+          {notifications.length ? (
+            <div className="notifications-list">
+              {notifications.map((item) => {
+                const isRead = Boolean(item.readAt || item.read_at);
+                const jobId = getNotificationJobId(item);
+                const tone = getNotificationTone(item);
+
+                return (
+                  <button
+                    key={item.id}
+                    type="button"
+                    className={`notification-card ${isRead ? "read" : "unread"} tone-${tone}`}
+                    onClick={() => handleOpenNotification(item)}
+                  >
+                    <span className="notification-icon" aria-hidden="true">
+                      {tone === "near" ? "📍" : tone === "apply" ? "💼" : tone === "job" ? "✨" : "🔔"}
+                    </span>
+
+                    <span className="notification-content">
+                      <span className="notification-title-row">
+                        <strong>{item.title || "Bildiriş"}</strong>
+                        {!isRead ? <span className="notification-unread-dot">Yeni</span> : null}
+                      </span>
+                      <span className="notification-message">{item.body || item.message || "Mesaj yoxdur"}</span>
+                      <span className="notification-meta">
+                        <span>{formatNotificationTime(getNotificationCreatedAt(item))}</span>
+                        {jobId ? <span>Elana keçid aktivdir</span> : <span>Ümumi məlumat</span>}
+                      </span>
+                    </span>
+
+                    <span className="notification-arrow" aria-hidden="true">→</span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="notifications-empty">
+              <div className="notifications-empty-icon">🔕</div>
+              <h3>Hələ bildiriş yoxdur</h3>
+              <p>Yaxınlığında yeni elan və ya hesabında vacib yenilik olduqda burada görünəcək.</p>
+            </div>
+          )}
         </section>
       ) : null}
 
@@ -1960,6 +2197,30 @@ export default function HomePageClient() {
         </section>
       ) : null}
 
+      {activeSection === "about" ? (
+        <section className="container page-section about-page">
+          <header className="section-head">
+            <span className="section-kicker">Asimos haqqında</span>
+            <h2>Yaxınındakı elanları və gündəlik fürsətləri bir yerdə tap.</h2>
+            <p>Asimos iş axtaranları, xidmət göstərənləri və işçi axtaranları lokasiya əsaslı sadə platformada birləşdirir.</p>
+          </header>
+          <div className="about-grid">
+            <article className="about-card">
+              <strong>Lokasiya əsaslı axtarış</strong>
+              <span>Cihaz lokasiyasını aktiv etdikdə sənə ən yaxın elanları xəritədə görə bilərsən.</span>
+            </article>
+            <article className="about-card">
+              <strong>Elanlar və gündəlik işlər</strong>
+              <span>Daimi və günlük fürsətləri ayrıca filtrlə, uyğun olanı sürətli tap.</span>
+            </article>
+            <article className="about-card">
+              <strong>Bildiriş sistemi</strong>
+              <span>Maraqlı kateqoriyalar üzrə iş bildirişləri yarat və yeni elanlardan xəbərdar ol.</span>
+            </article>
+          </div>
+        </section>
+      ) : null}
+
       {activeSection === "terms" ? (
         <section className="container page-section">
           <header className="section-head">
@@ -2017,6 +2278,36 @@ export default function HomePageClient() {
           handleResetPassword={handleResetPassword}
         />
       ) : null}
+
+
+      {roleSwitchConfirmOpen ? (
+        <div className="confirm-modal-backdrop" role="presentation" onClick={() => setRoleSwitchConfirmOpen(false)}>
+          <section className="confirm-modal" role="dialog" aria-modal="true" aria-labelledby="role-switch-confirm-title" onClick={(event) => event.stopPropagation()}>
+            <div className="confirm-modal-icon" aria-hidden="true">↔</div>
+            <h3 id="role-switch-confirm-title">Sorğunuzu dəyişməyə əminsiniz?</h3>
+            <p>
+              Profil rolunuzu <strong>{nextRoleLabel}</strong> olaraq dəyişmək üçün sorğu göndəriləcək.
+              {roleName === "seeker" ? " Admin təsdiqlədikdən sonra profiliniz avtomatik yenilənəcək." : " Bu keçid üçün admin təsdiqi lazım deyil, rolunuz dərhal iş axtaran olaraq yenilənəcək."}
+            </p>
+            {roleName === "seeker" ? (
+              <div className="confirm-modal-summary">
+                <span>Şirkət</span>
+                <strong>{switchCompany || "Qeyd edilməyib"}</strong>
+                {switchVoen ? <small>VOEN: {switchVoen}</small> : null}
+              </div>
+            ) : null}
+            <div className="confirm-modal-actions">
+              <button type="button" className="btn-secondary" onClick={() => setRoleSwitchConfirmOpen(false)} disabled={loading}>
+                Xeyr
+              </button>
+              <button type="button" className="btn-primary" onClick={confirmRoleSwitchRequest} disabled={loading}>
+                {roleName === "seeker" ? "Bəli, sorğu göndər" : "Bəli, rolu dəyiş"}
+              </button>
+            </div>
+          </section>
+        </div>
+      ) : null}
+
     </main>
   );
 }

@@ -1,13 +1,19 @@
 import React from 'react';
 
-const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
+const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = null }) => {
   if (!job) return null;
 
   const isPage = mode === 'page';
 
-  const lat = job.location?.lat;
-  const lng = job.location?.lng;
-  const hasLocation = lat && lng;
+  const lat = Number(job.location?.lat ?? job.lat);
+  const lng = Number(job.location?.lng ?? job.lng ?? job.lon);
+  const hasLocation = Number.isFinite(lat) && Number.isFinite(lng);
+  const userLat = Number(userLocation?.lat);
+  const userLng = Number(userLocation?.lng);
+  const hasUserLocation = Number.isFinite(userLat) && Number.isFinite(userLng);
+  const routeUrl = hasLocation && hasUserLocation
+    ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${userLat}%2C${userLng}%3B${lat}%2C${lng}`
+    : "";
 
   const mapSrc = hasLocation
     ? `https://www.openstreetmap.org/export/embed.html?bbox=${lng - 0.01}%2C${lat - 0.01}%2C${lng + 0.01}%2C${lat + 0.01}&layer=mapnik&marker=${lat}%2C${lng}`
@@ -107,6 +113,16 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null }) => {
                 <span className="meta-label">Ünvan</span>
                 <span className="meta-value">{job.location?.address || 'Qeyd edilməyib'}</span>
               </div>
+              <div className="meta-item">
+                <span className="meta-label">Sizin lokasiya</span>
+                <span className="meta-value">{hasUserLocation ? (userLocation?.address || `${userLat.toFixed(5)}, ${userLng.toFixed(5)}`) : 'Aktiv edilməyib'}</span>
+              </div>
+              {routeUrl ? (
+                <div className="meta-item">
+                  <span className="meta-label">Marşrut</span>
+                  <a className="meta-route-link" href={routeUrl} target="_blank" rel="noopener noreferrer">Cihaz lokasiyasından marşruta bax</a>
+                </div>
+              ) : null}
               <div className="meta-item">
                 <span className="meta-label">Elan tarixi</span>
                 <span className="meta-value">

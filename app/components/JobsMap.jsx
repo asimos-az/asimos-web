@@ -237,6 +237,15 @@ function createMarkerIcon(L, kind, label, isActive = false) {
   });
 }
 
+function buildUserLocationPopup(location) {
+  return `
+    <div class="jobs-map-popup jobs-map-popup--user">
+      <div class="jobs-map-popup__title">Sizin lokasiya</div>
+      <div class="jobs-map-popup__meta">${escapeHtml(location.address || "Cari məkan")}</div>
+    </div>
+  `;
+}
+
 function buildPoiPopup(poi, title) {
   return `
     <div class="jobs-map-popup jobs-map-popup--poi">
@@ -276,7 +285,7 @@ function buildJobPopup(job, nearestUniversity, nearestMetro) {
   `;
 }
 
-export default function JobsMap({ jobs, focusedJobId = null }) {
+export default function JobsMap({ jobs, focusedJobId = null, userLocation = null }) {
   const sectionRef = useRef(null);
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
@@ -357,6 +366,7 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
           jobs: L.layerGroup().addTo(map),
           universities: L.layerGroup().addTo(map),
           metros: L.layerGroup().addTo(map),
+          user: L.layerGroup().addTo(map),
         };
       })
       .catch((error) => {
@@ -380,15 +390,17 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
     if (!shouldLoadMap || !mapRef.current || !layersRef.current || !window.L) return;
 
     const L = window.L;
-    const { jobs: jobsLayer, universities: universitiesLayer, metros: metrosLayer } = layersRef.current;
+    const { jobs: jobsLayer, universities: universitiesLayer, metros: metrosLayer, user: userLayer } = layersRef.current;
     const universityIcon = createMarkerIcon(L, "university", "U");
     const metroIcon = createMarkerIcon(L, "metro", "M");
+    const userIcon = createMarkerIcon(L, "user", "S");
     const bounds = [];
     let focusedMarker = null;
 
     jobsLayer.clearLayers();
     universitiesLayer.clearLayers();
     metrosLayer.clearLayers();
+    userLayer?.clearLayers();
 
     poiData.universities.forEach((poi) => {
       L.marker([poi.lat, poi.lng], { icon: universityIcon })
@@ -403,6 +415,15 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
         .addTo(metrosLayer);
       bounds.push([poi.lat, poi.lng]);
     });
+
+    const userLat = Number(userLocation?.lat);
+    const userLng = Number(userLocation?.lng);
+    if (Number.isFinite(userLat) && Number.isFinite(userLng)) {
+      L.marker([userLat, userLng], { icon: userIcon })
+        .bindPopup(buildUserLocationPopup(userLocation))
+        .addTo(userLayer);
+      bounds.push([userLat, userLng]);
+    }
 
     jobsWithCoordinates.forEach((job) => {
       const nearestUniversity = findNearestPoint(job, poiData.universities);
@@ -435,14 +456,14 @@ export default function JobsMap({ jobs, focusedJobId = null }) {
     }
 
     mapRef.current.fitBounds(bounds, { padding: [36, 36] });
-  }, [jobsWithCoordinates, poiData, focusedJobId, shouldLoadMap]);
+  }, [jobsWithCoordinates, poiData, focusedJobId, shouldLoadMap, userLocation?.lat, userLocation?.lng]);
 
   return (
     <section ref={sectionRef} className="container page-section jobs-map-section">
       <header className="section-head jobs-map-head">
         <h2>Elanların xəritədə görünüşü</h2>
         <p>
-          Xəritədə {jobsWithCoordinates.length} iş elanı, {poiData.universities.length} universitet və {poiData.metros.length} metro marker kimi göstərilir.
+          Xəritədə {jobsWithCoordinates.length} iş elanı, {poiData.universities.length} universitet, {poiData.metros.length} metro və cihaz lokasiyanız marker kimi göstərilir.
         </p>
       </header>
 

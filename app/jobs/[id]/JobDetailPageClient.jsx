@@ -9,17 +9,17 @@ import JobDetail from "../../components/JobDetail";
 
 const guestNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Elanlar" },
 ];
 
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Elanlar" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "İş elanları" },
+  { key: "jobs", label: "Elanlar" },
 ];
 
 function normalizeRole(role) {
@@ -32,6 +32,7 @@ function normalizeRole(role) {
 export default function JobDetailPageClient({ job, error }) {
   const router = useRouter();
   const [user, setUser] = useState(null);
+  const [deviceLocation, setDeviceLocation] = useState(null);
   const roleName = normalizeRole(user?.role);
   const canCreateJob = roleName === "employer";
 
@@ -40,6 +41,11 @@ export default function JobDetailPageClient({ job, error }) {
     if (saved?.user) {
       setUser(saved.user);
     }
+
+    try {
+      const savedLocation = JSON.parse(window.localStorage.getItem("asimos_device_location") || "null");
+      if (savedLocation?.lat && savedLocation?.lng) setDeviceLocation(savedLocation);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -98,7 +104,7 @@ export default function JobDetailPageClient({ job, error }) {
           <p className="notice error">{error}</p>
         </section>
       ) : (
-        <JobDetail job={job} mode="page" user={user} />
+        <JobDetail job={job} mode="page" user={user} userLocation={user?.location || deviceLocation} />
       )}
     </>
   );

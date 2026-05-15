@@ -1,5 +1,5 @@
 export default function LocationPermissionPrompt({ isOpen, user, locationLoading, onActivate, onDismiss }) {
-  if (!isOpen || !user) return null;
+  if (!isOpen) return null;
 
   return (
     <div className="location-permission-overlay" role="dialog" aria-modal="true" aria-labelledby="location-permission-title">
@@ -8,7 +8,7 @@ export default function LocationPermissionPrompt({ isOpen, user, locationLoading
         <h3 id="location-permission-title">Lokasiyanızı aktivləşdirin</h3>
         <p>
           Yaxınlıqdakı elanları, sizə uyğun məsafədə bildirişləri və xəritədə düzgün nəticələri görmək üçün
-          lokasiya icazəsini aktiv edin.
+          cihaz lokasiyasına icazə verin. Daxil olmasanız belə bu məlumat yalnız brauzerinizdə saxlanacaq.
         </p>
         <div className="location-permission-list">
           <div>

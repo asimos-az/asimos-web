@@ -123,3 +123,13 @@
     height: 420px;
   }
 }
+
+.jobs-map-marker--user {
+  background: #0f766e;
+  border-color: #ccfbf1;
+  box-shadow: 0 0 0 8px rgba(15, 118, 110, 0.16), 0 14px 30px rgba(15, 118, 110, 0.28);
+}
+
+.jobs-map-popup--user .jobs-map-popup__title {
+  color: #0f766e;
+}
