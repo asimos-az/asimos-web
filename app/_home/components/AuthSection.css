@@ -248,3 +248,65 @@
     border-radius: 16px;
   }
 }
+
+.auth-back-button {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 42px;
+  padding: 0 14px;
+  border: 1px solid #dbe5f4;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #14213d;
+  font-weight: 900;
+  cursor: pointer;
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+}
+
+.auth-back-button:hover {
+  color: #2389da;
+  border-color: rgba(35, 137, 218, 0.32);
+}
+
+@media (max-width: 560px) {
+  .auth-container {
+    border-radius: 22px;
+  }
+
+  .auth-form-container {
+    padding: 16px;
+  }
+
+  .auth-back-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Compact top-left back control */
+.auth-form-shell {
+  position: relative;
+  padding-top: 4px;
+}
+
+.auth-back-button {
+  width: 44px !important;
+  height: 44px !important;
+  min-height: 44px !important;
+  padding: 0 !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-size: 1.3rem !important;
+  line-height: 1 !important;
+}
+
+@media (max-width: 560px) {
+  .auth-back-button {
+    width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    align-self: flex-start !important;
+  }
+}

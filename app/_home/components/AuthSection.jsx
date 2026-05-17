@@ -64,12 +64,16 @@ export default function AuthSection({
   handleVerifyOtp,
   handleForgotPassword,
   handleResetPassword,
+  onBack,
 }) {
   return (
     <section className="container page-section">
       <div className="auth-container">
         <div className="auth-form-container">
           <div className="auth-form-shell">
+            <button type="button" className="auth-back-button" onClick={onBack} aria-label="Ana səhifəyə qayıt">
+              <span aria-hidden="true">←</span>
+            </button>
             <div className="auth-header">
               <button className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => setMode("login")}>
                 Daxil ol

@@ -1575,10 +1575,25 @@ export default function HomePageClient() {
                   </select>
                 </label>
 
-                <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
-                  {loading ? "Axtarılır..." : "Axtar"}
+                <button type="submit" className={styles.homeFilterSubmit} disabled={loading} aria-label="Axtar">
+                  <svg className={styles.homeFilterSubmitIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                  </svg>
+                  <span className={styles.homeFilterSubmitText}>{loading ? "Axtarılır..." : "Axtar"}</span>
                 </button>
+
+                <label className={styles.mobileFilterButton} htmlFor="home-filter-toggle" aria-label="Filterləri göstər">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                    <path d="M4 6h16" strokeLinecap="round" />
+                    <path d="M7 12h10" strokeLinecap="round" />
+                    <path d="M10 18h4" strokeLinecap="round" />
+                  </svg>
+                  <span>Filter</span>
+                </label>
               </div>
+
+              <input id="home-filter-toggle" className={styles.mobileFilterCheckbox} type="checkbox" />
 
               <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan filterləri">
                 {homeFilterTabs.map((tab) => (
@@ -1674,8 +1689,8 @@ export default function HomePageClient() {
         onActivate={handleLocationActivation}
         onDismiss={() => setLocationPromptOpen(false)}
       />
-      {error ? <div className="container notice error">{error}</div> : null}
-      {ok ? <div className="toast-notice success" role="status">{ok}</div> : null}
+      {error ? <div className="toast-notice app-toast error" role="alert">{error}</div> : null}
+      {ok ? <div className="toast-notice app-toast success" role="status">{ok}</div> : null}
 
       {supportModalOpen ? (
         <div className="support-modal-backdrop" role="dialog" aria-modal="true" aria-label="Dəstək müraciətləri" onMouseDown={closeSupportModal}>
@@ -1828,37 +1843,6 @@ export default function HomePageClient() {
       {activeSection === "home" ? (
         <>
 
-          <section className={`container page-section ${styles.statsSection}`}>
-            <div className={styles.statsCard}>
-              <div className={styles.statsIntro}>
-                <span>Asimos statistikası</span>
-                <h2>Platformanın canlı göstəriciləri</h2>
-                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
-              </div>
-              <div className={styles.statsGrid}>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.users ?? 0}</strong>
-                  <span>Qeydiyyatdan keçən istifadəçi</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.activeJobs ?? 0}</strong>
-                  <span>Aktiv elan</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.onlineUsers ?? 0}</strong>
-                  <span>Hazırda online</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.visitsToday ?? 0}</strong>
-                  <span>Bu gün giriş</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.visitsThisMonth ?? 0}</strong>
-                  <span>Bu ay giriş</span>
-                </div>
-              </div>
-            </div>
-          </section>
 
           {hasHomeJobs ? (
             <section className="container page-section">
@@ -1894,7 +1878,7 @@ export default function HomePageClient() {
                         window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
                       }}
                     >
-                      Daha çox elan
+                      Hamısına bax
                       <span aria-hidden="true">→</span>
                     </button>
                   ) : null}
@@ -1916,6 +1900,38 @@ export default function HomePageClient() {
             </div>
           ) : null}
           <AppLaunchPanel />
+
+          <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
+            <div className={styles.statsCard}>
+              <div className={styles.statsIntro}>
+                <span>Asimos statistikası</span>
+                <h2>Platformanın canlı göstəriciləri</h2>
+                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
+              </div>
+              <div className={styles.statsGrid}>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.users ?? 0}</strong>
+                  <span>Qeydiyyatdan keçən istifadəçi</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.activeJobs ?? 0}</strong>
+                  <span>Aktiv elan</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.onlineUsers ?? 0}</strong>
+                  <span>Hazırda online</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.visitsToday ?? 0}</strong>
+                  <span>Bu gün giriş</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.visitsThisMonth ?? 0}</strong>
+                  <span>Bu ay giriş</span>
+                </div>
+              </div>
+            </div>
+          </section>
         </>
       ) : null}
 
@@ -1978,10 +1994,25 @@ export default function HomePageClient() {
                 </select>
               </label>
 
-              <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
-                {loading ? "Axtarılır..." : "Axtar"}
+              <button type="submit" className={styles.homeFilterSubmit} disabled={loading} aria-label="Axtar">
+                <svg className={styles.homeFilterSubmitIcon} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                </svg>
+                <span className={styles.homeFilterSubmitText}>{loading ? "Axtarılır..." : "Axtar"}</span>
               </button>
+
+              <label className={styles.mobileFilterButton} htmlFor="jobs-filter-toggle" aria-label="Filterləri göstər">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
+                  <path d="M4 6h16" strokeLinecap="round" />
+                  <path d="M7 12h10" strokeLinecap="round" />
+                  <path d="M10 18h4" strokeLinecap="round" />
+                </svg>
+                <span>Filter</span>
+              </label>
             </div>
+
+            <input id="jobs-filter-toggle" className={styles.mobileFilterCheckbox} type="checkbox" />
 
             <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan filterləri">
               {homeFilterTabs.map((tab) => (
@@ -2971,6 +3002,10 @@ export default function HomePageClient() {
           handleVerifyOtp={handleVerifyOtp}
           handleForgotPassword={handleForgotPassword}
           handleResetPassword={handleResetPassword}
+          onBack={() => {
+            setActiveSection("home");
+            setMode("login");
+          }}
         />
       ) : null}
 

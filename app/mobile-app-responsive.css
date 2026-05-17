@@ -450,7 +450,7 @@
     text-align: left;
   }
 
-  .toast-notice {
+  .toast-notice:not(.app-toast) {
     left: 16px !important;
     right: 16px !important;
     bottom: calc(92px + env(safe-area-inset-bottom)) !important;

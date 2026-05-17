@@ -1154,3 +1154,329 @@
     grid-auto-columns: 82% !important;
   }
 }
+
+/* Professional mobile search/filter polish */
+.mobileFilterCheckbox {
+  display: none;
+}
+
+.mobileFilterButton {
+  display: none;
+}
+
+@media (max-width: 640px) {
+  .homeFilterCard {
+    padding: 14px !important;
+    gap: 12px !important;
+    border-radius: 20px !important;
+  }
+
+  .homeFilterTitle {
+    display: none !important;
+  }
+
+  .homeFilterSearchRow {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) 92px 48px !important;
+    gap: 8px !important;
+    align-items: center;
+  }
+
+  .homeFilterSelectWrap {
+    display: none !important;
+  }
+
+  .homeFilterInputWrap {
+    min-height: 46px !important;
+    border-radius: 16px !important;
+    padding: 0 12px !important;
+  }
+
+  .homeFilterInputWrap span {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .homeFilterInputWrap svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .homeFilterInputWrap input {
+    min-height: 44px !important;
+    font-size: .86rem !important;
+    font-weight: 750 !important;
+  }
+
+  .homeFilterSubmit {
+    min-width: 0 !important;
+    min-height: 46px !important;
+    border-radius: 16px !important;
+    font-size: .88rem !important;
+    padding: 0 12px !important;
+  }
+
+  .mobileFilterButton {
+    min-height: 46px;
+    width: 48px;
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    border-radius: 16px;
+    border: 1px solid #d6e0ee;
+    background: #ffffff;
+    color: #1f8ddd;
+    box-shadow: 0 8px 20px rgba(15, 23, 42, .05);
+    cursor: pointer;
+  }
+
+  .mobileFilterButton svg {
+    width: 21px;
+    height: 21px;
+  }
+
+  .mobileFilterButton span {
+    display: none;
+  }
+
+  .mobileFilterCheckbox:not(:checked) ~ .homeFilterTabs,
+  .mobileFilterCheckbox:not(:checked) ~ .homeFilterOptions,
+  .mobileFilterCheckbox:not(:checked) ~ .homeFilterFooter {
+    display: none !important;
+  }
+
+  .mobileFilterCheckbox:checked ~ .homeFilterTabs {
+    display: flex !important;
+    margin-top: 6px;
+    padding-top: 10px;
+    border-top: 1px solid #eef2f7;
+    border-bottom-color: #d8e2ef;
+  }
+
+  .mobileFilterCheckbox:checked ~ .homeFilterOptions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    max-height: 56vh;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+
+  .mobileFilterCheckbox:checked ~ .homeFilterFooter {
+    display: flex !important;
+  }
+
+  .homeFilterOption,
+  .homeFilterOptionActive {
+    min-height: 44px !important;
+    border-radius: 13px !important;
+    font-size: .88rem !important;
+    padding: 9px 12px !important;
+  }
+
+  .homeFilterTab,
+  .homeFilterTabActive {
+    min-height: 38px !important;
+    font-size: .82rem !important;
+    padding: 0 12px !important;
+  }
+}
+
+/* Cleaner statistics block */
+.statsCard {
+  position: relative;
+  overflow: hidden;
+  align-items: stretch;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(31, 141, 221, .1), transparent 32%),
+    linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
+}
+
+.statsCard::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  top: -90px;
+  width: 220px;
+  height: 220px;
+  border-radius: 999px;
+  background: rgba(31, 141, 221, .08);
+  pointer-events: none;
+}
+
+.statsIntro {
+  position: relative;
+  z-index: 1;
+}
+
+.statsGrid {
+  position: relative;
+  z-index: 1;
+}
+
+.statItem {
+  background: rgba(255, 255, 255, .78);
+  border-color: #e0e9f5;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, .045);
+}
+
+@media (max-width: 640px) {
+  .statsSection {
+    padding-top: 8px !important;
+  }
+
+  .statsCard {
+    padding: 18px !important;
+    gap: 18px !important;
+    border-radius: 22px !important;
+  }
+
+  .statsIntro span {
+    font-size: .68rem !important;
+    letter-spacing: .14em !important;
+  }
+
+  .statsIntro h2 {
+    font-size: 1.28rem !important;
+    line-height: 1.15 !important;
+    margin-bottom: 8px !important;
+  }
+
+  .statsIntro p {
+    font-size: .88rem !important;
+    line-height: 1.4 !important;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .statItem {
+    min-height: 92px !important;
+    padding: 12px !important;
+    border-radius: 17px !important;
+    gap: 5px !important;
+  }
+
+  .statItem strong {
+    font-size: 1.8rem !important;
+  }
+
+  .statItem span {
+    font-size: .74rem !important;
+    line-height: 1.25 !important;
+  }
+}
+
+/* Better latest jobs controls */
+.latestJobsMoreButton {
+  min-height: auto !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #1f8ddd !important;
+  font-size: .95rem !important;
+}
+
+.latestJobsMoreButton:hover {
+  transform: none !important;
+  box-shadow: none !important;
+  color: #126fb3 !important;
+}
+
+@media (max-width: 640px) {
+  .latestJobsActions {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
+
+  .latestJobsControls {
+    display: none !important;
+  }
+
+  .latestJobsMoreButton {
+    width: auto !important;
+    justify-content: flex-start !important;
+    font-size: .9rem !important;
+    min-height: 28px !important;
+  }
+
+  .latestJobsCarousel {
+    display: grid !important;
+    grid-auto-flow: row !important;
+    grid-auto-columns: unset !important;
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    overflow: visible !important;
+    scroll-snap-type: none !important;
+    padding-bottom: 0 !important;
+  }
+
+  .latestJobsSlide {
+    scroll-snap-align: none !important;
+  }
+}
+
+/* User polish: move statistics lower and make mobile search action icon-only */
+.statsSectionBottom {
+  padding-top: 18px;
+  padding-bottom: 24px;
+}
+
+.homeFilterSubmit {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+}
+
+.homeFilterSubmitIcon {
+  display: none;
+  width: 21px;
+  height: 21px;
+  stroke-width: 2.5;
+}
+
+.homeFilterSubmitText {
+  display: inline-flex;
+  align-items: center;
+}
+
+@media (max-width: 640px) {
+  .homeFilterSearchRow {
+    grid-template-columns: minmax(0, 1fr) 48px 48px !important;
+  }
+
+  .homeFilterSubmit {
+    width: 48px !important;
+    min-width: 48px !important;
+    padding: 0 !important;
+    border-radius: 16px !important;
+  }
+
+  .homeFilterSubmitIcon {
+    display: block;
+  }
+
+  .homeFilterSubmitText {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .statsSectionBottom {
+    padding-top: 24px !important;
+    padding-bottom: 18px !important;
+  }
+
+  .statsSectionBottom .statsCard {
+    padding: 16px !important;
+    border-radius: 20px !important;
+  }
+}
