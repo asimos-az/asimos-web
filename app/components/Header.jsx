@@ -172,7 +172,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
         </div>
         </div>
       </div>
-      <div className="site-header-nav">
+      <div className={`site-header-nav ${menuOpen ? "open" : ""}`}>
         <nav className={`container main-nav ${menuOpen ? "open" : ""}`}>
           {navItems.map((item) => (
             <button

@@ -5,14 +5,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 const DEFAULT_CENTER = [40.4093, 49.8671];
 const LEAFLET_CSS_ID = "leaflet-cdn-styles";
 const LEAFLET_SCRIPT_ID = "leaflet-cdn-script";
+const LEAFLET_CLUSTER_CSS_ID = "leaflet-markercluster-styles";
+const LEAFLET_CLUSTER_DEFAULT_CSS_ID = "leaflet-markercluster-default-styles";
+const LEAFLET_CLUSTER_SCRIPT_ID = "leaflet-markercluster-script";
 const LEAFLET_CSS_URL = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css";
 const LEAFLET_SCRIPT_URL = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.js";
+const LEAFLET_CLUSTER_CSS_URL = "https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css";
+const LEAFLET_CLUSTER_DEFAULT_CSS_URL = "https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css";
+const LEAFLET_CLUSTER_SCRIPT_URL = "https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js";
 const OVERPASS_ENDPOINTS = [
   "https://overpass-api.de/api/interpreter",
   "https://overpass.kumi.systems/api/interpreter",
 ];
 const OVERPASS_QUERY = `
-[out:json][timeout:25];
+[out:json][timeout:18];
 area["ISO3166-1"="AZ"][admin_level=2]->.searchArea;
 (
   node["amenity"="university"](area.searchArea);
@@ -31,40 +37,64 @@ area["ISO3166-1"="AZ"][admin_level=2]->.searchArea;
 out center tags;
 `;
 
-function ensureLeafletCss() {
-  if (typeof document === "undefined" || document.getElementById(LEAFLET_CSS_ID)) return;
-
+function appendStylesheet(id, href) {
+  if (typeof document === "undefined" || document.getElementById(id)) return;
   const link = document.createElement("link");
-  link.id = LEAFLET_CSS_ID;
+  link.id = id;
   link.rel = "stylesheet";
-  link.href = LEAFLET_CSS_URL;
+  link.href = href;
   document.head.appendChild(link);
 }
 
-function ensureLeafletScript() {
+function appendScript(id, src) {
   if (typeof window === "undefined") {
-    return Promise.reject(new Error("Leaflet script can only load in the browser"));
+    return Promise.reject(new Error("Xəritə yalnız brauzerdə işləyir"));
   }
 
-  if (window.L) return Promise.resolve(window.L);
-
   return new Promise((resolve, reject) => {
-    const existing = document.getElementById(LEAFLET_SCRIPT_ID);
-
+    const existing = document.getElementById(id);
     if (existing) {
-      existing.addEventListener("load", () => resolve(window.L), { once: true });
-      existing.addEventListener("error", () => reject(new Error("Leaflet script failed to load")), { once: true });
+      if (existing.dataset.loaded === "true") {
+        resolve();
+        return;
+      }
+      existing.addEventListener("load", resolve, { once: true });
+      existing.addEventListener("error", () => reject(new Error("Xəritə script-i yüklənmədi")), { once: true });
       return;
     }
 
     const script = document.createElement("script");
-    script.id = LEAFLET_SCRIPT_ID;
-    script.src = LEAFLET_SCRIPT_URL;
+    script.id = id;
+    script.src = src;
     script.async = true;
-    script.onload = () => resolve(window.L);
-    script.onerror = () => reject(new Error("Leaflet script failed to load"));
+    script.onload = () => {
+      script.dataset.loaded = "true";
+      resolve();
+    };
+    script.onerror = () => reject(new Error("Xəritə script-i yüklənmədi"));
     document.body.appendChild(script);
   });
+}
+
+function ensureLeafletCss() {
+  appendStylesheet(LEAFLET_CSS_ID, LEAFLET_CSS_URL);
+}
+
+async function ensureLeafletScript() {
+  if (typeof window === "undefined") throw new Error("Leaflet script can only load in the browser");
+  if (!window.L) await appendScript(LEAFLET_SCRIPT_ID, LEAFLET_SCRIPT_URL);
+  return window.L;
+}
+
+async function ensureLeafletCluster(L) {
+  appendStylesheet(LEAFLET_CLUSTER_CSS_ID, LEAFLET_CLUSTER_CSS_URL);
+  appendStylesheet(LEAFLET_CLUSTER_DEFAULT_CSS_ID, LEAFLET_CLUSTER_DEFAULT_CSS_URL);
+
+  if (!L?.markerClusterGroup) {
+    await appendScript(LEAFLET_CLUSTER_SCRIPT_ID, LEAFLET_CLUSTER_SCRIPT_URL);
+  }
+
+  return L;
 }
 
 function getJobCoordinates(job) {
@@ -93,16 +123,13 @@ function getJobCoordinates(job) {
 function getElementCoordinates(element) {
   const lat = Number(element?.lat ?? element?.center?.lat);
   const lng = Number(element?.lon ?? element?.center?.lon);
-
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
-
   return { lat, lng };
 }
 
 function normalizePoi(element, kind) {
   const coordinates = getElementCoordinates(element);
   const name = element?.tags?.name || element?.tags?.["name:az"] || element?.tags?.operator;
-
   if (!coordinates || !name) return null;
 
   return {
@@ -122,7 +149,6 @@ function normalizePoi(element, kind) {
 
 function dedupePois(items) {
   const seen = new Set();
-
   return items.filter((item) => {
     const key = `${item.kind}-${item.name}-${item.lat.toFixed(4)}-${item.lng.toFixed(4)}`;
     if (seen.has(key)) return false;
@@ -159,12 +185,9 @@ function getDistanceInKm(pointA, pointB) {
 
 function findNearestPoint(origin, points) {
   if (!points.length) return null;
-
   return points.reduce((nearest, point) => {
     const distanceKm = getDistanceInKm(origin, point);
-    if (!nearest || distanceKm < nearest.distanceKm) {
-      return { ...point, distanceKm };
-    }
+    if (!nearest || distanceKm < nearest.distanceKm) return { ...point, distanceKm };
     return nearest;
   }, null);
 }
@@ -190,9 +213,7 @@ async function fetchPoiData(signal) {
         signal,
       });
 
-      if (!res.ok) {
-        throw new Error(`Overpass request failed with status ${res.status}`);
-      }
+      if (!res.ok) throw new Error(`Overpass request failed with status ${res.status}`);
 
       const data = await res.json();
       const elements = Array.isArray(data?.elements) ? data.elements : [];
@@ -206,11 +227,7 @@ async function fetchPoiData(signal) {
 
       const metros = dedupePois(
         elements
-          .filter(
-            (element) =>
-              element?.tags?.station === "subway" ||
-              element?.tags?.subway === "yes"
-          )
+          .filter((element) => element?.tags?.station === "subway" || element?.tags?.subway === "yes")
           .map((element) => normalizePoi(element, "metro"))
           .filter(Boolean)
       );
@@ -278,8 +295,8 @@ function buildJobPopup(job, nearestUniversity, nearestMetro) {
       ${job.whatsapp ? `<div class="jobs-map-popup__meta"><strong>WhatsApp:</strong> ${escapeHtml(job.whatsapp)}</div>` : ""}
       ${job.link ? `<div class="jobs-map-popup__meta"><strong>Link:</strong> ${escapeHtml(job.link)}</div>` : ""}
       <div class="jobs-map-popup__nearby">
-        <div><strong>Ən yaxın metro:</strong> ${nearestMetro ? `${escapeHtml(nearestMetro.name)} (${nearestMetro.distanceKm.toFixed(1)} km)` : "Tapılmadı"}</div>
-        <div><strong>Ən yaxın universitet:</strong> ${nearestUniversity ? `${escapeHtml(nearestUniversity.name)} (${nearestUniversity.distanceKm.toFixed(1)} km)` : "Tapılmadı"}</div>
+        <div><strong>Ən yaxın metro:</strong> ${nearestMetro ? `${escapeHtml(nearestMetro.name)} (${nearestMetro.distanceKm.toFixed(1)} km)` : "Yüklənməyib / tapılmadı"}</div>
+        <div><strong>Ən yaxın universitet:</strong> ${nearestUniversity ? `${escapeHtml(nearestUniversity.name)} (${nearestUniversity.distanceKm.toFixed(1)} km)` : "Yüklənməyib / tapılmadı"}</div>
       </div>
     </div>
   `;
@@ -290,10 +307,14 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layersRef = useRef(null);
+  const activeMarkerRef = useRef(null);
   const [loadError, setLoadError] = useState("");
   const [poiError, setPoiError] = useState("");
   const [poiData, setPoiData] = useState({ universities: [], metros: [] });
   const [shouldLoadMap, setShouldLoadMap] = useState(false);
+  const [poiRequested, setPoiRequested] = useState(false);
+  const [poiLoading, setPoiLoading] = useState(false);
+  const [jobsRendered, setJobsRendered] = useState(false);
 
   const jobsWithCoordinates = useMemo(
     () => (Array.isArray(jobs) ? jobs.map(getJobCoordinates).filter(Boolean) : []),
@@ -302,8 +323,8 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
   useEffect(() => {
     if (shouldLoadMap) return;
-
     const node = sectionRef.current;
+
     if (!node || typeof IntersectionObserver === "undefined") {
       const timer = window.setTimeout(() => setShouldLoadMap(true), 800);
       return () => window.clearTimeout(timer);
@@ -316,7 +337,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
           observer.disconnect();
         }
       },
-      { rootMargin: "320px 0px" }
+      { rootMargin: "420px 0px" }
     );
 
     observer.observe(node);
@@ -324,9 +345,10 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
   }, [shouldLoadMap]);
 
   useEffect(() => {
-    if (!shouldLoadMap) return;
+    if (!shouldLoadMap || !poiRequested) return;
 
     const controller = new AbortController();
+    setPoiLoading(true);
 
     fetchPoiData(controller.signal)
       .then((data) => {
@@ -336,52 +358,80 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
       .catch((error) => {
         if (controller.signal.aborted) return;
         setPoiError(error.message || "Universitet və metro məlumatları yüklənmədi");
+      })
+      .finally(() => {
+        if (!controller.signal.aborted) setPoiLoading(false);
       });
 
     return () => controller.abort();
-  }, [shouldLoadMap]);
+  }, [shouldLoadMap, poiRequested]);
 
   useEffect(() => {
     if (!shouldLoadMap) return;
 
     let cancelled = false;
 
-    ensureLeafletCss();
-    ensureLeafletScript()
-      .then((L) => {
+    async function initMap() {
+      try {
+        ensureLeafletCss();
+        let L = await ensureLeafletScript();
+        L = await ensureLeafletCluster(L);
+
         if (cancelled || !mapNodeRef.current || mapRef.current) return;
 
         const map = L.map(mapNodeRef.current, {
           center: DEFAULT_CENTER,
           zoom: 7,
-          scrollWheelZoom: true,
+          preferCanvas: true,
+          scrollWheelZoom: false,
+          zoomControl: true,
         });
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
           attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+          maxZoom: 19,
+          updateWhenIdle: true,
+          updateWhenZooming: false,
+          keepBuffer: 2,
         }).addTo(map);
 
         mapRef.current = map;
         layersRef.current = {
-          jobs: L.layerGroup().addTo(map),
-          universities: L.layerGroup().addTo(map),
+          jobs: L.markerClusterGroup({
+            chunkedLoading: true,
+            chunkDelay: 35,
+            chunkInterval: 170,
+            maxClusterRadius: 48,
+            removeOutsideVisibleBounds: true,
+            showCoverageOnHover: false,
+            spiderfyOnMaxZoom: true,
+            disableClusteringAtZoom: 16,
+          }).addTo(map),
+          universities: L.markerClusterGroup({
+            chunkedLoading: true,
+            chunkDelay: 35,
+            chunkInterval: 160,
+            maxClusterRadius: 42,
+            removeOutsideVisibleBounds: true,
+            showCoverageOnHover: false,
+          }).addTo(map),
           metros: L.layerGroup().addTo(map),
           user: L.layerGroup().addTo(map),
         };
-      })
-      .catch((error) => {
-        if (!cancelled) {
-          setLoadError(error.message || "Xəritə yüklənmədi");
-        }
-      });
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message || "Xəritə yüklənmədi");
+      }
+    }
+
+    initMap();
 
     return () => {
       cancelled = true;
-
       if (mapRef.current) {
         mapRef.current.remove();
         mapRef.current = null;
         layersRef.current = null;
+        activeMarkerRef.current = null;
       }
     };
   }, [shouldLoadMap]);
@@ -390,78 +440,97 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
     if (!shouldLoadMap || !mapRef.current || !layersRef.current || !window.L) return;
 
     const L = window.L;
-    const { jobs: jobsLayer, universities: universitiesLayer, metros: metrosLayer, user: userLayer } = layersRef.current;
-    const universityIcon = createMarkerIcon(L, "university", "U");
-    const metroIcon = createMarkerIcon(L, "metro", "M");
-    const userIcon = createMarkerIcon(L, "user", "S");
+    const { jobs: jobsLayer, user: userLayer } = layersRef.current;
     const bounds = [];
     let focusedMarker = null;
 
+    setJobsRendered(false);
     jobsLayer.clearLayers();
-    universitiesLayer.clearLayers();
-    metrosLayer.clearLayers();
     userLayer?.clearLayers();
+    activeMarkerRef.current = null;
 
     if (!jobsWithCoordinates.length) {
       mapRef.current.setView(DEFAULT_CENTER, 7);
+      setJobsRendered(true);
       return;
     }
-
-    poiData.universities.forEach((poi) => {
-      L.marker([poi.lat, poi.lng], { icon: universityIcon })
-        .bindPopup(buildPoiPopup(poi, "Universitet"))
-        .addTo(universitiesLayer);
-      bounds.push([poi.lat, poi.lng]);
-    });
-
-    poiData.metros.forEach((poi) => {
-      L.marker([poi.lat, poi.lng], { icon: metroIcon })
-        .bindPopup(buildPoiPopup(poi, "Metro"))
-        .addTo(metrosLayer);
-      bounds.push([poi.lat, poi.lng]);
-    });
 
     const userLat = Number(userLocation?.lat);
     const userLng = Number(userLocation?.lng);
     if (Number.isFinite(userLat) && Number.isFinite(userLng)) {
-      L.marker([userLat, userLng], { icon: userIcon })
+      L.marker([userLat, userLng], { icon: createMarkerIcon(L, "user", "S") })
         .bindPopup(buildUserLocationPopup(userLocation))
         .addTo(userLayer);
       bounds.push([userLat, userLng]);
     }
 
-    jobsWithCoordinates.forEach((job) => {
-      const nearestUniversity = findNearestPoint(job, poiData.universities);
-      const nearestMetro = findNearestPoint(job, poiData.metros);
+    const markers = jobsWithCoordinates.map((job) => {
       const isFocused = focusedJobId !== null && String(job.id) === String(focusedJobId);
+      const marker = L.marker([job.lat, job.lng], {
+        icon: createMarkerIcon(L, "job", "IS", isFocused),
+        riseOnHover: true,
+      });
 
-      const marker = L.marker([job.lat, job.lng], { icon: createMarkerIcon(L, "job", "IS", isFocused) })
-        .bindPopup(buildJobPopup(job, nearestUniversity, nearestMetro), { maxWidth: 340 })
-        .addTo(jobsLayer);
+      marker.on("click", () => {
+        const nearestUniversity = findNearestPoint(job, poiData.universities);
+        const nearestMetro = findNearestPoint(job, poiData.metros);
+        marker.bindPopup(buildJobPopup(job, nearestUniversity, nearestMetro), { maxWidth: 340 }).openPopup();
+      });
 
       if (isFocused) focusedMarker = marker;
       bounds.push([job.lat, job.lng]);
+      return marker;
     });
+
+    jobsLayer.addLayers(markers);
 
     if (focusedMarker) {
       const focusLatLng = focusedMarker.getLatLng();
       mapRef.current.setView(focusLatLng, 15, { animate: true });
-      focusedMarker.openPopup();
-      return;
-    }
-
-    if (!bounds.length) {
-      mapRef.current.setView(DEFAULT_CENTER, 7);
+      jobsLayer.zoomToShowLayer(focusedMarker, () => {
+        const job = jobsWithCoordinates.find((item) => String(item.id) === String(focusedJobId));
+        if (!job) return;
+        const nearestUniversity = findNearestPoint(job, poiData.universities);
+        const nearestMetro = findNearestPoint(job, poiData.metros);
+        focusedMarker.bindPopup(buildJobPopup(job, nearestUniversity, nearestMetro), { maxWidth: 340 }).openPopup();
+      });
+      setJobsRendered(true);
       return;
     }
 
     if (bounds.length === 1) {
       mapRef.current.setView(bounds[0], 13);
+      setJobsRendered(true);
       return;
     }
 
-    mapRef.current.fitBounds(bounds, { padding: [36, 36] });
-  }, [jobsWithCoordinates, poiData, focusedJobId, shouldLoadMap, userLocation?.lat, userLocation?.lng]);
+    mapRef.current.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
+    setJobsRendered(true);
+  }, [jobsWithCoordinates, focusedJobId, shouldLoadMap, userLocation?.lat, userLocation?.lng, poiData.universities, poiData.metros]);
+
+  useEffect(() => {
+    if (!shouldLoadMap || !mapRef.current || !layersRef.current || !window.L) return;
+
+    const L = window.L;
+    const { universities: universitiesLayer, metros: metrosLayer } = layersRef.current;
+    const universityIcon = createMarkerIcon(L, "university", "U");
+    const metroIcon = createMarkerIcon(L, "metro", "M");
+
+    universitiesLayer.clearLayers();
+    metrosLayer.clearLayers();
+
+    if (!poiRequested) return;
+
+    universitiesLayer.addLayers(
+      poiData.universities.map((poi) =>
+        L.marker([poi.lat, poi.lng], { icon: universityIcon }).bindPopup(buildPoiPopup(poi, "Universitet"))
+      )
+    );
+
+    poiData.metros.forEach((poi) => {
+      L.marker([poi.lat, poi.lng], { icon: metroIcon }).bindPopup(buildPoiPopup(poi, "Metro")).addTo(metrosLayer);
+    });
+  }, [poiData, poiRequested, shouldLoadMap]);
 
   return (
     <section ref={sectionRef} className="container page-section jobs-map-section">
@@ -469,17 +538,34 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
         <h2>Elanların xəritədə görünüşü</h2>
         <p>
           {jobsWithCoordinates.length
-            ? `Xəritədə ${jobsWithCoordinates.length} iş elanı, ${poiData.universities.length} universitet, ${poiData.metros.length} metro və cihaz lokasiyanız marker kimi göstərilir.`
+            ? `Xəritədə ${jobsWithCoordinates.length} koordinatlı iş elanı cluster sistemi ilə sürətli göstərilir${poiRequested ? `, ${poiData.universities.length} universitet və ${poiData.metros.length} metro marker kimi əlavə edilib` : ""}.`
             : "Real iş elanı olduqda xəritədə markerlər görünəcək."}
         </p>
       </header>
 
       <div className="jobs-map-shell card">
+        {jobsWithCoordinates.length ? (
+          <div className="jobs-map-toolbar">
+            <div>
+              <strong>{jobsWithCoordinates.length}</strong> elan markerləri cluster-lənir.
+              {!jobsRendered ? <span> Markerlər hissə-hissə yüklənir...</span> : null}
+            </div>
+            <button
+              type="button"
+              className="jobs-map-poi-button"
+              disabled={poiLoading || poiRequested}
+              onClick={() => setPoiRequested(true)}
+            >
+              {poiLoading ? "Yüklənir..." : poiRequested ? "Metro/universitet yükləndi" : "Metro/universitetləri yüklə"}
+            </button>
+          </div>
+        ) : null}
         {loadError ? <p className="jobs-map-empty">{loadError}</p> : null}
         {!loadError && poiError ? <p className="jobs-map-empty">{poiError}</p> : null}
         {!loadError && !jobsWithCoordinates.length ? (
           <p className="jobs-map-empty">Koordinatı olan elan tapılmadı.</p>
         ) : null}
+        {!shouldLoadMap ? <div className="jobs-map-skeleton">Xəritə görünən sahəyə çatanda yüklənəcək...</div> : null}
         <div ref={mapNodeRef} className="jobs-map-canvas" />
       </div>
     </section>

@@ -1301,3 +1301,202 @@ textarea:focus {
     transform: translateY(0) scale(1);
   }
 }
+
+/* Asimos compact UI tuning + unified action buttons */
+html {
+  font-size: 15px;
+}
+
+.container {
+  width: min(92%, 1240px);
+  max-width: 1240px;
+  padding: 0.72rem 0;
+}
+
+.page-section {
+  padding: 1.25rem 0;
+}
+
+.section-head h2,
+.mobile-web-head h2 {
+  font-size: clamp(1.35rem, 2.4vw, 1.95rem);
+}
+
+.card,
+.filter-panel,
+.form-grid,
+.create-map-shell,
+.profile-panel,
+.profile-hero {
+  border-radius: 18px;
+}
+
+.card {
+  padding: 1.15rem;
+}
+
+input,
+select,
+textarea {
+  min-height: 44px;
+  padding: 10px 13px;
+  border-radius: 14px;
+  font-size: 0.94rem;
+}
+
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.create-action,
+.login-action,
+.heroSearchSubmit,
+.job-card-edit,
+.notifications-read-button,
+.support-new-ticket {
+  min-height: 42px;
+  border-radius: 13px;
+  padding: 9px 15px;
+  font-size: 0.9rem;
+  font-weight: 850;
+  letter-spacing: -0.01em;
+}
+
+.btn-primary,
+.create-action,
+.login-action,
+.heroSearchSubmit,
+.support-new-ticket {
+  background: linear-gradient(135deg, #3c7df0 0%, #2467df 100%);
+  border: 1px solid rgba(60, 125, 240, 0.9);
+  color: #fff;
+  box-shadow: 0 12px 26px rgba(60, 125, 240, 0.20);
+}
+
+.btn-secondary,
+.job-card-edit,
+.notifications-read-button {
+  background: #ffffff;
+  color: #111827;
+  border: 1px solid #dfe7f3;
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.05);
+}
+
+.btn-danger {
+  background: #fff1f2;
+  color: #be123c;
+  border: 1px solid rgba(225, 29, 72, 0.20);
+}
+
+.btn-primary:hover,
+.btn-secondary:hover,
+.btn-danger:hover,
+.create-action:hover,
+.login-action:hover,
+.heroSearchSubmit:hover,
+.job-card-edit:hover,
+.notifications-read-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
+}
+
+.btn-primary::before,
+.btn-secondary::before,
+.btn-danger::before,
+.notifications-read-button::before,
+.support-new-ticket::before,
+.job-card-edit::before,
+.heroSearchSubmit::before {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  line-height: 1;
+  flex: 0 0 20px;
+}
+
+.btn-primary::before {
+  content: "→";
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.support-new-ticket::before,
+.actions-row .btn-primary::before {
+  content: "+";
+  background: rgba(255, 255, 255, 0.18);
+  color: #fff;
+}
+
+.filter-actions .btn-primary::before,
+.heroSearchSubmit::before {
+  content: "⌕";
+}
+
+.btn-secondary::before,
+.notifications-read-button::before {
+  content: "↺";
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.profile-actions .btn-secondary::before,
+.actions-row .btn-secondary::before,
+.job-card-edit::before {
+  content: "✎";
+  background: #eff6ff;
+  color: #2563eb;
+}
+
+.btn-danger::before {
+  content: "!";
+  background: #ffe4e6;
+  color: #be123c;
+  font-weight: 950;
+}
+
+button:disabled,
+.btn-primary:disabled,
+.btn-secondary:disabled,
+.btn-danger:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  box-shadow: none;
+}
+
+.profile-avatar {
+  width: 64px;
+  height: 64px;
+  flex-basis: 64px;
+  border-radius: 16px;
+  font-size: 1.65rem;
+}
+
+.profile-identity h2 {
+  font-size: clamp(1.4rem, 2.4vw, 2.1rem);
+}
+
+.profile-stats div,
+.info-item,
+.job-detail-meta .meta-item {
+  padding: 12px;
+}
+
+@media (max-width: 768px) {
+  html {
+    font-size: 14.5px;
+  }
+
+  .container {
+    width: min(100% - 28px, 1240px);
+  }
+
+  .filter-panel,
+  .form-grid {
+    gap: 10px;
+    padding: 12px;
+  }
+}

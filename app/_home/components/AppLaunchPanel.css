@@ -1,16 +1,30 @@
-
 .launch-section {
   padding-top: 0.5rem;
 }
 
 .launch-shell {
   position: relative;
-  padding: 24px;
-  border-radius: 22px;
+  padding: 28px;
+  border-radius: 28px;
   overflow: hidden;
-  background: #ffffff;
+  background:
+    radial-gradient(circle at 94% 18%, rgba(60, 125, 240, 0.1), transparent 30%),
+    radial-gradient(circle at 6% 8%, rgba(20, 184, 166, 0.1), transparent 32%),
+    #ffffff;
   border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 16px 34px rgba(31, 42, 68, 0.05);
+  box-shadow: 0 18px 42px rgba(31, 42, 68, 0.06);
+}
+
+.launch-shell::after {
+  content: "";
+  position: absolute;
+  right: -90px;
+  bottom: -120px;
+  width: 280px;
+  height: 280px;
+  border-radius: 999px;
+  background: rgba(60, 125, 240, 0.08);
+  pointer-events: none;
 }
 
 .launch-copy {
@@ -18,70 +32,110 @@
   z-index: 1;
 }
 
+.launch-kicker {
+  display: inline-flex;
+  width: fit-content;
+  margin-bottom: 10px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  color: #2563eb;
+  background: rgba(60, 125, 240, 0.1);
+  border: 1px solid rgba(60, 125, 240, 0.16);
+  font-size: 0.76rem;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .launch-title {
-  margin: 0 0 14px;
-  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
-  line-height: 1.05;
+  max-width: 980px;
+  margin: 0 0 18px;
+  font-size: clamp(1.55rem, 3.6vw, 2.55rem);
+  line-height: 1.08;
+  letter-spacing: -0.04em;
   color: #21324d;
 }
 
 .launch-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
+  gap: 14px;
 }
 
 .launch-button {
   display: inline-flex;
   align-items: center;
-  gap: 12px;
-  min-width: 210px;
+  gap: 14px;
+  min-width: 230px;
   padding: 14px 18px;
-  border-radius: 16px;
-  background: #f8fafc;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: none;
+  border-radius: 20px;
+  background: rgba(248, 250, 252, 0.88);
+  border: 1px solid rgba(212, 222, 238, 0.95);
+  box-shadow: 0 12px 28px rgba(31, 42, 68, 0.04);
   text-decoration: none;
-  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease, background-color 0.22s ease;
 }
 
 .launch-button:hover {
   transform: translateY(-2px);
-  border-color: rgba(15, 23, 42, 0.18);
-  box-shadow: 0 16px 30px rgba(31, 42, 68, 0.08);
+  border-color: rgba(60, 125, 240, 0.25);
+  background: #ffffff;
+  box-shadow: 0 18px 34px rgba(31, 42, 68, 0.09);
 }
 
 .launch-button-icon {
-  width: 42px;
-  height: 42px;
+  width: 52px;
+  height: 52px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: 13px;
+  border-radius: 16px;
   background: #0f172a;
-  color: #fff;
+  color: #ffffff;
   flex-shrink: 0;
+  box-shadow: 0 12px 24px rgba(15, 23, 42, 0.16);
 }
 
-.launch-button-icon svg {
-  width: 20px;
-  height: 20px;
+.store-logo {
+  width: 30px;
+  height: 30px;
+  display: block;
+}
+
+.store-logo-play {
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.18));
+}
+
+.store-logo-apple {
+  width: 28px;
+  height: 28px;
+}
+
+.launch-button-text {
+  display: grid;
+  gap: 2px;
+}
+
+.launch-button-meta {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 800;
 }
 
 .launch-button-label {
   color: #21324d;
-  font-size: 0.98rem;
-  font-weight: 800;
+  font-size: 1.08rem;
+  font-weight: 900;
 }
 
 @media (max-width: 640px) {
   .launch-shell {
-    padding: 18px 14px;
-    border-radius: 22px;
+    padding: 20px 14px;
+    border-radius: 24px;
   }
 
   .launch-title {
-    font-size: clamp(1.2rem, 8vw, 1.65rem);
+    font-size: clamp(1.32rem, 8vw, 1.9rem);
   }
 
   .launch-buttons {
@@ -90,5 +144,6 @@
 
   .launch-button {
     width: 100%;
+    min-width: 0;
   }
 }

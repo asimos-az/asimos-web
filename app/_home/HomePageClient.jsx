@@ -133,6 +133,7 @@ function buildJobDetailsText({
   publishMode,
   publishAt,
   durationLabel,
+  contactEmail,
   description,
 }) {
   const details = [];
@@ -140,6 +141,7 @@ function buildJobDetailsText({
   if (companyObject) details.push(`Şirkət / obyekt: ${companyObject}`);
   if (scheduleStart || scheduleEnd) details.push(`İş qrafiki: ${scheduleStart || "--:--"} - ${scheduleEnd || "--:--"}`);
   if (durationLabel) details.push(`Müddət: ${durationLabel}`);
+  if (contactEmail) details.push(`Email: ${String(contactEmail).trim()}`);
   if (publishMode === "scheduled" && publishAt) details.push(`Planlı yayım: ${publishAt}`);
 
   return [description.trim(), details.length ? "" : null, ...details].filter(Boolean).join("\n");
@@ -264,6 +266,13 @@ export default function HomePageClient() {
   const [jobsMode, setJobsMode] = useState("all");
   const [minWage, setMinWage] = useState("");
   const [maxWage, setMaxWage] = useState("");
+  const [appliedFilters, setAppliedFilters] = useState({
+    search: "",
+    category: "",
+    jobType: "",
+    minWage: "",
+    maxWage: "",
+  });
   const [radiusM, setRadiusM] = useState("0");
   const [myJobsStatus, setMyJobsStatus] = useState("open");
   const [editingJobId, setEditingJobId] = useState(null);
@@ -274,6 +283,7 @@ export default function HomePageClient() {
   const [description, setDescription] = useState("");
   const [whatsapp, setWhatsapp] = useState("+994");
   const [contactPhone, setContactPhone] = useState("+994");
+  const [contactEmail, setContactEmail] = useState("");
   const [link, setLink] = useState("");
   const [voen, setVoen] = useState("");
   const [workType, setWorkType] = useState("permanent");
@@ -379,6 +389,7 @@ export default function HomePageClient() {
       if (saved.user?.phone) {
         setPhone(saved.user.phone);
         setContactPhone(saved.user.phone);
+        setContactEmail(saved.user.email || "");
         setWhatsapp(saved.user.phone);
       }
 
@@ -406,15 +417,14 @@ export default function HomePageClient() {
       api.listCategories().catch(() => ({ items: [] })),
       api
         .listJobsWithSearch({
-          q: search,
+          q: appliedFilters.search || undefined,
           lat: effectiveLocation?.lat,
           lng: effectiveLocation?.lng,
-          radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
           daily: jobsMode === "daily" || dailyOnly || undefined,
-          jobType: jobType || undefined,
-          minWage: minWage || undefined,
-          maxWage: maxWage || undefined,
-          categories: category || undefined,
+          jobType: appliedFilters.jobType || undefined,
+          minWage: appliedFilters.minWage || undefined,
+          maxWage: appliedFilters.maxWage || undefined,
+          categories: appliedFilters.category || undefined,
         })
         .catch(() => ({ items: [] })),
       api.getContent("terms").catch(() => null),
@@ -484,17 +494,24 @@ export default function HomePageClient() {
     };
   }, [booting, user, effectiveLocation?.lat, effectiveLocation?.lng]);
 
-  async function refreshJobs() {
+  async function refreshJobs(nextFilters = appliedFilters) {
+    const filters = {
+      search: nextFilters?.search ?? appliedFilters.search,
+      category: nextFilters?.category ?? appliedFilters.category,
+      jobType: nextFilters?.jobType ?? appliedFilters.jobType,
+      minWage: nextFilters?.minWage ?? appliedFilters.minWage,
+      maxWage: nextFilters?.maxWage ?? appliedFilters.maxWage,
+    };
+
     const res = await api.listJobsWithSearch({
-      q: search,
+      q: filters.search || undefined,
       lat: effectiveLocation?.lat,
       lng: effectiveLocation?.lng,
-      radius_m: Number(radiusM) > 0 ? Number(radiusM) : undefined,
       daily: jobsMode === "daily" || dailyOnly || undefined,
-      jobType: jobType || undefined,
-      minWage: minWage || undefined,
-      maxWage: maxWage || undefined,
-      categories: category || undefined,
+      jobType: filters.jobType || undefined,
+      minWage: filters.minWage || undefined,
+      maxWage: filters.maxWage || undefined,
+      categories: filters.category || undefined,
     });
     const nextJobs = normalizeList(res);
     setJobs(nextJobs);
@@ -507,7 +524,9 @@ export default function HomePageClient() {
 
     try {
       setLoading(true);
-      const nextJobs = await refreshJobs();
+      const heroFilters = { search, category, jobType, minWage, maxWage };
+      setAppliedFilters(heroFilters);
+      const nextJobs = await refreshJobs(heroFilters);
 
       if (searchSurface === "map") {
         const jobsWithCoords = nextJobs.filter((job) => {
@@ -855,6 +874,7 @@ export default function HomePageClient() {
     setCompanyObject("");
     setWage("");
     setDescription("");
+    setContactEmail(user?.email || "");
     setLink("");
     setVoen("");
     setScheduleStart("");
@@ -881,6 +901,7 @@ export default function HomePageClient() {
     setCategory(job.category || "");
     setWhatsapp(job.whatsapp || "+994");
     setContactPhone(job.phone || "+994");
+    setContactEmail(job.email || job.contactEmail || job.contact_email || "");
     setLink(job.link || "");
     setVoen(job.voen || "");
     setDescription(job.description || "");
@@ -933,6 +954,10 @@ export default function HomePageClient() {
         category,
         whatsapp,
         phone: contactPhone,
+        contactPhone,
+        email: contactEmail,
+        contactEmail,
+        contact_email: contactEmail,
         link,
         voen,
         description: buildJobDetailsText({
@@ -942,6 +967,7 @@ export default function HomePageClient() {
           publishMode,
           publishAt,
           durationLabel,
+          contactEmail,
           description,
         }),
         companyName: roleName === "employer" ? companyName || user?.companyName : undefined,
@@ -1242,19 +1268,28 @@ export default function HomePageClient() {
   }
 
   const filteredJobs = useMemo(() => {
-    const minN = minWage ? Number(minWage) : null;
-    const maxN = maxWage ? Number(maxWage) : null;
+    const appliedSearch = String(appliedFilters.search || "").trim().toLowerCase();
+    const appliedCategory = String(appliedFilters.category || "").trim().toLowerCase();
+    const minN = appliedFilters.minWage ? Number(appliedFilters.minWage) : null;
+    const maxN = appliedFilters.maxWage ? Number(appliedFilters.maxWage) : null;
 
     return jobs.filter((job) => {
-      const matchSearch = !search || String(job?.title || "").toLowerCase().includes(search.toLowerCase());
-      const matchCategory = !category || String(job?.category || "").toLowerCase().includes(category.toLowerCase());
-      const matchDaily = jobsMode !== "daily" || job?.isDaily || job?.jobType === "temporary";
+      const matchSearch =
+        !appliedSearch ||
+        [job?.title, job?.companyName, job?.company_name, job?.category, job?.description]
+          .filter(Boolean)
+          .join(" ")
+          .toLowerCase()
+          .includes(appliedSearch);
+      const matchCategory = !appliedCategory || String(job?.category || "").toLowerCase().includes(appliedCategory);
+      const matchJobType = !appliedFilters.jobType || String(job?.jobType || job?.job_type || "").toLowerCase() === String(appliedFilters.jobType).toLowerCase();
+      const matchDaily = jobsMode !== "daily" || job?.isDaily || job?.jobType === "temporary" || job?.job_type === "temporary";
       const wageNumber = extractWageNumber(job?.wage);
       const matchMin = minN === null || !Number.isFinite(minN) || (wageNumber !== null && wageNumber >= minN);
       const matchMax = maxN === null || !Number.isFinite(maxN) || (wageNumber !== null && wageNumber <= maxN);
-      return matchSearch && matchCategory && matchDaily && matchMin && matchMax;
+      return matchSearch && matchCategory && matchJobType && matchDaily && matchMin && matchMax;
     });
-  }, [jobs, search, category, jobsMode, minWage, maxWage]);
+  }, [jobs, appliedFilters, jobsMode]);
 
   const shownJobs = filteredJobs;
   const profileJobs = useMemo(() => {
@@ -1515,8 +1550,27 @@ export default function HomePageClient() {
         <>
           {hasHomeJobs ? (
             <section className="container page-section">
-              <header className="section-head">
-                <h2>Son elanlar</h2>
+              <header className={`section-head ${styles.latestJobsHead}`}>
+                <div>
+                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
+                  <h2>Son elanlar</h2>
+                  <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
+                </div>
+                {homeJobs.length > 6 ? (
+                  <button
+                    type="button"
+                    className={styles.latestJobsMoreButton}
+                    onClick={() => {
+                      setJobsMode("all");
+                      setFocusedMapJobId(null);
+                      setActiveSection("jobs");
+                      window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+                    }}
+                  >
+                    Daha çox elan
+                    <span aria-hidden="true">→</span>
+                  </button>
+                ) : null}
               </header>
               <div className={`cards-grid ${styles.latestJobsGrid}`}>
                 {homeJobs.slice(0, 6).map((job) => (
@@ -1541,20 +1595,16 @@ export default function HomePageClient() {
             <div>
               <span className="mobile-web-kicker">Asimos</span>
               <h2>{jobsMode === "daily" ? "Gündəlik işlər" : "İş elanları"}</h2>
-              <p>{jobsMode === "daily" ? "Yalnız müvəqqəti və günlük elanlar" : "Mobil tətbiqdəki Jobs axınına uyğun axtarış"}</p>
-            </div>
-            <div className="mobile-web-actions">
-              {user ? <button type="button" className="icon-action" onClick={() => setActiveSection("notifications")}>{unread || ""}</button> : null}
-              <button type="button" className="icon-action" onClick={() => setActiveSection("jobs")}>⌕</button>
+              <p>{jobsMode === "daily" ? "Yalnız müvəqqəti və günlük elanlar" : "Mobil tətbiqdəki elanlar axınına uyğun axtarış"}</p>
             </div>
           </header>
 
           <div className="segmented-tabs">
             <button type="button" className={jobsMode === "all" ? "active" : ""} onClick={() => setJobsMode("all")}>
-              Jobs
+              Elanlar
             </button>
             <button type="button" className={jobsMode === "daily" ? "active" : ""} onClick={() => setJobsMode("daily")}>
-              Daily
+              Gündəlik
             </button>
           </div>
 
@@ -1562,7 +1612,9 @@ export default function HomePageClient() {
             className="filter-panel"
             onSubmit={(e) => {
               e.preventDefault();
-              refreshJobs();
+              const nextFilters = { search, category, jobType, minWage, maxWage };
+              setAppliedFilters(nextFilters);
+              refreshJobs(nextFilters);
             }}
           >
             <label>
@@ -1597,15 +1649,6 @@ export default function HomePageClient() {
               Max maaş
               <input value={maxWage} onChange={(e) => setMaxWage(e.target.value)} inputMode="numeric" placeholder="məs: 1200" />
             </label>
-            <label>
-              Məsafə
-              <select value={radiusM} onChange={(e) => setRadiusM(e.target.value)}>
-                <option value="0">Ölkə üzrə</option>
-                <option value="1000">1 km</option>
-                <option value="5000">5 km</option>
-                <option value="10000">10 km</option>
-              </select>
-            </label>
             <div className="filter-actions">
               <button type="submit" className="btn-primary">Axtar</button>
               <button
@@ -1619,6 +1662,9 @@ export default function HomePageClient() {
                   setMaxWage("");
                   setRadiusM("0");
                   setJobsMode("all");
+                  const emptyFilters = { search: "", category: "", jobType: "", minWage: "", maxWage: "" };
+                  setAppliedFilters(emptyFilters);
+                  refreshJobs(emptyFilters);
                 }}
               >
                 Sıfırla
@@ -1745,6 +1791,16 @@ export default function HomePageClient() {
               <label>
                 Əlaqə nömrəsi
                 <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+              </label>
+
+              <label>
+                Email
+                <input
+                  type="email"
+                  value={contactEmail}
+                  onChange={(e) => setContactEmail(e.target.value)}
+                  placeholder="mail@example.com"
+                />
               </label>
 
               <label>
