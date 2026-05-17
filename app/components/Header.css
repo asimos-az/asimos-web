@@ -416,3 +416,93 @@
     font-size: 0.92rem;
   }
 }
+
+.account-inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.account-info {
+  display: grid;
+  gap: 1px;
+  min-width: 0;
+  max-width: 240px;
+  text-align: right;
+  line-height: 1.25;
+}
+
+.account-info strong {
+  color: #17243a;
+  font-size: 0.92rem;
+  font-weight: 900;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.account-info span {
+  color: #64748b;
+  font-size: 0.78rem;
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 720px) {
+  .account-info {
+    display: none;
+  }
+}
+
+.header-user-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-notification-button {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #3c7df0;
+  background: #3c7df0;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+}
+
+.header-notification-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(60, 125, 240, 0.28);
+  background: #336fe0;
+}
+
+.header-notification-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header-notification-button span {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}

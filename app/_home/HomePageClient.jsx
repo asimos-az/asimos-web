@@ -39,13 +39,11 @@ const guestNav = [
 const seekerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "Elanlar" },
-  { key: "daily", label: "Gündəlik işlər" },
 ];
 
 const employerNav = [
   { key: "home", label: "Ana səhifə" },
   { key: "jobs", label: "Elanlar" },
-  { key: "daily", label: "Gündəlik işlər" },
 ];
 
 const employerSupportCategories = [
@@ -110,6 +108,16 @@ const salaryRangeOptions = [
   { label: "1500 - 2500 AZN", min: "1500", max: "2500" },
   { label: "2500+ AZN", min: "2500", max: "" },
 ];
+
+
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
 
 function normalizeRole(role) {
   const raw = String(role || "").trim().toLowerCase();
@@ -298,9 +306,11 @@ export default function HomePageClient() {
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
   const [categories, setCategories] = useState([]);
+  const [jobFilterOptions, setJobFilterOptions] = useState({ vacancyTypes: vacancyTypeOptions, jobLevels: jobLevelOptions, salaryRanges: salaryRangeOptions });
   const [alerts, setAlerts] = useState([]);
   const [notifications, setNotifications] = useState([]);
   const [tickets, setTickets] = useState([]);
+  const [siteStats, setSiteStats] = useState(null);
   const [terms, setTerms] = useState("");
   const [unread, setUnread] = useState(0);
 
@@ -348,6 +358,7 @@ export default function HomePageClient() {
   const [publishMode, setPublishMode] = useState("instant");
   const [publishAt, setPublishAt] = useState("");
   const [locationText, setLocationText] = useState("");
+  const [jobImagePreview, setJobImagePreview] = useState("");
   const [lat, setLat] = useState("40.4093");
   const [lng, setLng] = useState("49.8671");
 
@@ -466,7 +477,7 @@ export default function HomePageClient() {
   }, []);
 
   async function loadBaseData() {
-    const [categoryRes, jobsRes, termsRes] = await Promise.all([
+    const [categoryRes, jobsRes, termsRes, filterOptionsRes] = await Promise.all([
       api.listCategories().catch(() => ({ items: [] })),
       api
         .listJobsWithSearch({
@@ -483,9 +494,17 @@ export default function HomePageClient() {
         })
         .catch(() => ({ items: [] })),
       api.getContent("terms").catch(() => null),
+      api.getJobFilterOptions().catch(() => null),
     ]);
 
     setCategories(flattenCategories(categoryRes?.items || categoryRes));
+    if (filterOptionsRes) {
+      setJobFilterOptions({
+        vacancyTypes: Array.isArray(filterOptionsRes.vacancyTypes) && filterOptionsRes.vacancyTypes.length ? filterOptionsRes.vacancyTypes : vacancyTypeOptions,
+        jobLevels: Array.isArray(filterOptionsRes.jobLevels) && filterOptionsRes.jobLevels.length ? filterOptionsRes.jobLevels : jobLevelOptions,
+        salaryRanges: Array.isArray(filterOptionsRes.salaryRanges) && filterOptionsRes.salaryRanges.length ? filterOptionsRes.salaryRanges : salaryRangeOptions,
+      });
+    }
     setJobs(normalizeList(jobsRes));
     setTerms(termsRes?.content || termsRes?.body || "Qaydalar məlumatı mövcud deyil.");
   }
@@ -577,6 +596,11 @@ export default function HomePageClient() {
     return nextJobs;
   }
 
+  useEffect(() => {
+    if (booting) return;
+    refreshJobs(appliedFilters).catch((err) => setError(err.message || "Elanlar yenilənmədi"));
+  }, [jobsMode]);
+
   async function handleHeroSearchSubmit(event) {
     event.preventDefault();
     setError("");
@@ -630,7 +654,8 @@ export default function HomePageClient() {
       }
 
       setFocusedMapJobId(null);
-      setActiveSection(search.toLowerCase().includes("gündəlik") ? "daily" : "jobs");
+      setJobsMode(search.toLowerCase().includes("gündəlik") ? "daily" : "all");
+      setActiveSection("jobs");
     } catch (e) {
       setError(e.message || "Axtarış zamanı xəta baş verdi");
     } finally {
@@ -947,6 +972,7 @@ export default function HomePageClient() {
     setActiveCreateFilterTab("type");
     setPublishMode("instant");
     setPublishAt("");
+    setJobImagePreview("");
   }
 
   function startEditJob(job) {
@@ -976,6 +1002,7 @@ export default function HomePageClient() {
     setJobLevel(job.jobLevel || job.job_level || job.positionLevel || job.level || "");
     setPublishMode(nextPublishAt ? "scheduled" : "instant");
     setPublishAt(toDateTimeLocal(nextPublishAt));
+    setJobImagePreview(job.imageUrl || job.image_url || job.logoUrl || job.logo_url || "");
 
     if (job.location) {
       setLocationText(job.location.address || "");
@@ -987,7 +1014,7 @@ export default function HomePageClient() {
     setOk("Elan redaktə rejimində açıldı");
   }
 
-  async function handleCreateJob(e) {
+  async function handleCreateJob(e, saveAsDraft = false) {
     e.preventDefault();
     if (!user?.id) return;
     if (roleName !== "employer") {
@@ -1050,7 +1077,10 @@ export default function HomePageClient() {
         end_time: formatTimeFromDateTime(scheduleEnd),
         notifyRadiusM: Number(radiusM) > 0 ? Number(radiusM) : 500,
         publishMode,
-        publishedAt: publishMode === "scheduled" ? new Date(publishAt).toISOString() : null,
+        publishedAt: saveAsDraft ? null : (publishMode === "scheduled" ? new Date(publishAt).toISOString() : null),
+        status: saveAsDraft ? "draft" : undefined,
+        saveAsDraft,
+        imageUrl: jobImagePreview || undefined,
         location: {
           address: locationText || "Bakı",
           lat: Number(lat),
@@ -1063,7 +1093,7 @@ export default function HomePageClient() {
         setOk("Elan yeniləndi");
       } else {
         await api.createJob(payload);
-        setOk("Elan yaradıldı");
+        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : "Elan yayımlandı");
       }
 
       resetJobForm();
@@ -1075,6 +1105,30 @@ export default function HomePageClient() {
       setError(err.message || "Elan yaradılmadı");
     } finally {
       setLoading(false);
+    }
+  }
+
+
+  async function handlePublishJob(id) {
+    try {
+      await api.publishJob(id);
+      setOk("Elan aktiv edildi");
+      await loadAuthedData();
+      await refreshJobs();
+    } catch (err) {
+      setError(err.message || "Elan aktiv edilmədi");
+    }
+  }
+
+  async function handleDeleteJob(id) {
+    if (!window.confirm("Elanı silinmiş elanlara göndərmək istəyirsiniz?")) return;
+    try {
+      await api.deleteJob(id);
+      setOk("Elan silinmiş elanlara göndərildi");
+      await loadAuthedData();
+      await refreshJobs();
+    } catch (err) {
+      setError(err.message || "Elan silinmədi");
     }
   }
 
@@ -1357,7 +1411,20 @@ export default function HomePageClient() {
       const matchCity = !appliedCity || String(job?.location?.address || job?.address || "").toLowerCase().includes(appliedCity);
       const matchJobType = !appliedFilters.jobType || String(job?.jobType || job?.job_type || job?.workType || "").toLowerCase() === String(appliedFilters.jobType).toLowerCase();
       const matchJobLevel = !appliedJobLevel || [job?.jobLevel, job?.job_level, job?.positionLevel, job?.level, job?.title, job?.description].filter(Boolean).join(" ").toLowerCase().includes(appliedJobLevel);
-      const matchDaily = jobsMode !== "daily" || job?.isDaily || job?.jobType === "temporary" || job?.job_type === "temporary";
+      const normalizedJobType = String(job?.jobType || job?.job_type || job?.workType || job?.work_type || "").toLowerCase();
+      const dailyHaystack = [job?.title, job?.category, job?.description, job?.durationLabel, job?.duration_label]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
+      const matchDaily = jobsMode !== "daily" || Boolean(
+        job?.isDaily ||
+        job?.is_daily ||
+        ["temporary", "daily", "gundelik", "gündəlik", "muveqqeti", "müvəqqəti", "shift"].includes(normalizedJobType) ||
+        dailyHaystack.includes("gündəlik") ||
+        dailyHaystack.includes("gundelik") ||
+        dailyHaystack.includes("müvəqqəti") ||
+        dailyHaystack.includes("muveqqeti")
+      );
       const wageNumber = extractWageNumber(job?.wage);
       const matchMin = minN === null || !Number.isFinite(minN) || (wageNumber !== null && wageNumber >= minN);
       const matchMax = maxN === null || !Number.isFinite(maxN) || (wageNumber !== null && wageNumber <= maxN);
@@ -1372,23 +1439,31 @@ export default function HomePageClient() {
     { key: "salary", label: "Maaş aralığı" },
   ]), []);
 
+  const activeVacancyTypeOptions = useMemo(() => jobFilterOptions.vacancyTypes || vacancyTypeOptions, [jobFilterOptions]);
+  const activeJobLevelOptions = useMemo(() => jobFilterOptions.jobLevels || jobLevelOptions, [jobFilterOptions]);
+  const activeSalaryRangeOptions = useMemo(() => jobFilterOptions.salaryRanges || salaryRangeOptions, [jobFilterOptions]);
+
   const homeCategoryOptions = useMemo(() => categories.slice(0, 12), [categories]);
 
   const activeSalaryLabel = useMemo(() => {
-    const match = salaryRangeOptions.find((item) => item.min === minWage && item.max === maxWage);
+    const match = activeSalaryRangeOptions.find((item) => item.min === minWage && item.max === maxWage);
     return match?.label || "";
-  }, [minWage, maxWage]);
+  }, [minWage, maxWage, activeSalaryRangeOptions]);
 
   const activeCreateSalaryLabel = useMemo(() => {
-    const selected = salaryRangeOptions.find((item) => wage === item.label);
+    const selected = activeSalaryRangeOptions.find((item) => wage === item.label);
     return selected?.label || "";
-  }, [wage]);
+  }, [wage, activeSalaryRangeOptions]);
 
   const shownJobs = filteredJobs;
   const profileJobs = useMemo(() => {
     return myJobs.filter((job) => {
       const status = getJobStatus(job);
-      if (myJobsStatus === "pending") return status === "pending" || status === "scheduled";
+      if (myJobsStatus === "open") return status === "open" || status === "scheduled" || status === "pending";
+      if (myJobsStatus === "draft") return status === "draft";
+      if (myJobsStatus === "closed") return status === "closed" || status === "inactive";
+      if (myJobsStatus === "rejected") return status === "rejected";
+      if (myJobsStatus === "deleted") return status === "deleted";
       return status === myJobsStatus;
     });
   }, [myJobs, myJobsStatus]);
@@ -1410,6 +1485,27 @@ export default function HomePageClient() {
     const amount = Math.max(node.clientWidth * 0.85, 320);
     node.scrollBy({ left: direction * amount, behavior: "smooth" });
   }
+
+
+  useEffect(() => {
+    let ignore = false;
+    const sessionKey = "asimos_web_session_id";
+    let sessionId = "";
+    try {
+      sessionId = window.localStorage.getItem(sessionKey) || "";
+      if (!sessionId) {
+        sessionId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+        window.localStorage.setItem(sessionKey, sessionId);
+      }
+      api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => {});
+    } catch {}
+
+    api.getSiteStats()
+      .then((data) => { if (!ignore) setSiteStats(data || null); })
+      .catch(() => { if (!ignore) setSiteStats(null); });
+
+    return () => { ignore = true; };
+  }, []);
 
   if (booting) {
     return (
@@ -1433,6 +1529,7 @@ export default function HomePageClient() {
         handleSignOut={handleSignOut}
         canCreateJob={canCreateJob}
         onOpenSupport={openSupportModal}
+        unreadNotificationsCount={activeUnreadCount}
       />
       {activeSection === "home" ? (
         <section className={styles.homeFilterSection}>
@@ -1497,7 +1594,7 @@ export default function HomePageClient() {
               </div>
 
               <div className={styles.homeFilterOptions}>
-                {activeHomeFilterTab === "type" ? vacancyTypeOptions.map((item) => (
+                {activeHomeFilterTab === "type" ? activeVacancyTypeOptions.map((item) => (
                   <button
                     key={item.value}
                     type="button"
@@ -1519,7 +1616,7 @@ export default function HomePageClient() {
                   </button>
                 )) : <p className={styles.homeFilterEmpty}>Kateqoriyalar yüklənir...</p>) : null}
 
-                {activeHomeFilterTab === "level" ? jobLevelOptions.map((item) => (
+                {activeHomeFilterTab === "level" ? activeJobLevelOptions.map((item) => (
                   <button
                     key={item.value}
                     type="button"
@@ -1530,7 +1627,7 @@ export default function HomePageClient() {
                   </button>
                 )) : null}
 
-                {activeHomeFilterTab === "salary" ? salaryRangeOptions.map((item) => (
+                {activeHomeFilterTab === "salary" ? activeSalaryRangeOptions.map((item) => (
                   <button
                     key={item.label}
                     type="button"
@@ -1730,6 +1827,39 @@ export default function HomePageClient() {
 
       {activeSection === "home" ? (
         <>
+
+          <section className={`container page-section ${styles.statsSection}`}>
+            <div className={styles.statsCard}>
+              <div className={styles.statsIntro}>
+                <span>Asimos statistikası</span>
+                <h2>Platformanın canlı göstəriciləri</h2>
+                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
+              </div>
+              <div className={styles.statsGrid}>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.users ?? 0}</strong>
+                  <span>Qeydiyyatdan keçən istifadəçi</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.activeJobs ?? 0}</strong>
+                  <span>Aktiv elan</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.onlineUsers ?? 0}</strong>
+                  <span>Hazırda online</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.visitsToday ?? 0}</strong>
+                  <span>Bu gün giriş</span>
+                </div>
+                <div className={styles.statItem}>
+                  <strong>{siteStats?.visitsThisMonth ?? 0}</strong>
+                  <span>Bu ay giriş</span>
+                </div>
+              </div>
+            </div>
+          </section>
+
           {hasHomeJobs ? (
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
@@ -1781,7 +1911,7 @@ export default function HomePageClient() {
         </>
       ) : null}
 
-      {activeSection === "jobs" || activeSection === "daily" ? (
+      {activeSection === "jobs" ? (
         <section className="container page-section">
           <header className="mobile-web-head">
             <div>
@@ -1800,75 +1930,138 @@ export default function HomePageClient() {
             </button>
           </div>
 
-          <form
-            className="filter-panel"
-            onSubmit={(e) => {
+          <form className={styles.homeFilterCard} onSubmit={(e) => {
               e.preventDefault();
               const nextFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
               setAppliedFilters(nextFilters);
               refreshJobs(nextFilters);
-            }}
-          >
-            <label>
-              Açar sözlər
-              <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Məs: ofisiant, kuryer" />
-            </label>
-            <label>
-              Şəhər
-              <select value={city} onChange={(e) => setCity(e.target.value)}>
-                <option value="">Bütün şəhərlər</option>
-                {cityOptions.map((item) => (
-                  <option key={item} value={item}>
-                    {item}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Kateqoriya
-              <select value={category} onChange={(e) => setCategory(e.target.value)}>
-                <option value="">İstənilən kateqoriya</option>
-                {categories.map((cat) => (
-                  <option key={cat} value={cat}>
-                    {cat}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              İş rejimi
-              <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
-                <option value="">Fərqi yoxdur</option>
-                <option value="permanent">Daimi</option>
-                <option value="temporary">Müvəqqəti</option>
-                <option value="seeker">İş axtaran elanı</option>
-                <option value="part_time">Yarım ştat</option>
-                <option value="full_time">Tam ştat</option>
-                <option value="freelance">Frilans</option>
-              </select>
-            </label>
-            <label>
-              Vəzifə dərəcəsi
-              <select value={jobLevel} onChange={(e) => setJobLevel(e.target.value)}>
-                <option value="">Fərqi yoxdur</option>
-                {jobLevelOptions.map((item) => (
-                  <option key={item.value} value={item.value}>{item.label}</option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Min maaş
-              <input value={minWage} onChange={(e) => setMinWage(e.target.value)} inputMode="numeric" placeholder="məs: 400" />
-            </label>
-            <label>
-              Max maaş
-              <input value={maxWage} onChange={(e) => setMaxWage(e.target.value)} inputMode="numeric" placeholder="məs: 1200" />
-            </label>
-            <div className="filter-actions">
-              <button type="submit" className="btn-primary">Axtar</button>
+            }}>
+            <div className={styles.homeFilterTitle}>
+              <span className={styles.homeFilterTitleIcon} aria-hidden="true">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <circle cx="11" cy="11" r="7" />
+                  <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                </svg>
+              </span>
+              <h1>İş axtarışı</h1>
+            </div>
+
+            <div className={styles.homeFilterSearchRow}>
+              <label className={styles.homeFilterInputWrap}>
+                <span aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Vakansiya adı və ya açar söz" />
+              </label>
+
+              <label className={styles.homeFilterSelectWrap}>
+                <span aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
+                    <circle cx="12" cy="10" r="2.5" />
+                  </svg>
+                </span>
+                <select value={city} onChange={(e) => setCity(e.target.value)} aria-label="Şəhəri seç">
+                  <option value="">Şəhəri seç</option>
+                  {cityOptions.map((item) => <option key={item} value={item}>{item}</option>)}
+                </select>
+              </label>
+
+              <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
+                {loading ? "Axtarılır..." : "Axtar"}
+              </button>
+            </div>
+
+            <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan filterləri">
+              {homeFilterTabs.map((tab) => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  className={activeHomeFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab}
+                  onClick={() => setActiveHomeFilterTab(tab.key)}
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+
+            <div className={styles.homeFilterOptions}>
+              {activeHomeFilterTab === "type" ? activeVacancyTypeOptions.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                  onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                >
+                  {item.label}
+                </button>
+              )) : null}
+
+              {activeHomeFilterTab === "category" ? (homeCategoryOptions.length ? homeCategoryOptions.map((item) => (
+                <button
+                  key={item}
+                  type="button"
+                  className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                  onClick={() => setCategory((current) => current === item ? "" : item)}
+                >
+                  {item}
+                </button>
+              )) : <p className={styles.homeFilterEmpty}>Kateqoriyalar yüklənir...</p>) : null}
+
+              {activeHomeFilterTab === "level" ? activeJobLevelOptions.map((item) => (
+                <button
+                  key={item.value}
+                  type="button"
+                  className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                  onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                >
+                  {item.label}
+                </button>
+              )) : null}
+
+              {activeHomeFilterTab === "salary" ? (
+                <>
+                  {activeSalaryRangeOptions.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      className={activeSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                      onClick={() => {
+                        const same = minWage === item.min && maxWage === item.max;
+                        setMinWage(same ? "" : item.min);
+                        setMaxWage(same ? "" : item.max);
+                      }}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                  <input
+                    className={styles.homeFilterOption}
+                    style={{ textAlign: "left", cursor: "text" }}
+                    value={minWage}
+                    onChange={(e) => setMinWage(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="Min maaş: məsələn 400"
+                  />
+                  <input
+                    className={styles.homeFilterOption}
+                    style={{ textAlign: "left", cursor: "text" }}
+                    value={maxWage}
+                    onChange={(e) => setMaxWage(e.target.value)}
+                    inputMode="numeric"
+                    placeholder="Max maaş: məsələn 1200"
+                  />
+                </>
+              ) : null}
+            </div>
+
+            <div className={styles.homeFilterFooter}>
               <button
                 type="button"
-                className="btn-secondary"
+                className={styles.homeFilterReset}
                 onClick={() => {
                   setSearch("");
                   setCategory("");
@@ -1878,7 +2071,6 @@ export default function HomePageClient() {
                   setMinWage("");
                   setMaxWage("");
                   setRadiusM("0");
-                  setJobsMode("all");
                   const emptyFilters = { search: "", category: "", city: "", jobType: "", jobLevel: "", minWage: "", maxWage: "" };
                   setAppliedFilters(emptyFilters);
                   refreshJobs(emptyFilters);
@@ -1902,7 +2094,31 @@ export default function HomePageClient() {
             ))}
           </div>
 
-          {shownJobs.length === 0 ? <p className="muted">Elan tapılmadı.</p> : null}
+          {shownJobs.length === 0 ? (
+            <div className="empty-state-card">
+              <strong>Elan tapılmadı</strong>
+              <p>Seçilən filterlərə uyğun elan yoxdur. Filterləri sıfırlayıb bütün elanlara baxa bilərsiniz.</p>
+              <button
+                type="button"
+                className="btn-primary"
+                onClick={() => {
+                  setSearch("");
+                  setCategory("");
+                  setCity("");
+                  setJobType("");
+                  setJobLevel("");
+                  setMinWage("");
+                  setMaxWage("");
+                  setJobsMode("all");
+                  const emptyFilters = { search: "", category: "", city: "", jobType: "", jobLevel: "", minWage: "", maxWage: "" };
+                  setAppliedFilters(emptyFilters);
+                  refreshJobs(emptyFilters);
+                }}
+              >
+                Bütün elanları göstər
+              </button>
+            </div>
+          ) : null}
 
         </section>
       ) : null}
@@ -1985,7 +2201,7 @@ export default function HomePageClient() {
                 </div>
 
                 <div className={styles.homeFilterOptions}>
-                  {activeCreateFilterTab === "type" ? vacancyTypeOptions.map((item) => (
+                  {activeCreateFilterTab === "type" ? activeVacancyTypeOptions.map((item) => (
                     <button
                       key={item.value}
                       type="button"
@@ -2007,7 +2223,7 @@ export default function HomePageClient() {
                     </button>
                   )) : <p className={styles.homeFilterEmpty}>Kateqoriyalar yüklənir...</p>) : null}
 
-                  {activeCreateFilterTab === "level" ? jobLevelOptions.map((item) => (
+                  {activeCreateFilterTab === "level" ? activeJobLevelOptions.map((item) => (
                     <button
                       key={item.value}
                       type="button"
@@ -2018,16 +2234,27 @@ export default function HomePageClient() {
                     </button>
                   )) : null}
 
-                  {activeCreateFilterTab === "salary" ? salaryRangeOptions.map((item) => (
-                    <button
-                      key={item.label}
-                      type="button"
-                      className={activeCreateSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => setWage((current) => current === item.label ? "" : item.label)}
-                    >
-                      {item.label}
-                    </button>
-                  )) : null}
+                  {activeCreateFilterTab === "salary" ? (
+                    <>
+                      {activeSalaryRangeOptions.map((item) => (
+                        <button
+                          key={item.label}
+                          type="button"
+                          className={activeCreateSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                          onClick={() => setWage((current) => current === item.label ? "" : item.label)}
+                        >
+                          {item.label}
+                        </button>
+                      ))}
+                      <input
+                        className={styles.homeFilterOption}
+                        style={{ textAlign: "left", cursor: "text" }}
+                        value={wage}
+                        onChange={(e) => setWage(e.target.value)}
+                        placeholder="Maaşı əl ilə yaz: məsələn 900 AZN"
+                      />
+                    </>
+                  ) : null}
                 </div>
 
                 <div className={styles.homeFilterFooter}>
@@ -2040,6 +2267,36 @@ export default function HomePageClient() {
               <label>
                 Şirkət / obyekt
                 <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Direkt və ya obyekt adı" />
+              </label>
+
+              <label className="asimos-upload-field">
+                Şirkət loqosu / elan şəkli
+                <div className="asimos-file-upload">
+                  <input
+                    id="job-image-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      if (!file) { setJobImagePreview(""); return; }
+                      if (file.size > 800 * 1024) {
+                        setError("Şəkil maksimum 800KB olmalıdır. Loqo üçün kiçik ölçü seçin.");
+                        e.target.value = "";
+                        return;
+                      }
+                      const dataUrl = await fileToDataUrl(file);
+                      setJobImagePreview(dataUrl);
+                    }}
+                  />
+                  <label htmlFor="job-image-upload" className="asimos-file-button">Şəkil seç</label>
+                  <span>{jobImagePreview ? "Şəkil seçildi" : "Şəkil seçilməyib"}</span>
+                </div>
+                {jobImagePreview ? (
+                  <div className="asimos-upload-preview">
+                    <img src={jobImagePreview} alt="Seçilmiş loqo" />
+                    <button type="button" className="btn-secondary" onClick={() => setJobImagePreview("")}>Şəkli sil</button>
+                  </div>
+                ) : null}
               </label>
 
               {jobType === "temporary" ? (
@@ -2151,9 +2408,14 @@ export default function HomePageClient() {
                 />
               </div>
 
-              <div className="full-row">
+              <div className="full-row" style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+                {!editingJobId ? (
+                  <button type="button" className="btn-secondary" disabled={loading} onClick={(e) => handleCreateJob(e, true)}>
+                    Yadda saxla
+                  </button>
+                ) : null}
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {editingJobId ? "Dəyişiklikləri saxla" : "Elanı yadda saxla"}
+                  {editingJobId ? "Dəyişiklikləri saxla" : "Yerləşdir"}
                 </button>
                 {editingJobId ? (
                   <button type="button" className="btn-secondary" onClick={resetJobForm}>
@@ -2469,10 +2731,11 @@ export default function HomePageClient() {
 
                     <div className="status-tabs">
                       {[
-                        ["open", "Aktiv"],
-                        ["pending", "Gözləyən"],
-                        ["rejected", "Rədd edilib"],
-                        ["closed", "Deaktiv"],
+                        ["open", "Aktiv elanlar"],
+                        ["draft", "Yadda saxlanılanlar"],
+                        ["closed", "Deaktiv elanlar"],
+                        ["rejected", "Rədd edilmiş"],
+                        ["deleted", "Silinmiş elanlar"],
                       ].map(([value, label]) => (
                         <button key={value} type="button" className={myJobsStatus === value ? "active" : ""} onClick={() => setMyJobsStatus(value)}>
                           {label}
@@ -2495,12 +2758,21 @@ export default function HomePageClient() {
                             <button type="button" className="btn-secondary" onClick={() => startEditJob(job)}>
                               Redaktə et
                             </button>
-                            <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
-                              Bağla
-                            </button>
-                            <button type="button" className="btn-secondary" onClick={() => handleReopenJob(job.id)}>
-                              Yenidən aç
-                            </button>
+                            {["draft", "closed", "rejected"].includes(getJobStatus(job)) ? (
+                              <button type="button" className="btn-secondary" onClick={() => handlePublishJob(job.id)}>
+                                Aktiv et
+                              </button>
+                            ) : null}
+                            {getJobStatus(job) === "open" || getJobStatus(job) === "pending" || getJobStatus(job) === "scheduled" ? (
+                              <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
+                                Deaktiv et
+                              </button>
+                            ) : null}
+                            {getJobStatus(job) !== "deleted" ? (
+                              <button type="button" className="btn-secondary" onClick={() => handleDeleteJob(job.id)}>
+                                Sil
+                              </button>
+                            ) : null}
                           </div>
                         </article>
                       ))}

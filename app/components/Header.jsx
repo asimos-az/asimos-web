@@ -56,7 +56,7 @@ function ArrowUpRightIcon() {
   );
 }
 
-const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport }) => {
+const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, unreadNotificationsCount = 0 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -103,6 +103,9 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
     setAccountMenuOpen(false);
   }
 
+  const displayName = user?.fullName || user?.full_name || user?.name || user?.companyName || user?.company_name || "İstifadəçi";
+  const displayEmail = user?.email || "";
+
   const accountMenuItems = [
     { key: "profile", label: "Profil", icon: <ProfileIcon /> },
     { key: "alerts", label: "Elan bildirişləri", icon: <BellIcon /> },
@@ -128,15 +131,31 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
           ) : null}
           <div className="user-chip">
             {user ? (
-              <div className="account-menu" ref={accountMenuRef}>
+              <div className="header-user-actions">
                 <button
                   type="button"
-                  className={`account-trigger ${accountMenuOpen ? "open" : ""}`}
-                  onClick={() => setAccountMenuOpen((value) => !value)}
-                  aria-label="Hesab menyusu"
+                  className="header-notification-button"
+                  onClick={() => handleNavigate("notifications")}
+                  aria-label="Bildirişlər"
                 >
-                  <ProfileIcon />
+                  <BellIcon />
+                  {unreadNotificationsCount > 0 ? <span>{unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}</span> : null}
                 </button>
+              <div className="account-menu" ref={accountMenuRef}>
+                <div className="account-inline">
+                  <div className="account-info" title={`${displayName}${displayEmail ? ` • ${displayEmail}` : ""}`}>
+                    <strong>{displayName}</strong>
+                    {displayEmail ? <span>{displayEmail}</span> : null}
+                  </div>
+                  <button
+                    type="button"
+                    className={`account-trigger ${accountMenuOpen ? "open" : ""}`}
+                    onClick={() => setAccountMenuOpen((value) => !value)}
+                    aria-label="Hesab menyusu"
+                  >
+                    <ProfileIcon />
+                  </button>
+                </div>
 
                 {accountMenuOpen ? (
                   <div className="account-dropdown">
@@ -154,6 +173,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
                     </button>
                   </div>
                 ) : null}
+              </div>
               </div>
             ) : (
               <button type="button" className="login-action" onClick={() => handleNavigate("auth")}>

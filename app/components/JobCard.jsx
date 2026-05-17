@@ -42,6 +42,17 @@ function getJobTypeLabel(job) {
   return "Elan";
 }
 
+
+function DefaultJobLogoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7V6a3 3 0 0 1 6 0v1" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5h15v9A2.5 2.5 0 0 1 17 20H7a2.5 2.5 0 0 1-2.5-2.5v-9Z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15M10 12v1.2h4V12" />
+    </svg>
+  );
+}
+
 export default function JobCard({ job, onClick, onPrefetch, showEdit = false, onEdit }) {
   const companyLabel = getCompanyLabel(job);
   const createdAt = formatDate(job.publishedAt || job.published_at || job.createdAt || job.created_at);
@@ -50,12 +61,14 @@ export default function JobCard({ job, onClick, onPrefetch, showEdit = false, on
   const locationLabel = getLocationLabel(job, distance);
   const jobTypeLabel = getJobTypeLabel(job);
   const premium = isPremiumJob(job);
-  const initial = companyLabel.trim().charAt(0).toUpperCase() || "A";
+  const logoUrl = job?.logoUrl || job?.logo_url || job?.imageUrl || job?.image_url || job?.companyLogo || job?.company_logo || "";
 
   return (
     <article className="job-card" onClick={onClick} onMouseEnter={onPrefetch} onFocus={onPrefetch} tabIndex={0}>
       <div className="job-card-top">
-        <div className="job-card-logo" aria-hidden="true">{initial}</div>
+        <div className="job-card-logo" aria-hidden="true">
+          {logoUrl ? <img src={logoUrl} alt="" /> : <DefaultJobLogoIcon />}
+        </div>
         {premium ? (
           <div className="job-card-crown" title="Premium elan" aria-label="Premium elan">
             <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

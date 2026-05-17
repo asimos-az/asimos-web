@@ -43,6 +43,21 @@
   line-height: 1;
   font-weight: 900;
   letter-spacing: -0.06em;
+  overflow: hidden;
+}
+
+.job-card-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 9px;
+  background: #fff;
+}
+
+.job-card-logo svg {
+  width: 36px;
+  height: 36px;
+  color: #fff;
 }
 
 .job-card-crown {

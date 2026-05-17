@@ -1500,3 +1500,146 @@ button:disabled,
     padding: 12px;
   }
 }
+
+/* Unified Asimos button style */
+.btn-primary,
+.btn-secondary,
+.btn-danger,
+.create-action,
+.login-action,
+.account-trigger,
+.icon-action,
+.support-new-ticket,
+.support-close-button,
+.support-back-button,
+.notifications-read-button,
+button[type="submit"]:not(.homeFilterTab):not(.homeFilterTabActive):not(.homeFilterOption):not(.homeFilterOptionActive),
+button[type="button"].primary-like {
+  border-radius: 12px;
+  font-weight: 900;
+}
+
+.btn-primary,
+.create-action,
+.login-action {
+  background: #1f8ddd;
+  border-color: #1f8ddd;
+  color: #fff;
+  box-shadow: none;
+}
+
+.btn-primary:hover,
+.create-action:hover,
+.create-action.active,
+.login-action:hover {
+  background: #187fd0;
+  border-color: #187fd0;
+  transform: translateY(-1px);
+  box-shadow: 0 16px 32px rgba(31, 141, 221, 0.24);
+}
+
+.btn-secondary {
+  border: 1px solid #d5dfed;
+  background: #ffffff;
+  color: #1689e7;
+  box-shadow: none;
+}
+
+.btn-secondary:hover {
+  border-color: rgba(31, 141, 221, 0.38);
+  color: #117fd0;
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(31, 141, 221, 0.1);
+}
+
+.empty-state-card {
+  margin-top: 18px;
+  padding: 26px;
+  border: 1px solid #d6e0ee;
+  border-radius: 16px;
+  background: #ffffff;
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.04);
+}
+
+.empty-state-card strong {
+  color: #17243a;
+  font-size: 1.1rem;
+  font-weight: 900;
+}
+
+.empty-state-card p {
+  margin: 0 0 6px;
+  color: #64748b;
+  font-weight: 700;
+}
+
+.mobile-job-list {
+  margin-top: 22px;
+}
+
+.form-grid > label {
+  align-self: start;
+  width: 100%;
+}
+
+.asimos-upload-field {
+  align-self: start;
+}
+
+.asimos-file-upload {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.asimos-file-upload input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.asimos-file-button {
+  width: auto !important;
+  min-height: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: #1f8ddd;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.asimos-file-upload span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.asimos-upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.asimos-upload-preview img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border: 1px solid #dbe5f3;
+  border-radius: 14px;
+  background: #fff;
+}
