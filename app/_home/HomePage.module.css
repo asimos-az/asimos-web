@@ -493,3 +493,341 @@
     width: 100%;
   }
 }
+
+.latestJobsActions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.latestJobsControls {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.latestJobsControls button {
+  width: 46px;
+  height: 46px;
+  border: 1px solid #d8e1ef;
+  border-radius: 14px;
+  background: #ffffff;
+  color: #26354f;
+  font-size: 1.7rem;
+  line-height: 1;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+}
+
+.latestJobsControls button:hover {
+  background: #f6f9fd;
+  border-color: rgba(30, 136, 229, 0.34);
+  transform: translateY(-1px);
+}
+
+.latestJobsCarousel {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - 32px) / 3);
+  gap: 16px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scroll-snap-type: x mandatory;
+  scroll-behavior: smooth;
+  padding: 2px 1px 12px;
+  scrollbar-width: thin;
+}
+
+.latestJobsCarousel::-webkit-scrollbar {
+  height: 6px;
+}
+
+.latestJobsCarousel::-webkit-scrollbar-track {
+  background: #eef3f9;
+  border-radius: 999px;
+}
+
+.latestJobsCarousel::-webkit-scrollbar-thumb {
+  background: #c5d2e4;
+  border-radius: 999px;
+}
+
+.latestJobsSlide {
+  scroll-snap-align: start;
+  min-width: 0;
+}
+
+.latestJobsSlide :global(.job-card) {
+  height: 100%;
+}
+
+@media (max-width: 1100px) {
+  .latestJobsCarousel {
+    grid-auto-columns: calc((100% - 16px) / 2);
+  }
+}
+
+@media (max-width: 720px) {
+  .latestJobsActions {
+    justify-content: flex-start;
+  }
+
+  .latestJobsControls {
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .latestJobsControls button {
+    flex: 1;
+  }
+
+  .latestJobsCarousel {
+    grid-auto-columns: 88%;
+    gap: 14px;
+    padding-bottom: 10px;
+  }
+}
+
+.homeFilterSection {
+  padding: 28px 0 18px;
+  background: #f7f9fc;
+}
+
+.homeFilterCard {
+  display: grid;
+  gap: 28px;
+  padding: 34px 34px 30px;
+  border-radius: 16px;
+  background: #ffffff;
+  border: 1px solid #d6e0ee;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.04);
+}
+
+.homeFilterTitle {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  color: #17243a;
+}
+
+.homeFilterTitle h1 {
+  margin: 0;
+  font-size: clamp(1.35rem, 2.1vw, 1.8rem);
+  line-height: 1.1;
+  font-weight: 900;
+  letter-spacing: -0.03em;
+}
+
+.homeFilterTitleIcon {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: #1689e7;
+}
+
+.homeFilterTitleIcon svg {
+  width: 25px;
+  height: 25px;
+}
+
+.homeFilterSearchRow {
+  display: grid;
+  grid-template-columns: minmax(240px, 1fr) minmax(240px, 1fr) 176px;
+  gap: 18px;
+  align-items: stretch;
+}
+
+.homeFilterInputWrap,
+.homeFilterSelectWrap {
+  min-height: 58px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 0 18px;
+  border: 1px solid #d5dfed;
+  border-radius: 12px;
+  background: #ffffff;
+  color: #1c2940;
+}
+
+.homeFilterInputWrap span,
+.homeFilterSelectWrap span {
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #17243a;
+}
+
+.homeFilterInputWrap svg,
+.homeFilterSelectWrap svg {
+  width: 25px;
+  height: 25px;
+}
+
+.homeFilterInputWrap input,
+.homeFilterSelectWrap select {
+  width: 100%;
+  min-height: 56px;
+  border: 0;
+  outline: 0;
+  padding: 0;
+  background: transparent;
+  color: #1c2940;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.homeFilterInputWrap input::placeholder,
+.homeFilterSelectWrap select:invalid {
+  color: #9ba7ba;
+}
+
+.homeFilterSubmit {
+  min-height: 58px;
+  border: 0;
+  border-radius: 12px;
+  background: #1f8ddd;
+  color: #ffffff;
+  font-size: 1.05rem;
+  font-weight: 900;
+  cursor: pointer;
+  transition: transform 0.18s ease, background-color 0.18s ease;
+}
+
+.homeFilterSubmit:hover {
+  transform: translateY(-1px);
+  background: #187fd0;
+}
+
+.homeFilterSubmit:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.homeFilterTabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border-bottom: 1px solid #cfd9e8;
+}
+
+.homeFilterTab,
+.homeFilterTabActive {
+  min-height: 48px;
+  padding: 0 22px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: transparent;
+  color: #1d2a40;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.homeFilterTabActive {
+  color: #1689e7;
+  border-bottom-color: #1689e7;
+}
+
+.homeFilterOptions {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  min-height: 126px;
+}
+
+.homeFilterOption,
+.homeFilterOptionActive {
+  min-height: 44px;
+  padding: 10px 16px;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  background: #f6f8fb;
+  color: #24324a;
+  font-size: 0.92rem;
+  font-weight: 850;
+  text-align: left;
+  cursor: pointer;
+  transition: border-color 0.18s ease, background-color 0.18s ease, color 0.18s ease;
+}
+
+.homeFilterOptionActive {
+  border-color: rgba(31, 141, 221, 0.42);
+  background: rgba(31, 141, 221, 0.1);
+  color: #117fd0;
+}
+
+.homeFilterEmpty {
+  margin: 0;
+  color: #7d8da3;
+  font-weight: 800;
+}
+
+.homeFilterFooter {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.homeFilterReset {
+  min-height: 42px;
+  padding: 0 18px;
+  border-radius: 6px;
+  border: 1px solid #d5dfed;
+  background: #ffffff;
+  color: #1689e7;
+  font-size: 0.95rem;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+@media (max-width: 1024px) {
+  .homeFilterSearchRow {
+    grid-template-columns: 1fr;
+  }
+
+  .homeFilterOptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 640px) {
+  .homeFilterSection {
+    padding-top: 16px;
+  }
+
+  .homeFilterCard {
+    padding: 20px 16px;
+    gap: 20px;
+    border-radius: 14px;
+  }
+
+  .homeFilterTabs {
+    overflow-x: auto;
+    flex-wrap: nowrap;
+    scrollbar-width: none;
+  }
+
+  .homeFilterTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .homeFilterTab,
+  .homeFilterTabActive {
+    flex: 0 0 auto;
+    padding: 0 14px;
+    font-size: 0.88rem;
+  }
+
+  .homeFilterOptions {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+}

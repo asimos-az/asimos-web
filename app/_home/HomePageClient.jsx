@@ -65,6 +65,52 @@ const seekerSupportCategories = [
   "Digər",
 ];
 
+const cityOptions = [
+  "Bakı",
+  "Sumqayıt",
+  "Gəncə",
+  "Mingəçevir",
+  "Şəki",
+  "Lənkəran",
+  "Şirvan",
+  "Naxçıvan",
+  "Quba",
+  "Xaçmaz",
+  "Masallı",
+  "Salyan",
+];
+
+const vacancyTypeOptions = [
+  { label: "Növbə əsasında", value: "shift" },
+  { label: "Tam ştat", value: "full_time" },
+  { label: "Daimi", value: "permanent" },
+  { label: "Frilans", value: "freelance" },
+  { label: "Komisyon haqqı", value: "commission" },
+  { label: "Könüllü", value: "volunteer" },
+  { label: "Mövsümi", value: "seasonal" },
+  { label: "Müvəqqəti", value: "temporary" },
+  { label: "Təcrübə", value: "internship" },
+  { label: "Təqaüd proqramı", value: "scholarship" },
+  { label: "Yarım ştat", value: "part_time" },
+];
+
+const jobLevelOptions = [
+  { label: "Təcrübəsiz", value: "entry" },
+  { label: "Junior", value: "junior" },
+  { label: "Middle", value: "middle" },
+  { label: "Senior", value: "senior" },
+  { label: "Menecer", value: "manager" },
+  { label: "Rəhbər", value: "lead" },
+];
+
+const salaryRangeOptions = [
+  { label: "0 - 500 AZN", min: "0", max: "500" },
+  { label: "500 - 1000 AZN", min: "500", max: "1000" },
+  { label: "1000 - 1500 AZN", min: "1000", max: "1500" },
+  { label: "1500 - 2500 AZN", min: "1500", max: "2500" },
+  { label: "2500+ AZN", min: "2500", max: "" },
+];
+
 function normalizeRole(role) {
   const raw = String(role || "").trim().toLowerCase();
   if (["seeker", "is axtaran", "alici", "jobseeker"].includes(raw)) return "seeker";
@@ -214,6 +260,7 @@ function getTicketMessages(ticket) {
 export default function HomePageClient() {
   const router = useRouter();
   const prefetchedJobIds = useRef(new Set());
+  const latestJobsCarouselRef = useRef(null);
   const [booting, setBooting] = useState(true);
   const [activeSection, setActiveSection] = useState("home");
 
@@ -261,7 +308,11 @@ export default function HomePageClient() {
   const [searchSurface, setSearchSurface] = useState("global");
   const [focusedMapJobId, setFocusedMapJobId] = useState(null);
   const [category, setCategory] = useState("");
+  const [city, setCity] = useState("");
   const [jobType, setJobType] = useState("");
+  const [jobLevel, setJobLevel] = useState("");
+  const [activeHomeFilterTab, setActiveHomeFilterTab] = useState("type");
+  const [activeCreateFilterTab, setActiveCreateFilterTab] = useState("type");
   const [dailyOnly, setDailyOnly] = useState(false);
   const [jobsMode, setJobsMode] = useState("all");
   const [minWage, setMinWage] = useState("");
@@ -269,7 +320,9 @@ export default function HomePageClient() {
   const [appliedFilters, setAppliedFilters] = useState({
     search: "",
     category: "",
+    city: "",
     jobType: "",
+    jobLevel: "",
     minWage: "",
     maxWage: "",
   });
@@ -422,6 +475,8 @@ export default function HomePageClient() {
           lng: effectiveLocation?.lng,
           daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: appliedFilters.jobType || undefined,
+          jobLevel: appliedFilters.jobLevel || undefined,
+          city: appliedFilters.city || undefined,
           minWage: appliedFilters.minWage || undefined,
           maxWage: appliedFilters.maxWage || undefined,
           categories: appliedFilters.category || undefined,
@@ -498,7 +553,9 @@ export default function HomePageClient() {
     const filters = {
       search: nextFilters?.search ?? appliedFilters.search,
       category: nextFilters?.category ?? appliedFilters.category,
+      city: nextFilters?.city ?? appliedFilters.city,
       jobType: nextFilters?.jobType ?? appliedFilters.jobType,
+      jobLevel: nextFilters?.jobLevel ?? appliedFilters.jobLevel,
       minWage: nextFilters?.minWage ?? appliedFilters.minWage,
       maxWage: nextFilters?.maxWage ?? appliedFilters.maxWage,
     };
@@ -509,6 +566,8 @@ export default function HomePageClient() {
       lng: effectiveLocation?.lng,
       daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: filters.jobType || undefined,
+      jobLevel: filters.jobLevel || undefined,
+      city: filters.city || undefined,
       minWage: filters.minWage || undefined,
       maxWage: filters.maxWage || undefined,
       categories: filters.category || undefined,
@@ -524,7 +583,7 @@ export default function HomePageClient() {
 
     try {
       setLoading(true);
-      const heroFilters = { search, category, jobType, minWage, maxWage };
+      const heroFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
       setAppliedFilters(heroFilters);
       const nextJobs = await refreshJobs(heroFilters);
 
@@ -882,6 +941,10 @@ export default function HomePageClient() {
     setDurationPreset("1");
     setCustomDurationDays("");
     setDurationDays("1");
+    setCategory("");
+    setJobType("");
+    setJobLevel("");
+    setActiveCreateFilterTab("type");
     setPublishMode("instant");
     setPublishAt("");
   }
@@ -910,6 +973,7 @@ export default function HomePageClient() {
     setCustomDurationDays(nextDurationPreset === "other" ? String(nextDuration || "") : "");
     setDurationDays(String(nextDuration || "1"));
     setWorkType(job.work_type || "full_time");
+    setJobLevel(job.jobLevel || job.job_level || job.positionLevel || job.level || "");
     setPublishMode(nextPublishAt ? "scheduled" : "instant");
     setPublishAt(toDateTimeLocal(nextPublishAt));
 
@@ -937,6 +1001,10 @@ export default function HomePageClient() {
     setOk("");
 
     try {
+      if (!title.trim()) throw new Error("Elanın adını yazın");
+      if (!category) throw new Error("Kateqoriya seçin");
+      if (!jobType) throw new Error("Vakansiyanın növünü seçin");
+
       const resolvedDuration =
         jobType === "temporary"
           ? durationPreset === "other"
@@ -973,6 +1041,8 @@ export default function HomePageClient() {
         companyName: roleName === "employer" ? companyName || user?.companyName : undefined,
         createdBy: user.id,
         jobType: jobType || (roleName === "seeker" ? "seeker" : "permanent"),
+        jobLevel: jobLevel || undefined,
+        job_level: jobLevel || undefined,
         isDaily: jobType === "temporary",
         durationDays: jobType === "temporary" ? Number(resolvedDuration || 0) : undefined,
         work_type: workType || undefined,
@@ -1270,6 +1340,8 @@ export default function HomePageClient() {
   const filteredJobs = useMemo(() => {
     const appliedSearch = String(appliedFilters.search || "").trim().toLowerCase();
     const appliedCategory = String(appliedFilters.category || "").trim().toLowerCase();
+    const appliedCity = String(appliedFilters.city || "").trim().toLowerCase();
+    const appliedJobLevel = String(appliedFilters.jobLevel || "").trim().toLowerCase();
     const minN = appliedFilters.minWage ? Number(appliedFilters.minWage) : null;
     const maxN = appliedFilters.maxWage ? Number(appliedFilters.maxWage) : null;
 
@@ -1282,14 +1354,35 @@ export default function HomePageClient() {
           .toLowerCase()
           .includes(appliedSearch);
       const matchCategory = !appliedCategory || String(job?.category || "").toLowerCase().includes(appliedCategory);
-      const matchJobType = !appliedFilters.jobType || String(job?.jobType || job?.job_type || "").toLowerCase() === String(appliedFilters.jobType).toLowerCase();
+      const matchCity = !appliedCity || String(job?.location?.address || job?.address || "").toLowerCase().includes(appliedCity);
+      const matchJobType = !appliedFilters.jobType || String(job?.jobType || job?.job_type || job?.workType || "").toLowerCase() === String(appliedFilters.jobType).toLowerCase();
+      const matchJobLevel = !appliedJobLevel || [job?.jobLevel, job?.job_level, job?.positionLevel, job?.level, job?.title, job?.description].filter(Boolean).join(" ").toLowerCase().includes(appliedJobLevel);
       const matchDaily = jobsMode !== "daily" || job?.isDaily || job?.jobType === "temporary" || job?.job_type === "temporary";
       const wageNumber = extractWageNumber(job?.wage);
       const matchMin = minN === null || !Number.isFinite(minN) || (wageNumber !== null && wageNumber >= minN);
       const matchMax = maxN === null || !Number.isFinite(maxN) || (wageNumber !== null && wageNumber <= maxN);
-      return matchSearch && matchCategory && matchJobType && matchDaily && matchMin && matchMax;
+      return matchSearch && matchCategory && matchCity && matchJobType && matchJobLevel && matchDaily && matchMin && matchMax;
     });
   }, [jobs, appliedFilters, jobsMode]);
+
+  const homeFilterTabs = useMemo(() => ([
+    { key: "type", label: "Vakansiyanın növü" },
+    { key: "category", label: "Kateqoriyalar" },
+    { key: "level", label: "Vəzifə dərəcəsi" },
+    { key: "salary", label: "Maaş aralığı" },
+  ]), []);
+
+  const homeCategoryOptions = useMemo(() => categories.slice(0, 12), [categories]);
+
+  const activeSalaryLabel = useMemo(() => {
+    const match = salaryRangeOptions.find((item) => item.min === minWage && item.max === maxWage);
+    return match?.label || "";
+  }, [minWage, maxWage]);
+
+  const activeCreateSalaryLabel = useMemo(() => {
+    const selected = salaryRangeOptions.find((item) => wage === item.label);
+    return selected?.label || "";
+  }, [wage]);
 
   const shownJobs = filteredJobs;
   const profileJobs = useMemo(() => {
@@ -1309,6 +1402,13 @@ export default function HomePageClient() {
 
     prefetchedJobIds.current.add(jobId);
     router.prefetch(`/jobs/${jobId}`);
+  }
+
+  function scrollLatestJobs(direction) {
+    const node = latestJobsCarouselRef.current;
+    if (!node) return;
+    const amount = Math.max(node.clientWidth * 0.85, 320);
+    node.scrollBy({ left: direction * amount, behavior: "smooth" });
   }
 
   if (booting) {
@@ -1335,40 +1435,23 @@ export default function HomePageClient() {
         onOpenSupport={openSupportModal}
       />
       {activeSection === "home" ? (
-        <section className={styles.heroSearchSection}>
-          <div className={`container ${styles.heroSearchInner}`}>
-            <div className={styles.heroSearchCopy}>
-              <span className={styles.heroSearchKicker}>ASIMOS PLATFORMASI</span>
-              <h1 className={styles.heroSearchTitle}>
-                <span className={styles.heroSearchTitleText}>Yaxınındakı işi, xidməti və günlük fürsətləri tək axtarışla tap.</span>
-              </h1>
-              <p className={styles.heroSearchDescription}>
-                Açar söz yaz, sonra ümumi siyahıda bax və ya nəticələri birbaşa xəritə üzərində araşdır.
-              </p>
-            </div>
-
-            <form className={styles.heroSearchForm} onSubmit={handleHeroSearchSubmit}>
-              <div className={styles.heroSearchModes} role="tablist" aria-label="Axtarış görünüşü">
-                <button
-                  type="button"
-                  className={searchSurface === "global" ? styles.heroSearchModeActive : styles.heroSearchMode}
-                  onClick={() => setSearchSurface("global")}
-                >
-                  Ümumi axtarış
-                </button>
-                <button
-                  type="button"
-                  className={searchSurface === "map" ? styles.heroSearchModeActive : styles.heroSearchMode}
-                  onClick={() => setSearchSurface("map")}
-                >
-                  Xəritə üzrə axtarış
-                </button>
+        <section className={styles.homeFilterSection}>
+          <div className="container">
+            <form className={styles.homeFilterCard} onSubmit={handleHeroSearchSubmit}>
+              <div className={styles.homeFilterTitle}>
+                <span className={styles.homeFilterTitleIcon} aria-hidden="true">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="11" cy="11" r="7" />
+                    <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                  </svg>
+                </span>
+                <h1>İş axtarışı</h1>
               </div>
 
-              <div className={styles.heroSearchControls}>
-                <label className={styles.heroSearchInputWrap}>
-                  <span className={styles.heroSearchInputIcon} aria-hidden="true">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8">
+              <div className={styles.homeFilterSearchRow}>
+                <label className={styles.homeFilterInputWrap}>
+                  <span aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <circle cx="11" cy="11" r="7" />
                       <path d="m20 20-3.5-3.5" strokeLinecap="round" />
                     </svg>
@@ -1376,12 +1459,111 @@ export default function HomePageClient() {
                   <input
                     value={search}
                     onChange={(event) => setSearch(event.target.value)}
-                    placeholder={searchSurface === "map" ? "Məs: kuryer, restoran, təmir xidməti" : "Məs: ofisiant, dizayner, günlük iş"}
+                    placeholder="Vakansiya adı və ya açar söz"
                   />
                 </label>
 
-                <button type="submit" className={styles.heroSearchSubmit} disabled={loading}>
-                  {loading ? "Axtarılır..." : searchSurface === "map" ? "Xəritədə bax" : "Elanlarda axtar"}
+                <label className={styles.homeFilterSelectWrap}>
+                  <span aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
+                      <circle cx="12" cy="10" r="2.5" />
+                    </svg>
+                  </span>
+                  <select value={city} onChange={(event) => setCity(event.target.value)} aria-label="Şəhəri seç">
+                    <option value="">Şəhəri seç</option>
+                    {cityOptions.map((item) => (
+                      <option key={item} value={item}>{item}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
+                  {loading ? "Axtarılır..." : "Axtar"}
+                </button>
+              </div>
+
+              <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan filterləri">
+                {homeFilterTabs.map((tab) => (
+                  <button
+                    key={tab.key}
+                    type="button"
+                    className={activeHomeFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab}
+                    onClick={() => setActiveHomeFilterTab(tab.key)}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className={styles.homeFilterOptions}>
+                {activeHomeFilterTab === "type" ? vacancyTypeOptions.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                    onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                  >
+                    {item.label}
+                  </button>
+                )) : null}
+
+                {activeHomeFilterTab === "category" ? (homeCategoryOptions.length ? homeCategoryOptions.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                    onClick={() => setCategory((current) => current === item ? "" : item)}
+                  >
+                    {item}
+                  </button>
+                )) : <p className={styles.homeFilterEmpty}>Kateqoriyalar yüklənir...</p>) : null}
+
+                {activeHomeFilterTab === "level" ? jobLevelOptions.map((item) => (
+                  <button
+                    key={item.value}
+                    type="button"
+                    className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                    onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                  >
+                    {item.label}
+                  </button>
+                )) : null}
+
+                {activeHomeFilterTab === "salary" ? salaryRangeOptions.map((item) => (
+                  <button
+                    key={item.label}
+                    type="button"
+                    className={activeSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                    onClick={() => {
+                      const same = minWage === item.min && maxWage === item.max;
+                      setMinWage(same ? "" : item.min);
+                      setMaxWage(same ? "" : item.max);
+                    }}
+                  >
+                    {item.label}
+                  </button>
+                )) : null}
+              </div>
+
+              <div className={styles.homeFilterFooter}>
+                <button
+                  type="button"
+                  className={styles.homeFilterReset}
+                  onClick={() => {
+                    setSearch("");
+                    setCity("");
+                    setCategory("");
+                    setJobType("");
+                    setJobLevel("");
+                    setMinWage("");
+                    setMaxWage("");
+                    const emptyFilters = { search: "", category: "", city: "", jobType: "", jobLevel: "", minWage: "", maxWage: "" };
+                    setAppliedFilters(emptyFilters);
+                    refreshJobs(emptyFilters);
+                  }}
+                >
+                  Sıfırla
                 </button>
               </div>
             </form>
@@ -1556,25 +1738,35 @@ export default function HomePageClient() {
                   <h2>Son elanlar</h2>
                   <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
-                {homeJobs.length > 6 ? (
-                  <button
-                    type="button"
-                    className={styles.latestJobsMoreButton}
-                    onClick={() => {
-                      setJobsMode("all");
-                      setFocusedMapJobId(null);
-                      setActiveSection("jobs");
-                      window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
-                    }}
-                  >
-                    Daha çox elan
-                    <span aria-hidden="true">→</span>
-                  </button>
-                ) : null}
+                <div className={styles.latestJobsActions}>
+                  {homeJobs.length > 1 ? (
+                    <div className={styles.latestJobsControls} aria-label="Elan carousel idarəsi">
+                      <button type="button" onClick={() => scrollLatestJobs(-1)} aria-label="Əvvəlki elanlar">‹</button>
+                      <button type="button" onClick={() => scrollLatestJobs(1)} aria-label="Növbəti elanlar">›</button>
+                    </div>
+                  ) : null}
+                  {homeJobs.length > 6 ? (
+                    <button
+                      type="button"
+                      className={styles.latestJobsMoreButton}
+                      onClick={() => {
+                        setJobsMode("all");
+                        setFocusedMapJobId(null);
+                        setActiveSection("jobs");
+                        window.setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 0);
+                      }}
+                    >
+                      Daha çox elan
+                      <span aria-hidden="true">→</span>
+                    </button>
+                  ) : null}
+                </div>
               </header>
-              <div className={`cards-grid ${styles.latestJobsGrid}`}>
-                {homeJobs.slice(0, 6).map((job) => (
-                  <JobCard key={job.id} job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
+              <div className={styles.latestJobsCarousel} ref={latestJobsCarouselRef}>
+                {homeJobs.slice(0, 10).map((job) => (
+                  <div className={styles.latestJobsSlide} key={job.id}>
+                    <JobCard job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
+                  </div>
                 ))}
               </div>
             </section>
@@ -1612,7 +1804,7 @@ export default function HomePageClient() {
             className="filter-panel"
             onSubmit={(e) => {
               e.preventDefault();
-              const nextFilters = { search, category, jobType, minWage, maxWage };
+              const nextFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
               setAppliedFilters(nextFilters);
               refreshJobs(nextFilters);
             }}
@@ -1620,6 +1812,17 @@ export default function HomePageClient() {
             <label>
               Açar sözlər
               <input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="Məs: ofisiant, kuryer" />
+            </label>
+            <label>
+              Şəhər
+              <select value={city} onChange={(e) => setCity(e.target.value)}>
+                <option value="">Bütün şəhərlər</option>
+                {cityOptions.map((item) => (
+                  <option key={item} value={item}>
+                    {item}
+                  </option>
+                ))}
+              </select>
             </label>
             <label>
               Kateqoriya
@@ -1639,6 +1842,18 @@ export default function HomePageClient() {
                 <option value="permanent">Daimi</option>
                 <option value="temporary">Müvəqqəti</option>
                 <option value="seeker">İş axtaran elanı</option>
+                <option value="part_time">Yarım ştat</option>
+                <option value="full_time">Tam ştat</option>
+                <option value="freelance">Frilans</option>
+              </select>
+            </label>
+            <label>
+              Vəzifə dərəcəsi
+              <select value={jobLevel} onChange={(e) => setJobLevel(e.target.value)}>
+                <option value="">Fərqi yoxdur</option>
+                {jobLevelOptions.map((item) => (
+                  <option key={item.value} value={item.value}>{item.label}</option>
+                ))}
               </select>
             </label>
             <label>
@@ -1657,12 +1872,14 @@ export default function HomePageClient() {
                 onClick={() => {
                   setSearch("");
                   setCategory("");
+                  setCity("");
                   setJobType("");
+                  setJobLevel("");
                   setMinWage("");
                   setMaxWage("");
                   setRadiusM("0");
                   setJobsMode("all");
-                  const emptyFilters = { search: "", category: "", jobType: "", minWage: "", maxWage: "" };
+                  const emptyFilters = { search: "", category: "", city: "", jobType: "", jobLevel: "", minWage: "", maxWage: "" };
                   setAppliedFilters(emptyFilters);
                   refreshJobs(emptyFilters);
                 }}
@@ -1701,34 +1918,128 @@ export default function HomePageClient() {
 
           {user ? (
             <form className="form-grid" onSubmit={handleCreateJob}>
-              <label>
-                Elanın adı
-                <input value={title} onChange={(e) => setTitle(e.target.value)} required />
-              </label>
+              <div className={`${styles.homeFilterCard} full-row`}>
+                <div className={styles.homeFilterTitle}>
+                  <span className={styles.homeFilterTitleIcon} aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <circle cx="11" cy="11" r="7" />
+                      <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <h1>Elan yerləşdir</h1>
+                </div>
+
+                <div className={styles.homeFilterSearchRow}>
+                  <div className={styles.homeFilterInputWrap}>
+                    <span aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                      </svg>
+                    </span>
+                    <input
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Vakansiya adı və ya açar söz"
+                    />
+                  </div>
+
+                  <div className={styles.homeFilterSelectWrap}>
+                    <span aria-hidden="true">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
+                        <circle cx="12" cy="10" r="2.5" />
+                      </svg>
+                    </span>
+                    <select
+                      value={city}
+                      onChange={(e) => {
+                        setCity(e.target.value);
+                        if (e.target.value) setLocationText(e.target.value);
+                      }}
+                      aria-label="Şəhəri seç"
+                    >
+                      <option value="">Şəhəri seç</option>
+                      {cityOptions.map((item) => (
+                        <option key={item} value={item}>{item}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
+                    {loading ? "Saxlanılır..." : editingJobId ? "Yenilə" : "Yerləşdir"}
+                  </button>
+                </div>
+
+                <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan yerləşdirmə filterləri">
+                  {homeFilterTabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      className={activeCreateFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab}
+                      onClick={() => setActiveCreateFilterTab(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.homeFilterOptions}>
+                  {activeCreateFilterTab === "type" ? vacancyTypeOptions.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                      onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                    >
+                      {item.label}
+                    </button>
+                  )) : null}
+
+                  {activeCreateFilterTab === "category" ? (homeCategoryOptions.length ? homeCategoryOptions.map((item) => (
+                    <button
+                      key={item}
+                      type="button"
+                      className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                      onClick={() => setCategory((current) => current === item ? "" : item)}
+                    >
+                      {item}
+                    </button>
+                  )) : <p className={styles.homeFilterEmpty}>Kateqoriyalar yüklənir...</p>) : null}
+
+                  {activeCreateFilterTab === "level" ? jobLevelOptions.map((item) => (
+                    <button
+                      key={item.value}
+                      type="button"
+                      className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                      onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                    >
+                      {item.label}
+                    </button>
+                  )) : null}
+
+                  {activeCreateFilterTab === "salary" ? salaryRangeOptions.map((item) => (
+                    <button
+                      key={item.label}
+                      type="button"
+                      className={activeCreateSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                      onClick={() => setWage((current) => current === item.label ? "" : item.label)}
+                    >
+                      {item.label}
+                    </button>
+                  )) : null}
+                </div>
+
+                <div className={styles.homeFilterFooter}>
+                  <button type="button" className={styles.homeFilterReset} onClick={resetJobForm}>
+                    Sıfırla
+                  </button>
+                </div>
+              </div>
 
               <label>
                 Şirkət / obyekt
                 <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Direkt və ya obyekt adı" />
-              </label>
-
-              <label>
-                İş növü
-                <select value={jobType} onChange={(e) => setJobType(e.target.value)}>
-                  <option value="permanent">Daimi iş</option>
-                  <option value="temporary">Müvəqqəti iş</option>
-                </select>
-              </label>
-
-              <label>
-                Kateqoriya
-                <select value={category} onChange={(e) => setCategory(e.target.value)} required>
-                  <option value="">Seçin</option>
-                  {categories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
               </label>
 
               {jobType === "temporary" ? (
@@ -1760,7 +2071,7 @@ export default function HomePageClient() {
 
               <label>
                 Maaş
-                <input value={wage} onChange={(e) => setWage(e.target.value)} />
+                <input value={wage} onChange={(e) => setWage(e.target.value)} placeholder="Məs: 800 AZN və ya razılaşma yolu ilə" />
               </label>
 
               <label>

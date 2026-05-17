@@ -322,27 +322,9 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
   );
 
   useEffect(() => {
-    if (shouldLoadMap) return;
-    const node = sectionRef.current;
-
-    if (!node || typeof IntersectionObserver === "undefined") {
-      const timer = window.setTimeout(() => setShouldLoadMap(true), 800);
-      return () => window.clearTimeout(timer);
-    }
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries.some((entry) => entry.isIntersecting)) {
-          setShouldLoadMap(true);
-          observer.disconnect();
-        }
-      },
-      { rootMargin: "420px 0px" }
-    );
-
-    observer.observe(node);
-    return () => observer.disconnect();
-  }, [shouldLoadMap]);
+    setShouldLoadMap(true);
+    setPoiRequested(true);
+  }, []);
 
   useEffect(() => {
     if (!shouldLoadMap || !poiRequested) return;
@@ -538,26 +520,22 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
         <h2>Elanların xəritədə görünüşü</h2>
         <p>
           {jobsWithCoordinates.length
-            ? `Xəritədə ${jobsWithCoordinates.length} koordinatlı iş elanı cluster sistemi ilə sürətli göstərilir${poiRequested ? `, ${poiData.universities.length} universitet və ${poiData.metros.length} metro marker kimi əlavə edilib` : ""}.`
+            ? `Xəritədə ${jobsWithCoordinates.length} koordinatlı iş elanı, metro və universitet markerləri avtomatik göstərilir.`
             : "Real iş elanı olduqda xəritədə markerlər görünəcək."}
         </p>
       </header>
 
       <div className="jobs-map-shell card">
         {jobsWithCoordinates.length ? (
-          <div className="jobs-map-toolbar">
+          <div className="jobs-map-toolbar jobs-map-toolbar--auto">
             <div>
               <strong>{jobsWithCoordinates.length}</strong> elan markerləri cluster-lənir.
               {!jobsRendered ? <span> Markerlər hissə-hissə yüklənir...</span> : null}
+              {poiLoading ? <span> Metro və universitetlər yüklənir...</span> : null}
+              {!poiLoading && poiData.universities.length + poiData.metros.length > 0 ? (
+                <span> {poiData.universities.length} universitet, {poiData.metros.length} metro marker kimi əlavə edildi.</span>
+              ) : null}
             </div>
-            <button
-              type="button"
-              className="jobs-map-poi-button"
-              disabled={poiLoading || poiRequested}
-              onClick={() => setPoiRequested(true)}
-            >
-              {poiLoading ? "Yüklənir..." : poiRequested ? "Metro/universitet yükləndi" : "Metro/universitetləri yüklə"}
-            </button>
           </div>
         ) : null}
         {loadError ? <p className="jobs-map-empty">{loadError}</p> : null}
@@ -565,7 +543,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
         {!loadError && !jobsWithCoordinates.length ? (
           <p className="jobs-map-empty">Koordinatı olan elan tapılmadı.</p>
         ) : null}
-        {!shouldLoadMap ? <div className="jobs-map-skeleton">Xəritə görünən sahəyə çatanda yüklənəcək...</div> : null}
+        {!shouldLoadMap ? <div className="jobs-map-skeleton">Xəritə yüklənir...</div> : null}
         <div ref={mapNodeRef} className="jobs-map-canvas" />
       </div>
     </section>
