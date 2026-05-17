@@ -1871,8 +1871,16 @@ export default function HomePageClient() {
                 <div className={styles.latestJobsActions}>
                   {homeJobs.length > 1 ? (
                     <div className={styles.latestJobsControls} aria-label="Elan carousel idarəsi">
-                      <button type="button" onClick={() => scrollLatestJobs(-1)} aria-label="Əvvəlki elanlar">‹</button>
-                      <button type="button" onClick={() => scrollLatestJobs(1)} aria-label="Növbəti elanlar">›</button>
+                      <button type="button" onClick={() => scrollLatestJobs(-1)} aria-label="Əvvəlki elanlar">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M15 6l-6 6 6 6" />
+                        </svg>
+                      </button>
+                      <button type="button" onClick={() => scrollLatestJobs(1)} aria-label="Növbəti elanlar">
+                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                          <path d="M9 6l6 6-6 6" />
+                        </svg>
+                      </button>
                     </div>
                   ) : null}
                   {homeJobs.length > 6 ? (

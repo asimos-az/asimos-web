@@ -506,3 +506,33 @@
   font-weight: 900;
   line-height: 1;
 }
+
+/* Navigation icons */
+.nav-item-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  vertical-align: -3px;
+  color: currentColor;
+}
+
+.nav-item-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.main-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+@media (min-width: 901px) {
+  .main-nav button.active::after {
+    bottom: 8px;
+  }
+}

@@ -107,8 +107,9 @@
 }
 
 .store-logo-apple {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  color: #ffffff;
 }
 
 .launch-button-text {
@@ -145,5 +146,67 @@
   .launch-button {
     width: 100%;
     min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .launch-section {
+    padding-top: 0;
+  }
+
+  .launch-shell {
+    padding: 18px 14px !important;
+    border-radius: 20px !important;
+  }
+
+  .launch-shell::after {
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    bottom: -80px;
+  }
+
+  .launch-kicker {
+    padding: 6px 10px;
+    font-size: .68rem;
+    margin-bottom: 8px;
+  }
+
+  .launch-title {
+    font-size: 1.55rem !important;
+    line-height: 1.14 !important;
+    letter-spacing: -0.045em;
+    margin-bottom: 14px;
+  }
+
+  .launch-buttons {
+    gap: 10px;
+  }
+
+  .launch-button {
+    min-height: 74px;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    gap: 12px;
+  }
+
+  .launch-button-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .store-logo,
+  .store-logo-apple {
+    width: 28px;
+    height: 28px;
+  }
+
+  .launch-button-meta {
+    font-size: .72rem;
+  }
+
+  .launch-button-label {
+    font-size: 1rem;
   }
 }

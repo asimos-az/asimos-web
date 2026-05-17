@@ -1615,6 +1615,70 @@ button[type="button"].primary-like {
   margin-top: 22px;
 }
 
+.form-grid > label {
+  align-self: start;
+  width: 100%;
+}
+
+.asimos-upload-field {
+  align-self: start;
+}
+
+.asimos-file-upload {
+  min-height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 14px;
+  background: #ffffff;
+}
+
+.asimos-file-upload input[type="file"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.asimos-file-button {
+  width: auto !important;
+  min-height: 38px;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  border-radius: 12px;
+  background: #1f8ddd;
+  color: #ffffff !important;
+  font-weight: 900 !important;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.asimos-file-upload span {
+  color: #64748b;
+  font-weight: 800;
+}
+
+.asimos-upload-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.asimos-upload-preview img {
+  width: 58px;
+  height: 58px;
+  object-fit: contain;
+  border: 1px solid #dbe5f3;
+  border-radius: 14px;
+  background: #fff;
+}
+
 /*!**********************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/_home/components/AuthSection.css ***!
   \**********************************************************************************************************************************************************************************************************************************************************************************/
@@ -2507,8 +2571,9 @@ button[type="button"].primary-like {
 }
 
 .store-logo-apple {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
+  color: #ffffff;
 }
 
 .launch-button-text {
@@ -2546,6 +2611,68 @@ button[type="button"].primary-like {
   .launch-button {
     width: 100%;
     min-width: 0;
+  }
+}
+
+@media (max-width: 640px) {
+  .launch-section {
+    padding-top: 0;
+  }
+
+  .launch-shell {
+    padding: 18px 14px !important;
+    border-radius: 20px !important;
+  }
+
+  .launch-shell::after {
+    width: 180px;
+    height: 180px;
+    right: -70px;
+    bottom: -80px;
+  }
+
+  .launch-kicker {
+    padding: 6px 10px;
+    font-size: .68rem;
+    margin-bottom: 8px;
+  }
+
+  .launch-title {
+    font-size: 1.55rem !important;
+    line-height: 1.14 !important;
+    letter-spacing: -0.045em;
+    margin-bottom: 14px;
+  }
+
+  .launch-buttons {
+    gap: 10px;
+  }
+
+  .launch-button {
+    min-height: 74px;
+    padding: 12px !important;
+    border-radius: 18px !important;
+    gap: 12px;
+  }
+
+  .launch-button-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+  }
+
+  .store-logo,
+  .store-logo-apple {
+    width: 28px;
+    height: 28px;
+  }
+
+  .launch-button-meta {
+    font-size: .72rem;
+  }
+
+  .launch-button-label {
+    font-size: 1rem;
   }
 }
 
@@ -3429,6 +3556,87 @@ button[type="button"].primary-like {
 @media (max-width: 720px) {
   .account-info {
     display: none;
+  }
+}
+
+.header-user-actions {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.header-notification-button {
+  position: relative;
+  width: 46px;
+  height: 46px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 999px;
+  border: 1px solid #3c7df0;
+  background: #3c7df0;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.22s ease, box-shadow 0.22s ease, background-color 0.22s ease;
+}
+
+.header-notification-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 14px 34px rgba(60, 125, 240, 0.28);
+  background: #336fe0;
+}
+
+.header-notification-button svg {
+  width: 20px;
+  height: 20px;
+}
+
+.header-notification-button span {
+  position: absolute;
+  top: -5px;
+  right: -5px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #fff;
+  font-size: 0.68rem;
+  font-weight: 900;
+  line-height: 1;
+}
+
+/* Navigation icons */
+.nav-item-icon {
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 8px;
+  vertical-align: -3px;
+  color: currentColor;
+}
+
+.nav-item-icon svg {
+  width: 18px;
+  height: 18px;
+  display: block;
+}
+
+.main-nav button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+}
+
+@media (min-width: 901px) {
+  .main-nav button.active::after {
+    bottom: 8px;
   }
 }
 
@@ -5479,6 +5687,90 @@ button[type="button"].primary-like {
   }
 }
 
+
+/* Updated opening logo: softer, handwritten and more premium */
+.asimos-splash__stage::before {
+  height: 210px;
+  background:
+    linear-gradient(135deg, rgba(255, 255, 255, .72), rgba(255, 255, 255, .5)),
+    radial-gradient(circle at 18% 20%, rgba(60, 125, 240, .16), transparent 42%),
+    radial-gradient(circle at 82% 74%, rgba(20, 184, 166, .16), transparent 42%);
+}
+
+.asimos-splash__wordmark {
+  position: relative;
+  z-index: 2;
+  width: min(86vw, 820px);
+  min-height: 148px;
+  display: grid;
+  place-items: center;
+  overflow: visible;
+}
+
+.asimos-splash__script {
+  grid-area: 1 / 1;
+  font-family: "Snell Roundhand", "Segoe Script", "Brush Script MT", "Apple Chancery", cursive;
+  font-size: clamp(5rem, 13vw, 9.7rem);
+  font-weight: 700;
+  line-height: .9;
+  letter-spacing: -0.035em;
+  transform-origin: 50% 70%;
+}
+
+.asimos-splash__script--glow {
+  color: rgba(60, 125, 240, .22);
+  filter: blur(14px);
+  transform: translateY(10px) scale(1.02);
+  opacity: 0;
+  animation: asimosSplashScriptGlow 900ms cubic-bezier(.22, 1, .36, 1) .1s forwards;
+}
+
+.asimos-splash__script--main {
+  background: linear-gradient(100deg, #10233d 0%, #2563eb 42%, #12877e 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-shadow: 0 16px 34px rgba(31, 42, 68, .13);
+  -webkit-clip-path: inset(0 100% 0 0);
+          clip-path: inset(0 100% 0 0);
+  animation:
+    asimosSplashScriptReveal 1.15s cubic-bezier(.76, 0, .24, 1) .18s forwards,
+    asimosSplashScriptFloat 2.2s ease-in-out 1.15s infinite;
+}
+
+.asimos-splash__script--main::after {
+  content: "";
+}
+
+@keyframes asimosSplashScriptReveal {
+  from { -webkit-clip-path: inset(0 100% 0 0); clip-path: inset(0 100% 0 0); transform: translateY(14px) rotate(-1deg); opacity: .3; }
+  to { -webkit-clip-path: inset(0 0 0 0); clip-path: inset(0 0 0 0); transform: translateY(0) rotate(-1deg); opacity: 1; }
+}
+
+@keyframes asimosSplashScriptGlow {
+  from { opacity: 0; transform: translateY(26px) scale(.96); }
+  to { opacity: 1; transform: translateY(10px) scale(1.02); }
+}
+
+@keyframes asimosSplashScriptFloat {
+  0%, 100% { transform: translateY(0) rotate(-1deg); }
+  50% { transform: translateY(-3px) rotate(-1deg); }
+}
+
+@media (max-width: 640px) {
+  .asimos-splash__stage::before {
+    height: 162px;
+  }
+
+  .asimos-splash__wordmark {
+    min-height: 118px;
+  }
+
+  .asimos-splash__script {
+    font-size: clamp(4.5rem, 21vw, 6.7rem);
+  }
+}
+
 /*!***************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/mobile-app-responsive.css ***!
   \***************************************************************************************************************************************************************************************************************************************************************************/
@@ -6826,5 +7118,390 @@ button[type="button"].primary-like {
   .site-shell {
     padding-bottom: calc(6.5rem + env(safe-area-inset-bottom)) !important;
   }
+}
+
+/* Responsive cleanup requested: compact header, accessible filters and cleaner mobile sections */
+@media (max-width: 900px) {
+  html { scroll-padding-top: 86px !important; }
+
+  .site-shell {
+    padding-bottom: 32px !important;
+  }
+
+  .site-header,
+  .site-header.is-scrolled {
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    top: 0 !important;
+    overflow: visible !important;
+    background: rgba(255, 255, 255, 0.97) !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06) !important;
+  }
+
+  .header-inner,
+  .site-header.is-scrolled .header-inner {
+    min-height: 58px !important;
+    padding-block: 6px !important;
+  }
+
+  .brand img,
+  .site-header.is-scrolled .brand img {
+    height: 29px !important;
+    max-width: 110px !important;
+  }
+
+  .header-actions {
+    gap: 6px !important;
+  }
+
+  .create-action,
+  .login-action,
+  .header-notification-button,
+  .account-trigger,
+  .menu-toggle {
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    padding: 0 !important;
+    border-radius: 14px !important;
+    box-shadow: 0 8px 18px rgba(60, 125, 240, 0.16) !important;
+  }
+
+  .create-action:hover,
+  .create-action.active,
+  .login-action:hover,
+  .account-trigger:hover,
+  .account-trigger.open,
+  .header-notification-button:hover {
+    transform: translateY(-1px) !important;
+  }
+
+  .create-action span,
+  .login-action span,
+  .account-info {
+    display: none !important;
+  }
+
+  .create-action svg,
+  .login-action svg,
+  .header-notification-button svg,
+  .account-trigger svg,
+  .menu-toggle svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  .site-header-nav {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(78vw, 310px) !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    padding: calc(72px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom)) !important;
+    border-radius: 0 24px 24px 0 !important;
+    background: #ffffff !important;
+    border-right: 1px solid rgba(226, 232, 240, 0.9) !important;
+    box-shadow: 24px 0 60px rgba(15, 23, 42, 0.18) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateX(-108%) !important;
+    transition: opacity .22s ease, transform .26s ease !important;
+    z-index: 7001 !important;
+  }
+
+  .site-header-nav.open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translateX(0) !important;
+  }
+
+  .main-nav,
+  .main-nav.open,
+  .site-header.is-scrolled .main-nav,
+  .site-header.is-scrolled .main-nav.open {
+    position: static !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    gap: 4px !important;
+    width: 100% !important;
+    padding: 0 !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    transform: none !important;
+    opacity: 1 !important;
+  }
+
+  .main-nav button,
+  .site-header.is-scrolled .main-nav button {
+    width: 100% !important;
+    min-height: 48px !important;
+    padding: 0 8px !important;
+    border-radius: 0 !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    color: #24324a !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-bottom: 1px solid #e8eef7 !important;
+    box-shadow: none !important;
+    font-size: .95rem !important;
+  }
+
+  .main-nav button.active,
+  .main-nav button:hover,
+  .site-header.is-scrolled .main-nav button.active,
+  .site-header.is-scrolled .main-nav button:hover {
+    color: #1f8ddd !important;
+    background: transparent !important;
+    border-color: #cfe0f6 !important;
+    box-shadow: none !important;
+  }
+
+  .main-nav button.active::after,
+  .main-nav button::before {
+    display: none !important;
+  }
+
+  .main-nav button.active {
+    border-bottom: 3px solid #1f8ddd !important;
+  }
+
+  .nav-item-icon {
+    width: 22px !important;
+    height: 22px !important;
+    margin: 0 !important;
+    color: currentColor !important;
+  }
+
+  .nav-item-icon svg {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  .page-section {
+    padding-top: 12px !important;
+    padding-bottom: 12px !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .container {
+    padding-left: 12px !important;
+    padding-right: 12px !important;
+  }
+
+  .homeFilterSection {
+    padding: 12px 0 !important;
+  }
+
+  .homeFilterCard {
+    padding: 16px 12px !important;
+    gap: 14px !important;
+    border-radius: 18px !important;
+  }
+
+  .homeFilterTitle h1 {
+    font-size: 1.25rem !important;
+  }
+
+  .homeFilterSearchRow {
+    gap: 10px !important;
+  }
+
+  .homeFilterInputWrap,
+  .homeFilterSelectWrap,
+  .homeFilterSubmit {
+    min-height: 48px !important;
+    border-radius: 14px !important;
+  }
+
+  .homeFilterInputWrap input,
+  .homeFilterSelectWrap select {
+    min-height: 46px !important;
+    font-size: .95rem !important;
+  }
+
+  .homeFilterTabs {
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    padding-bottom: 2px !important;
+    gap: 16px !important;
+    scrollbar-width: none !important;
+  }
+
+  .homeFilterTabs::-webkit-scrollbar { display: none !important; }
+
+  .homeFilterTab,
+  .homeFilterTabActive {
+    flex: 0 0 auto !important;
+    min-height: 42px !important;
+    padding: 0 6px !important;
+    font-size: .92rem !important;
+    white-space: nowrap !important;
+  }
+
+  .homeFilterOptions {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    max-height: min(58vh, 520px) !important;
+    overflow-y: auto !important;
+    padding-right: 2px !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .homeFilterOption,
+  .homeFilterOptionActive {
+    min-height: 50px !important;
+    border-radius: 14px !important;
+    font-size: .96rem !important;
+  }
+
+  .statsCard {
+    padding: 16px 12px !important;
+    gap: 16px !important;
+    border-radius: 20px !important;
+  }
+
+  .statsIntro span {
+    font-size: .72rem !important;
+  }
+
+  .statsIntro h2 {
+    font-size: 1.35rem !important;
+    line-height: 1.18 !important;
+  }
+
+  .statsIntro p {
+    font-size: .95rem !important;
+    line-height: 1.45 !important;
+  }
+
+  .statsGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  .statItem {
+    min-height: 112px !important;
+    padding: 14px 12px !important;
+    border-radius: 18px !important;
+  }
+
+  .statItem strong {
+    font-size: 2rem !important;
+  }
+
+  .statItem span {
+    font-size: .82rem !important;
+  }
+
+  .latestJobsHead {
+    gap: 12px !important;
+  }
+
+  .latestJobsControls {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    grid-gap: 10px !important;
+    gap: 10px !important;
+    width: 100% !important;
+  }
+
+  .latestJobsControls button {
+    width: 100% !important;
+    height: 46px !important;
+    border-radius: 14px !important;
+  }
+
+  .latestJobsMoreButton {
+    width: 100% !important;
+    min-height: 52px !important;
+    border-radius: 18px !important;
+  }
+
+  .latestJobsCarousel {
+    grid-auto-columns: 78% !important;
+    gap: 12px !important;
+    padding-bottom: 10px !important;
+  }
+
+  .job-card {
+    min-height: auto !important;
+    padding: 18px 16px !important;
+    border-radius: 22px !important;
+  }
+
+  .launch-section {
+    padding-top: 0 !important;
+  }
+
+  .launch-shell {
+    padding: 18px 14px !important;
+    border-radius: 20px !important;
+  }
+
+  .launch-kicker {
+    padding: 6px 10px !important;
+    font-size: .68rem !important;
+  }
+
+  .launch-title {
+    font-size: 1.65rem !important;
+    line-height: 1.12 !important;
+    margin-bottom: 14px !important;
+  }
+
+  .launch-buttons {
+    gap: 10px !important;
+  }
+
+  .launch-button {
+    padding: 12px !important;
+    border-radius: 18px !important;
+    gap: 12px !important;
+    min-height: 76px !important;
+  }
+
+  .launch-button-icon {
+    width: 50px !important;
+    height: 50px !important;
+    border-radius: 14px !important;
+  }
+
+  .launch-button-label {
+    font-size: 1rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .header-actions { gap: 5px !important; }
+  .create-action,
+  .login-action,
+  .header-notification-button,
+  .account-trigger,
+  .menu-toggle {
+    width: 37px !important;
+    min-width: 37px !important;
+    height: 37px !important;
+    min-height: 37px !important;
+    border-radius: 13px !important;
+  }
+  .brand img,
+  .site-header.is-scrolled .brand img {
+    height: 27px !important;
+    max-width: 96px !important;
+  }
+  .statsGrid { gap: 8px !important; }
+  .statItem { min-height: 102px !important; padding: 12px 10px !important; }
 }
 

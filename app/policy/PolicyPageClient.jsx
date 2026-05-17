@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import Header from "../components/Header";
 import styles from "./PolicyPage.module.css";
 
 function Title({ level = 1, className = "", children }) {
@@ -23,12 +23,13 @@ function Divider() {
 export default function PolicyPageClient() {
   return (
     <main className={styles.layout}>
-      <header className={styles.policyPublicHeader}>
-        <Link href="/" className={styles.policyBrand}>
-          <img src="/logo.svg" alt="Asimos" />
-        </Link>
-        <Link href="/" className={styles.policyHomeLink}>Ana səhifə</Link>
-      </header>
+      <Header
+        activeSection="policy"
+        setActiveSection={(section) => {
+          window.location.href = section === "jobs" ? "/?section=jobs" : "/";
+        }}
+        navItems={[{ key: "home", label: "Ana səhifə" }, { key: "jobs", label: "Elanlar" }]}
+      />
       <div className={styles.content}>
         <article className={styles.card}>
           <div className={styles.cardBody}>

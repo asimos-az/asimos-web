@@ -56,6 +56,44 @@ function ArrowUpRightIcon() {
   );
 }
 
+
+function HomeIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 11.5 12 4l9 7.5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5.5 10.5V20h13v-9.5" />
+    </svg>
+  );
+}
+
+function BriefcaseIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7V6a3 3 0 0 1 3-3v0a3 3 0 0 1 3 3v1" />
+      <rect x="4" y="7" width="16" height="13" rx="3" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 12h16M10 12v1.5h4V12" />
+    </svg>
+  );
+}
+
+function InfoIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true">
+      <circle cx="12" cy="12" r="9" />
+      <path strokeLinecap="round" d="M12 11v5" />
+      <path strokeLinecap="round" d="M12 8h.01" />
+    </svg>
+  );
+}
+
+function getNavIcon(key) {
+  if (key === "home") return <HomeIcon />;
+  if (key === "jobs" || key === "daily") return <BriefcaseIcon />;
+  if (key === "about") return <InfoIcon />;
+  if (key === "create") return <PlusIcon />;
+  return <ArrowUpRightIcon />;
+}
+
 const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, unreadNotificationsCount = 0 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
@@ -201,7 +239,8 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
               className={`${activeSection === item.key ? "active" : ""} ${item.key === "create" ? "nav-cta" : ""}`.trim()}
               onClick={() => handleNavigate(item.key)}
             >
-              {item.label}
+              <span className="nav-item-icon">{getNavIcon(item.key)}</span>
+              <span>{item.label}</span>
             </button>
           ))}
         </nav>
