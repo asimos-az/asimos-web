@@ -144,6 +144,26 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
   const displayName = user?.fullName || user?.full_name || user?.name || user?.companyName || user?.company_name || "İstifadəçi";
   const displayEmail = user?.email || "";
 
+
+  function handleBrandClick(event) {
+    if (typeof window === "undefined") return;
+
+    const isHomeRoute = window.location.pathname === "/";
+
+    if (isHomeRoute && typeof setActiveSection === "function") {
+      event.preventDefault();
+      setActiveSection("home");
+      setMenuOpen(false);
+      setAccountMenuOpen(false);
+      window.history.replaceState(null, "", "/");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+
+    // From pages like /policy or /jobs/[id], always go back to the real home page.
+    window.location.href = "/";
+  }
+
   const accountMenuItems = [
     { key: "profile", label: "Profil", icon: <ProfileIcon /> },
     { key: "alerts", label: "Elan bildirişləri", icon: <BellIcon /> },
@@ -156,7 +176,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
       <div className="site-header-top">
         <div className="container header-inner">
           <div className="brand">
-            <Link href="/">
+            <Link href="/" onClick={handleBrandClick} aria-label="Ana səhifəyə keç">
               <img src="/logo.svg" alt="Asimos loqosu" />
             </Link>
           </div>
