@@ -93,7 +93,7 @@ export default async function Footer() {
       <div className="container footer-shell">
         <div className="footer-brand">
           <Link href="/" className="footer-logo">
-            <img src="/logo.jpeg" alt="Asimos loqosu" />
+            <img src="/logo.svg" alt="Asimos loqosu" />
           </Link>
           <p>
             Asimos platformasında vakansiyaları izləyin, uyğun imkanları kəşf edin və karyera axınınızı daha rahat idarə edin.

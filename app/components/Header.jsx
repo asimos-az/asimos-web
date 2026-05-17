@@ -157,7 +157,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
         <div className="container header-inner">
           <div className="brand">
             <Link href="/">
-              <img src="/logo.jpeg" alt="Asimos loqosu" />
+              <img src="/logo.svg" alt="Asimos loqosu" />
             </Link>
           </div>
         <div className="header-actions">

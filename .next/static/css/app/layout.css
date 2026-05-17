@@ -3596,6 +3596,110 @@ button[type="button"].primary-like {
   }
 }
 
+/* Mobile compact card layout: keep logo on the left, put all text/meta on the right */
+@media (max-width: 640px) {
+  .job-card {
+    min-height: auto;
+    padding: 18px;
+    display: grid;
+    grid-template-columns: 64px minmax(0, 1fr);
+    grid-template-areas:
+      "logo content"
+      "logo footer";
+    grid-column-gap: 15px;
+    column-gap: 15px;
+    grid-row-gap: 10px;
+    row-gap: 10px;
+    align-items: start;
+  }
+
+  .job-card-top {
+    grid-area: logo;
+    min-height: 0;
+    display: block;
+  }
+
+  .job-card-logo {
+    width: 62px;
+    height: 62px;
+  }
+
+  .job-card-logo svg {
+    width: 31px;
+    height: 31px;
+  }
+
+  .job-card-crown {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    margin: 0;
+  }
+
+  .job-card-content {
+    grid-area: content;
+    gap: 8px;
+    align-self: start;
+  }
+
+  .job-card-company {
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  .job-card-title {
+    font-size: 1.08rem;
+    line-height: 1.25;
+    margin: 0;
+    -webkit-line-clamp: 2;
+  }
+
+  .job-card-location {
+    gap: 8px;
+    font-size: 0.92rem;
+    line-height: 1.25;
+  }
+
+  .job-card-location svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .job-card-footer {
+    grid-area: footer;
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  .job-card-meta {
+    gap: 8px 14px;
+    font-size: 0.88rem;
+    line-height: 1.2;
+  }
+
+  .job-card-meta-item svg {
+    width: 17px;
+    height: 17px;
+  }
+}
+
+@media (max-width: 390px) {
+  .job-card {
+    grid-template-columns: 56px minmax(0, 1fr);
+    column-gap: 12px;
+    padding: 16px;
+  }
+
+  .job-card-logo {
+    width: 54px;
+    height: 54px;
+  }
+
+  .job-card-title {
+    font-size: 1rem;
+  }
+}
+
 /*!**************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/JobDetail.css ***!
   \**************************************************************************************************************************************************************************************************************************************************************************/
