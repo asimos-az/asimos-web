@@ -238,9 +238,26 @@ function toDateTimeLocal(value) {
 
 function formatTimeFromDateTime(value) {
   if (!value) return null;
-  const date = new Date(value);
+  const raw = String(value).trim();
+  if (/^\d{2}:\d{2}$/.test(raw)) return raw;
+  const date = new Date(raw);
   if (Number.isNaN(date.getTime())) return null;
-  return date.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" });
+  return date.toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit", hour12: false });
+}
+
+function formatProfileJobDate(value) {
+  if (!value) return "Yeni";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Yeni";
+  return date.toLocaleDateString("az-AZ", { day: "2-digit", month: "2-digit", year: "numeric" });
+}
+
+function getProfileJobCompany(job) {
+  return job?.companyName || job?.company_name || job?.company || "Asimos işəgötürən";
+}
+
+function getProfileJobLogo(job) {
+  return job?.logoUrl || job?.logo_url || job?.imageUrl || job?.image_url || job?.companyLogo || job?.company_logo || "";
 }
 
 function getTicketSubject(ticket) {
@@ -305,6 +322,8 @@ export default function HomePageClient() {
 
   const [jobs, setJobs] = useState([]);
   const [myJobs, setMyJobs] = useState([]);
+  const [favoriteJobs, setFavoriteJobs] = useState([]);
+  const [favoriteJobIds, setFavoriteJobIds] = useState(() => new Set());
   const [categories, setCategories] = useState([]);
   const [jobFilterOptions, setJobFilterOptions] = useState({ vacancyTypes: vacancyTypeOptions, jobLevels: jobLevelOptions, salaryRanges: salaryRangeOptions });
   const [alerts, setAlerts] = useState([]);
@@ -512,8 +531,9 @@ export default function HomePageClient() {
   async function loadAuthedData(currentUser = user) {
     if (!currentUser?.id) return;
 
-    const [myJobsRes, alertsRes, notificationsRes, unreadRes, ticketsRes, switchRes] = await Promise.all([
+    const [myJobsRes, favoritesRes, alertsRes, notificationsRes, unreadRes, ticketsRes, switchRes] = await Promise.all([
       api.listMyJobs(currentUser.id).catch(() => ({ items: [] })),
+      api.listMyFavorites().catch(() => ({ items: [] })),
       api.listMyAlerts().catch(() => ({ items: [] })),
       api.listMyNotifications({ limit: 100, offset: 0 }).catch(() => ({ items: [] })),
       api.getUnreadNotificationsCount().catch(() => ({ unread: 0 })),
@@ -522,6 +542,9 @@ export default function HomePageClient() {
     ]);
 
     setMyJobs(normalizeList(myJobsRes));
+    const nextFavorites = normalizeList(favoritesRes);
+    setFavoriteJobs(nextFavorites);
+    setFavoriteJobIds(new Set(nextFavorites.map((job) => String(job.id)).filter(Boolean)));
     setAlerts(normalizeList(alertsRes));
     setNotifications(normalizeList(notificationsRes));
     setUnread(Number(unreadRes?.unread || 0));
@@ -917,6 +940,8 @@ export default function HomePageClient() {
     setUser(null);
     setToken(null);
     setRefreshTokenState(null);
+    setFavoriteJobs([]);
+    setFavoriteJobIds(new Set());
     clearAuthToken();
     clearAuth();
     setActiveSection("home");
@@ -999,6 +1024,8 @@ export default function HomePageClient() {
     setCustomDurationDays(nextDurationPreset === "other" ? String(nextDuration || "") : "");
     setDurationDays(String(nextDuration || "1"));
     setWorkType(job.work_type || "full_time");
+    setScheduleStart(formatTimeFromDateTime(job.start_time || job.startTime || job.schedule_start || "") || "");
+    setScheduleEnd(formatTimeFromDateTime(job.end_time || job.endTime || job.schedule_end || "") || "");
     setJobLevel(job.jobLevel || job.job_level || job.positionLevel || job.level || "");
     setPublishMode(nextPublishAt ? "scheduled" : "instant");
     setPublishAt(toDateTimeLocal(nextPublishAt));
@@ -1073,8 +1100,8 @@ export default function HomePageClient() {
         isDaily: jobType === "temporary",
         durationDays: jobType === "temporary" ? Number(resolvedDuration || 0) : undefined,
         work_type: workType || undefined,
-        start_time: formatTimeFromDateTime(scheduleStart),
-        end_time: formatTimeFromDateTime(scheduleEnd),
+        start_time: scheduleStart || null,
+        end_time: scheduleEnd || null,
         notifyRadiusM: Number(radiusM) > 0 ? Number(radiusM) : 500,
         publishMode,
         publishedAt: saveAsDraft ? null : (publishMode === "scheduled" ? new Date(publishAt).toISOString() : null),
@@ -1467,6 +1494,44 @@ export default function HomePageClient() {
       return status === myJobsStatus;
     });
   }, [myJobs, myJobsStatus]);
+
+
+  async function handleToggleFavorite(job, event) {
+    event?.stopPropagation?.();
+    if (!job?.id) return;
+    if (!user) {
+      setActiveSection("auth");
+      setError("Elanı yadda saxlamaq üçün əvvəlcə daxil olun.");
+      return;
+    }
+
+    const id = String(job.id);
+    const alreadySaved = favoriteJobIds.has(id);
+    setFavoriteJobIds((current) => {
+      const next = new Set(current);
+      alreadySaved ? next.delete(id) : next.add(id);
+      return next;
+    });
+    setFavoriteJobs((current) => alreadySaved ? current.filter((item) => String(item.id) !== id) : [{ ...job, isFavorite: true, is_favorite: true }, ...current]);
+
+    try {
+      if (alreadySaved) {
+        await api.removeFavoriteJob(id);
+        setOk("Elan favoritlərdən silindi");
+      } else {
+        await api.addFavoriteJob(id);
+        setOk("Elan favoritlərə əlavə edildi");
+      }
+      await loadAuthedData(user);
+    } catch (e) {
+      setFavoriteJobIds((current) => {
+        const next = new Set(current);
+        alreadySaved ? next.add(id) : next.delete(id);
+        return next;
+      });
+      setError(e.message || "Favorit əməliyyatı alınmadı");
+    }
+  }
 
   function openJobDetail(jobId) {
     router.push(`/jobs/${jobId}`);
@@ -1887,7 +1952,13 @@ export default function HomePageClient() {
               <div className={styles.latestJobsCarousel} ref={latestJobsCarouselRef}>
                 {homeJobs.slice(0, 10).map((job) => (
                   <div className={styles.latestJobsSlide} key={job.id}>
-                    <JobCard job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} />
+                    <JobCard
+                      job={job}
+                      onClick={() => openJobDetail(job.id)}
+                      onPrefetch={() => prefetchJobDetail(job.id)}
+                      isFavorite={favoriteJobIds.has(String(job.id)) || Boolean(job.isFavorite || job.is_favorite)}
+                      onToggleFavorite={(event) => handleToggleFavorite(job, event)}
+                    />
                   </div>
                 ))}
               </div>
@@ -2129,6 +2200,8 @@ export default function HomePageClient() {
                 onPrefetch={() => prefetchJobDetail(job.id)}
                 showEdit={(job?.createdBy || job?.created_by) === user?.id}
                 onEdit={() => startEditJob(job)}
+                isFavorite={favoriteJobIds.has(String(job.id)) || Boolean(job.isFavorite || job.is_favorite)}
+                onToggleFavorite={(event) => handleToggleFavorite(job, event)}
               />
             ))}
           </div>
@@ -2372,12 +2445,12 @@ export default function HomePageClient() {
 
               <label>
                 Başlama saatı
-                <input type="datetime-local" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} />
+                <input type="time" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} />
               </label>
 
               <label>
                 Bitmə saatı
-                <input type="datetime-local" value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} />
+                <input type="time" value={scheduleEnd} onChange={(e) => setScheduleEnd(e.target.value)} />
               </label>
 
               <label>
@@ -2783,42 +2856,83 @@ export default function HomePageClient() {
                     </div>
 
                     <div className="profile-jobs-list">
-                      {profileJobs.map((job) => (
-                        <article key={job.id} className="profile-job-card">
-                          <div>
-                            <h3>{job.title || "Adsız elan"}</h3>
-                            <p>{job.description || "Təsvir yoxdur"}</p>
-                            <div className="meta-row">
-                              <span>{getJobStatus(job)}</span>
-                              <span>{job.jobType || "permanent"}</span>
+                      {profileJobs.map((job) => {
+                        const logo = getProfileJobLogo(job);
+                        const status = getJobStatus(job);
+                        return (
+                          <article key={job.id} className="profile-job-card">
+                            <div className="profile-job-main">
+                              <div className="profile-job-logo" aria-hidden="true">
+                                {logo ? <img src={logo} alt="" /> : <span>{String(job.title || getProfileJobCompany(job) || "A").charAt(0).toUpperCase()}</span>}
+                              </div>
+                              <div className="profile-job-info">
+                                <div className="profile-job-title-row">
+                                  <h3>{job.title || "Adsız elan"}</h3>
+                                  <span className={`profile-job-status ${status}`}>{status}</span>
+                                </div>
+                                <p>{getProfileJobCompany(job)}{job.category ? ` • ${job.category}` : ""}</p>
+                                <div className="profile-job-meta">
+                                  <span>{job.location?.address || job.address || "Ünvan yoxdur"}</span>
+                                  <span>{formatProfileJobDate(job.publishedAt || job.published_at || job.createdAt || job.created_at)}</span>
+                                  <span>{job.jobType || job.job_type || "permanent"}</span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
-                          <div className="profile-job-actions">
-                            <button type="button" className="btn-secondary" onClick={() => startEditJob(job)}>
-                              Redaktə et
-                            </button>
-                            {["draft", "closed", "rejected"].includes(getJobStatus(job)) ? (
-                              <button type="button" className="btn-secondary" onClick={() => handlePublishJob(job.id)}>
-                                Aktiv et
+                            <div className="profile-job-actions">
+                              <button type="button" className="btn-secondary" onClick={() => startEditJob(job)}>
+                                Redaktə et
                               </button>
-                            ) : null}
-                            {getJobStatus(job) === "open" || getJobStatus(job) === "pending" || getJobStatus(job) === "scheduled" ? (
-                              <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
-                                Deaktiv et
-                              </button>
-                            ) : null}
-                            {getJobStatus(job) !== "deleted" ? (
-                              <button type="button" className="btn-secondary" onClick={() => handleDeleteJob(job.id)}>
-                                Sil
-                              </button>
-                            ) : null}
-                          </div>
-                        </article>
-                      ))}
+                              {["draft", "closed", "rejected"].includes(status) ? (
+                                <button type="button" className="btn-secondary" onClick={() => handlePublishJob(job.id)}>
+                                  Aktiv et
+                                </button>
+                              ) : null}
+                              {status === "open" || status === "pending" || status === "scheduled" ? (
+                                <button type="button" className="btn-secondary" onClick={() => handleCloseJob(job.id)}>
+                                  Deaktiv et
+                                </button>
+                              ) : null}
+                              {status !== "deleted" ? (
+                                <button type="button" className="btn-secondary danger-soft" onClick={() => handleDeleteJob(job.id)}>
+                                  Sil
+                                </button>
+                              ) : null}
+                            </div>
+                          </article>
+                        );
+                      })}
                     </div>
                     {profileJobs.length === 0 ? <p className="muted">Bu statusda elan yoxdur.</p> : null}
                   </section>
                 ) : null}
+
+
+                <section className="profile-panel profile-favorites-section">
+                  <div className="profile-panel-head">
+                    <div>
+                      <span>Favoritlər</span>
+                      <h3>Yadda saxlanılan elanlar</h3>
+                    </div>
+                    <small>{favoriteJobs.length} elan</small>
+                  </div>
+
+                  {favoriteJobs.length ? (
+                    <div className="profile-favorites-list">
+                      {favoriteJobs.map((job) => (
+                        <JobCard
+                          key={job.id}
+                          job={job}
+                          onClick={() => openJobDetail(job.id)}
+                          onPrefetch={() => prefetchJobDetail(job.id)}
+                          isFavorite={true}
+                          onToggleFavorite={(event) => handleToggleFavorite(job, event)}
+                        />
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="muted">Favorit elan yoxdur. Elan kartındakı yadda saxla ikonuna kliklədikdə burada görünəcək.</p>
+                  )}
+                </section>
               </div>
 
               <aside className="profile-side-column">

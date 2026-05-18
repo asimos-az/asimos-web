@@ -79,6 +79,20 @@ function getAddress(job) {
   return job?.location?.address || job?.address || job?.city || 'Qeyd edilməyib';
 }
 
+function getJobLogoUrl(job) {
+  return job?.logoUrl || job?.logo_url || job?.imageUrl || job?.image_url || job?.companyLogo || job?.company_logo || '';
+}
+
+function cleanDescription(value) {
+  const text = String(value || '').trim();
+  if (!text) return '';
+  return text
+    .split('\n')
+    .filter((line) => !/^\s*(Şirkət\s*\/\s*obyekt|İş qrafiki|Email|E-?poçt|Planlı yayım|Müddət)\s*:/i.test(line))
+    .join('\n')
+    .trim();
+}
+
 function JobDetailMap({ lat, lng, userLat, userLng, hasUserLocation, address, userAddress }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -166,6 +180,8 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const isPage = mode === 'page';
   const companyName = getCompanyName(job);
   const companyInitial = String(companyName || job.title || 'A').charAt(0).toUpperCase();
+  const logoUrl = getJobLogoUrl(job);
+  const cleanJobDescription = cleanDescription(job.description);
   const jobDate = formatJobDate(job.createdAt || job.created_at || job.publishedAt || job.published_at);
 
   const lat = Number(job.location?.lat ?? job.lat);
@@ -211,7 +227,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         <div className="job-detail-hero-content">
           <div className="job-detail-breadcrumb">Asimos / Elan detalları</div>
           <div className="job-detail-header-main">
-            <div className="job-detail-logo">{companyInitial}</div>
+            <div className="job-detail-logo">{logoUrl ? <img src={logoUrl} alt="" /> : companyInitial}</div>
             <div className="job-detail-title-section">
               <div className="job-detail-badges">
                 <span className="job-detail-badge">Elan</span>
@@ -261,7 +277,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
                 <h2 className="job-detail-section-title">Təsvir</h2>
               </div>
             </div>
-            <div className="job-detail-description">{job.description || 'Təsvir qeyd edilməyib.'}</div>
+            <div className="job-detail-description">{cleanJobDescription || 'Təsvir qeyd edilməyib.'}</div>
           </section>
 
           <section className="job-detail-card">
@@ -342,33 +358,33 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
               ) : null}
             </div>
           </section>
-
-          {hasLocation ? (
-            <section className="job-detail-map-card job-detail-card">
-              <div className="map-card-head">
-                <div>
-                  <span className="section-kicker">Xəritə</span>
-                  <h2 className="job-detail-section-title">Elan və cihaz lokasiyası</h2>
-                </div>
-                <span className="map-pin">📍</span>
-              </div>
-              <div className="job-map-legend">
-                <span><i className="legend-dot job" /> Elan lokasiyası</span>
-                {hasUserLocation ? <span><i className="legend-dot user" /> Sizin lokasiya</span> : null}
-              </div>
-              <JobDetailMap
-                lat={lat}
-                lng={lng}
-                userLat={userLat}
-                userLng={userLng}
-                hasUserLocation={hasUserLocation}
-                address={getAddress(job)}
-                userAddress={userLocation?.address}
-              />
-            </section>
-          ) : null}
         </aside>
       </div>
+
+      {hasLocation ? (
+        <section className="job-detail-map-card job-detail-card job-detail-map-card-wide">
+          <div className="map-card-head">
+            <div>
+              <span className="section-kicker">Xəritə</span>
+              <h2 className="job-detail-section-title">Elan və cihaz lokasiyası</h2>
+            </div>
+            <span className="map-pin">📍</span>
+          </div>
+          <div className="job-map-legend">
+            <span><i className="legend-dot job" /> Elan lokasiyası</span>
+            {hasUserLocation ? <span><i className="legend-dot user" /> Sizin lokasiya</span> : null}
+          </div>
+          <JobDetailMap
+            lat={lat}
+            lng={lng}
+            userLat={userLat}
+            userLng={userLng}
+            hasUserLocation={hasUserLocation}
+            address={getAddress(job)}
+            userAddress={userLocation?.address}
+          />
+        </section>
+      ) : null}
     </div>
   );
 
