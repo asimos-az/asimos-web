@@ -1896,6 +1896,10 @@
 }
 
 @media (max-width: 640px) {
+  .HomePage_statsSectionBottom__h1QYf {
+    padding-bottom: 30px !important;
+  }
+
   .HomePage_statsSectionBottom__h1QYf .HomePage_statsCard__8xyq4 {
     padding-bottom: 30px !important;
   }

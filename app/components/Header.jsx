@@ -160,14 +160,12 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
       return;
     }
 
-    // From pages like /policy or /jobs/[id], always go back to the real home page.
     window.location.href = "/";
   }
 
   const accountMenuItems = [
     { key: "profile", label: "Profil", icon: <ProfileIcon /> },
-    { key: "alerts", label: "Elan bildirişləri", icon: <BellIcon /> },
-    { key: "notifications", label: "İş bildirişləri", icon: <BellIcon /> },
+    { key: "notifications", label: "Bildirişlər", icon: <BellIcon /> },
     ...(showSupport ? [{ key: "support", label: "Əlaqə", icon: <SupportIcon /> }] : []),
   ];
 

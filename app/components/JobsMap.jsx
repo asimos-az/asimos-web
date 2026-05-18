@@ -518,7 +518,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
     <section ref={sectionRef} className="container page-section jobs-map-section">
       <header className="section-head jobs-map-head">
         <h2>Elanların xəritədə görünüşü</h2>
-       
+        
       </header>
 
       <div className="jobs-map-shell card">

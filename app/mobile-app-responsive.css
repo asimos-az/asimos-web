@@ -821,6 +821,7 @@
   }
 }
 
+/* Mobile header redesign: drawer menu + floating create button */
 @media (max-width: 900px) {
 
   .site-header {
@@ -1054,7 +1055,7 @@
 }
 
 @media (max-width: 900px) {
-
+ 
   .site-header {
     overflow: visible;
   }
@@ -1322,6 +1323,7 @@
 
 @media (max-width: 900px) {
   html { scroll-padding-top: 86px !important; }
+
 
   .site-header,
   .site-header.is-scrolled {
@@ -1734,7 +1736,6 @@
 }
 
 @media (max-width: 900px) {
- 
 
   .header-actions .create-action,
   .header-actions .header-notification-button,
@@ -1882,7 +1883,6 @@
     z-index: 2147483000 !important;
     transform: none !important;
   }
-
 
 }
 

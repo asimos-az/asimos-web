@@ -69,6 +69,8 @@ textarea {
   padding: 0.95rem 0;
 }
 
+
+
 .btn-primary,
 .btn-secondary {
   min-height: 46px;
@@ -2169,7 +2171,6 @@ button {
 }
 
 @media (max-width: 900px) {
- 
 
   .header-actions .create-action,
   .header-actions .header-notification-button,
@@ -2305,6 +2306,7 @@ button {
     top: auto !important;
     bottom: max(10px, env(safe-area-inset-bottom)) !important;
   }
+
 }
 
 @media (max-width: 430px) {
@@ -2566,5 +2568,28 @@ button {
     .site-header .mobile-bottom-nav {
       bottom: 2px !important;
     }
+  }
+}
+
+/* Employer profile responsive actions: support and logout must be reachable on mobile */
+.profile-mobile-actions {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .profile-mobile-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    width: 100%;
+    margin-top: 12px;
+  }
+
+  .profile-mobile-actions .btn-secondary {
+    min-height: 46px;
+    border-radius: 16px;
+    padding: 0 12px;
+    font-size: 14px;
+    font-weight: 700;
   }
 }

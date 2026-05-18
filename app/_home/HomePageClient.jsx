@@ -1226,10 +1226,10 @@ export default function HomePageClient() {
 
       if (editingJobId) {
         await api.updateJob(editingJobId, payload);
-        setOk("Elan yeniləndi");
+        setOk("Dəyişikliklər admin təsdiqinə göndərildi. Təsdiqlənənə qədər elan yayımlanmayacaq.");
       } else {
-        await api.createJob(payload);
-        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : "Elan yayımlandı");
+        const created = await api.createJob(payload);
+        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : (created?.status === "pending" ? "Elan admin təsdiqinə göndərildi. Təsdiqlənəndən sonra yayımlanacaq." : "Elan yayımlandı"));
       }
 
       resetJobForm();
@@ -1248,7 +1248,7 @@ export default function HomePageClient() {
   async function handlePublishJob(id) {
     try {
       await api.publishJob(id);
-      setOk("Elan aktiv edildi");
+      setOk("Elan admin təsdiqinə göndərildi. Təsdiqlənəndən sonra aktiv olacaq.");
       await loadAuthedData();
       await refreshJobs();
     } catch (err) {
@@ -2325,11 +2325,6 @@ export default function HomePageClient() {
 
       {activeSection === "create" && canCreateJob ? (
         <section className="container page-section">
-          <header className="section-head">
-            <h2>{editingJobId ? "Elanı redaktə et" : "İşçi axtaran profili üçün elan yarat"}</h2>
-            <p>{editingJobId ? "Məlumatları yeniləyin və yenidən yadda saxlayın." : "Elan məlumatlarını doldurun, xəritədə ünvan seçin və yayımlanma formasını müəyyən edin."}</p>
-          </header>
-
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
 
           {user ? (
@@ -2883,6 +2878,16 @@ export default function HomePageClient() {
                 <small>Lokasiya</small>
               </div>
             </div>
+            {roleName === "employer" ? (
+              <div className="profile-mobile-actions">
+                <button type="button" className="btn-secondary profile-support-button" onClick={openSupportModal}>
+                  Əlaqə / Dəstək
+                </button>
+                <button type="button" className="btn-secondary profile-logout-button" onClick={handleSignOut}>
+                  Çıxış et
+                </button>
+              </div>
+            ) : null}
           </header>
 
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
@@ -2930,6 +2935,9 @@ export default function HomePageClient() {
                     <button type="submit" className="btn-primary" disabled={loading}>
                       Profili yenilə
                     </button>
+                    <button type="button" className="btn-secondary profile-signout-action" onClick={handleSignOut}>
+                      Çıxış et
+                    </button>
                     <button type="button" className="btn-danger" onClick={handleDeleteAccount}>
                       Hesabı sil
                     </button>
@@ -2949,6 +2957,7 @@ export default function HomePageClient() {
                     <div className="status-tabs">
                       {[
                         ["open", "Aktiv elanlar"],
+                        ["pending", "Təsdiq gözləyən"],
                         ["draft", "Yadda saxlanılanlar"],
                         ["closed", "Deaktiv elanlar"],
                         ["rejected", "Rədd edilmiş"],
@@ -3145,6 +3154,7 @@ export default function HomePageClient() {
       {activeSection === "about" ? (
         <section className="container page-section about-page">
           <header className="section-head">
+            <span className="section-kicker">Asimos haqqında</span>
             <h2>Yaxınındakı elanları və gündəlik fürsətləri bir yerdə tap.</h2>
             <p>Asimos iş axtaranları, xidmət göstərənləri və işçi axtaranları lokasiya əsaslı sadə platformada birləşdirir.</p>
           </header>

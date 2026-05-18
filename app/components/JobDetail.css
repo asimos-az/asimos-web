@@ -1502,6 +1502,7 @@
   align-items: flex-start;
   justify-content: space-between;
   gap: 12px;
+  margin-bottom: 12px;
 }
 
 .job-detail-badges-row .job-detail-badges {
@@ -1617,6 +1618,7 @@
 
   .job-detail-badges-row {
     gap: 7px !important;
+    margin-bottom: 8px !important;
   }
 
   .job-detail-share-btn {
