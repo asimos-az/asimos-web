@@ -177,7 +177,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
         <div className="container header-inner">
           <div className="brand">
             <Link href="/" onClick={handleBrandClick} aria-label="Ana səhifəyə keç">
-              <img src="/logo.svg" alt="Asimos loqosu" />
+              <img src="/logo.jpeg" alt="Asimos loqosu" />
             </Link>
           </div>
         <div className="header-actions">
