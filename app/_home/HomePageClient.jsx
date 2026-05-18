@@ -2019,9 +2019,7 @@ export default function HomePageClient() {
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
-                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
                   <h2>Son elanlar</h2>
-                  <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
                 <div className={styles.latestJobsActions}>
                   {homeJobs.length > 9 ? (
@@ -2067,9 +2065,7 @@ export default function HomePageClient() {
           <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
             <div className={styles.statsCard}>
               <div className={styles.statsIntro}>
-                <span>Asimos statistikası</span>
                 <h2>Platformanın canlı göstəriciləri</h2>
-                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>
               <div className={styles.statsGrid}>
                 <div className={styles.statItem}>
@@ -3149,7 +3145,6 @@ export default function HomePageClient() {
       {activeSection === "about" ? (
         <section className="container page-section about-page">
           <header className="section-head">
-            <span className="section-kicker">Asimos haqqında</span>
             <h2>Yaxınındakı elanları və gündəlik fürsətləri bir yerdə tap.</h2>
             <p>Asimos iş axtaranları, xidmət göstərənləri və işçi axtaranları lokasiya əsaslı sadə platformada birləşdirir.</p>
           </header>

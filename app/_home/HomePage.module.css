@@ -1860,3 +1860,23 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+
+/* User fix: reduce bottom whitespace under statistics section/card */
+.statsSectionBottom {
+  padding-bottom: 30px !important;
+}
+
+.statsSectionBottom .statsCard {
+  padding-bottom: 30px !important;
+}
+
+@media (max-width: 640px) {
+  .statsSectionBottom {
+    padding-bottom: 30px !important;
+  }
+
+  .statsSectionBottom .statsCard {
+    padding-bottom: 30px !important;
+  }
+}

@@ -268,7 +268,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
       </div>
     </header>
 
-      <nav className="mobile-bottom-nav" aria-label="Mobil əsas menyu">
+      <nav className={`mobile-bottom-nav ${user ? "is-authenticated" : "is-guest"} ${user && canCreateJob ? "has-create" : "no-create"}`.trim()} aria-label="Mobil əsas menyu">
         <button type="button" className={activeSection === "home" ? "active" : ""} onClick={() => handleNavigate("home")} aria-label="Ana səhifə">
           <HomeIcon />
           <span>Ana səhifə</span>

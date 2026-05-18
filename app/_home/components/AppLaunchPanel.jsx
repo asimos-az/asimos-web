@@ -55,8 +55,7 @@ export default function AppLaunchPanel() {
     <section className="container page-section launch-section">
       <div className="launch-shell">
         <div className="launch-copy">
-          <span className="launch-kicker">Mobil tətbiq</span>
-          <h2 className="launch-title">Asimos tezliklə Play Store və App Store-da</h2>
+          <h2 className="launch-title">Asimos tezliklə <br /> Play Store və App Store-da</h2>
           <div className="launch-buttons">
             {storeLinks.map((item) => (
               <a key={item.title} className="launch-button" href={item.href} target="_blank" rel="noreferrer">

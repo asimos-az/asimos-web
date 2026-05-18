@@ -440,7 +440,7 @@
 
 .HomePage_latestJobsHead__8Hvwf {
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 18px;
 }
@@ -1882,6 +1882,22 @@
 @media (max-width: 900px) {
   .HomePage_createIntroRow__lFey0 {
     grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* User fix: reduce bottom whitespace under statistics section/card */
+.HomePage_statsSectionBottom__h1QYf {
+  padding-bottom: 30px !important;
+}
+
+.HomePage_statsSectionBottom__h1QYf .HomePage_statsCard__8xyq4 {
+  padding-bottom: 30px !important;
+}
+
+@media (max-width: 640px) {
+  .HomePage_statsSectionBottom__h1QYf .HomePage_statsCard__8xyq4 {
+    padding-bottom: 30px !important;
   }
 }
 

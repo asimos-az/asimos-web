@@ -69,10 +69,6 @@ textarea {
   padding: 0.95rem 0;
 }
 
-.site-shell {
-  padding-bottom: 4rem;
-}
-
 .btn-primary,
 .btn-secondary {
   min-height: 46px;
@@ -2173,9 +2169,7 @@ button {
 }
 
 @media (max-width: 900px) {
-  .site-shell {
-    padding-bottom: calc(86px + env(safe-area-inset-bottom)) !important;
-  }
+ 
 
   .header-actions .create-action,
   .header-actions .header-notification-button,
@@ -2310,11 +2304,6 @@ button {
     position: fixed !important;
     top: auto !important;
     bottom: max(10px, env(safe-area-inset-bottom)) !important;
-  }
-
-  body,
-  .site-shell {
-    padding-bottom: calc(96px + env(safe-area-inset-bottom)) !important;
   }
 }
 
@@ -2528,5 +2517,54 @@ button {
 
   .profile-job-actions {
     grid-template-columns: 1fr !important;
+  }
+}
+
+/* FIX: bottom nav item count on guest / non-employer mobile states */
+@media (max-width: 900px) {
+  .mobile-bottom-nav.is-guest {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+    justify-items: stretch !important;
+  }
+
+  .mobile-bottom-nav.is-authenticated.no-create {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    justify-items: stretch !important;
+  }
+
+  .mobile-bottom-nav.is-authenticated.has-create {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) !important;
+    justify-items: stretch !important;
+  }
+
+  .mobile-bottom-nav.is-guest button,
+  .mobile-bottom-nav.is-authenticated.no-create button,
+  .mobile-bottom-nav.is-authenticated.has-create button {
+    width: 100% !important;
+  }
+}
+
+/* iPhone Safari/Chrome bottom nav adjustment: keep the mobile navbar glued closer to the real screen bottom */
+@media (max-width: 900px) {
+  .mobile-bottom-nav,
+  .site-header .mobile-bottom-nav {
+    bottom: max(2px, env(safe-area-inset-bottom)) !important;
+  }
+
+}
+
+@media (max-width: 430px) {
+  .mobile-bottom-nav,
+  .site-header .mobile-bottom-nav {
+    bottom: max(2px, env(safe-area-inset-bottom)) !important;
+  }
+}
+
+@supports (-webkit-touch-callout: none) {
+  @media (max-width: 900px) {
+    .mobile-bottom-nav,
+    .site-header .mobile-bottom-nav {
+      bottom: 2px !important;
+    }
   }
 }

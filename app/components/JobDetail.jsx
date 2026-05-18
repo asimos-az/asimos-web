@@ -374,7 +374,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
       <section className="job-detail-hero">
         <div className="job-detail-hero-pattern" aria-hidden="true" />
         <div className="job-detail-hero-content">
-          <div className="job-detail-breadcrumb">Asimos / Elan detalları</div>
           <div className="job-detail-header-main">
             <div className="job-detail-logo">{logoUrl ? <img src={logoUrl} alt="" /> : companyInitial}</div>
             <div className="job-detail-title-section">
@@ -435,7 +434,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
           <section className="job-detail-card description-card">
             <div className="section-heading-row">
               <div>
-                <span className="section-kicker">Vakansiya haqqında</span>
                 <h2 className="job-detail-section-title">Təsvir</h2>
               </div>
             </div>
@@ -450,7 +448,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
               aria-expanded={infoOpen}
             >
               <span>
-                <span className="section-kicker">İş şərtləri</span>
                 <strong>Əsas məlumatlar</strong>
               </span>
               <i aria-hidden="true">⌄</i>
@@ -481,12 +478,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
                 <span className="info-value">{getFirstValue(job.voen, job.tax_id, job.taxId) || 'Qeyd edilməyib'}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Müraciət linki</span>
                 <span className="info-value">{getFirstValue(job.link, job.contact_link, job.contactLink) ? <a href={getFirstValue(job.link, job.contact_link, job.contactLink)} target="_blank" rel="noopener noreferrer">Keçidə bax</a> : 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Yayım tipi</span>
-                <span className="info-value">{job.publishMode === 'scheduled' || job.publish_mode === 'scheduled' ? 'Planlı yayım' : 'Dərhal yayım'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Əlaqə email</span>
@@ -503,10 +495,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
               <div className="info-item">
                 <span className="info-label">Bitmə tarixi</span>
                 <span className="info-value">{expiryDateLabel}</span>
-              </div>
-              <div className="info-item info-item-accent">
-                <span className="info-label">Elanın bitməsinə</span>
-                <span className="info-value">{expiryRemainingLabel}</span>
               </div>
             </div>
           </section>
@@ -573,7 +561,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         <section className="job-detail-map-card job-detail-card job-detail-map-card-wide">
           <div className="map-card-head">
             <div>
-              <span className="section-kicker">Xəritə</span>
               <h2 className="job-detail-section-title">Elan və cihaz lokasiyası</h2>
             </div>
             <span className="map-pin">📍</span>
