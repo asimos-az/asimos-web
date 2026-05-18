@@ -166,7 +166,8 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
 
   const accountMenuItems = [
     { key: "profile", label: "Profil", icon: <ProfileIcon /> },
-    { key: "notifications", label: "Bildirişlər", icon: <BellIcon /> },
+    { key: "alerts", label: "Elan bildirişləri", icon: <BellIcon /> },
+    { key: "notifications", label: "İş bildirişləri", icon: <BellIcon /> },
     { key: "support", label: "Əlaqə", icon: <SupportIcon /> },
   ];
 

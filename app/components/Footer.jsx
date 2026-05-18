@@ -48,6 +48,15 @@ function TelegramIcon() {
   );
 }
 
+function WhatsAppIcon() {
+  return (
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path fill="currentColor" d="M12.04 2A9.9 9.9 0 0 0 2.1 11.9c0 1.8.5 3.5 1.3 5L2 22l5.3-1.4a9.9 9.9 0 0 0 4.7 1.2h.1A9.9 9.9 0 0 0 22 11.9 9.9 9.9 0 0 0 12.04 2Zm0 18.1h-.1a8.2 8.2 0 0 1-4.2-1.1l-.3-.2-3.1.8.8-3-.2-.3a8.1 8.1 0 1 1 7.1 3.8Zm4.5-6.1c-.2-.1-1.4-.7-1.7-.8-.2-.1-.4-.1-.6.1-.2.3-.7.8-.8 1-.2.2-.3.2-.6.1-.2-.1-1-.4-1.9-1.2-.7-.6-1.2-1.4-1.3-1.6-.1-.3 0-.4.1-.5l.4-.5c.1-.2.2-.3.3-.5.1-.2 0-.4 0-.5-.1-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-1 1-1 2.3s1 2.7 1.1 2.9c.1.2 2 3 4.8 4.2.7.3 1.2.5 1.6.6.7.2 1.3.2 1.8.1.6-.1 1.4-.6 1.6-1.1.2-.6.2-1 .1-1.1 0-.2-.2-.3-.4-.4Z" />
+    </svg>
+  );
+}
+
+
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
 
 const defaultSocialLinks = {
@@ -57,6 +66,7 @@ const defaultSocialLinks = {
   linkedin: "https://www.linkedin.com/",
   twitter: "https://x.com/",
   telegram: "https://t.me/",
+  whatsapp: "https://wa.me/994",
 };
 
 const socialLinkMeta = [
@@ -66,6 +76,7 @@ const socialLinkMeta = [
   { key: "linkedin", label: "LinkedIn", icon: <LinkedInIcon /> },
   { key: "twitter", label: "Twitter / X", icon: <XIcon /> },
   { key: "telegram", label: "Telegram", icon: <TelegramIcon /> },
+  { key: "whatsapp", label: "WhatsApp", icon: <WhatsAppIcon /> },
 ];
 
 async function getSiteSettings() {

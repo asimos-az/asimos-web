@@ -1913,25 +1913,12 @@ export default function HomePageClient() {
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
+                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
                   <h2>Son elanlar</h2>
                   <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
                 <div className={styles.latestJobsActions}>
-                  {homeJobs.length > 1 ? (
-                    <div className={styles.latestJobsControls} aria-label="Elan carousel idarəsi">
-                      <button type="button" onClick={() => scrollLatestJobs(-1)} aria-label="Əvvəlki elanlar">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                          <path d="M15 6l-6 6 6 6" />
-                        </svg>
-                      </button>
-                      <button type="button" onClick={() => scrollLatestJobs(1)} aria-label="Növbəti elanlar">
-                        <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
-                          <path d="M9 6l6 6-6 6" />
-                        </svg>
-                      </button>
-                    </div>
-                  ) : null}
-                  {homeJobs.length > 6 ? (
+                  {homeJobs.length > 9 ? (
                     <button
                       type="button"
                       className={styles.latestJobsMoreButton}
@@ -1948,9 +1935,9 @@ export default function HomePageClient() {
                   ) : null}
                 </div>
               </header>
-              <div className={styles.latestJobsCarousel} ref={latestJobsCarouselRef}>
-                {homeJobs.slice(0, 10).map((job) => (
-                  <div className={styles.latestJobsSlide} key={job.id}>
+              <div className={styles.latestJobsGridList}>
+                {homeJobs.slice(0, 9).map((job) => (
+                  <div className={styles.latestJobsGridItem} key={job.id}>
                     <JobCard
                       job={job}
                       onClick={() => openJobDetail(job.id)}
@@ -1974,6 +1961,7 @@ export default function HomePageClient() {
           <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
             <div className={styles.statsCard}>
               <div className={styles.statsIntro}>
+                <span>Asimos statistikası</span>
                 <h2>Platformanın canlı göstəriciləri</h2>
                 <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>
