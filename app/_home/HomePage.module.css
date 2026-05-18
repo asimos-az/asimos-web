@@ -1603,3 +1603,211 @@
     font-size: .72rem !important;
   }
 }
+
+/* Compact filter redesign: keep main search controls visible, move advanced filters behind one filter button */
+.compactSearchFilter {
+  gap: 18px !important;
+  padding: 26px 28px 24px !important;
+  border-radius: 18px !important;
+}
+
+.compactSearchFilter .homeFilterTitle {
+  margin-bottom: 2px;
+}
+
+.compactSearchFilter .homeFilterTitle h1 {
+  font-size: clamp(1.25rem, 1.9vw, 1.65rem) !important;
+  font-weight: 800 !important;
+}
+
+.compactSearchFilter .homeFilterSearchRow {
+  grid-template-columns: minmax(260px, 1.15fr) minmax(220px, .85fr) 148px 128px !important;
+  gap: 12px !important;
+  align-items: center !important;
+}
+
+.compactSearchFilter .homeFilterInputWrap,
+.compactSearchFilter .homeFilterSelectWrap,
+.compactSearchFilter .homeFilterSubmit,
+.compactSearchFilter .mobileFilterButton {
+  min-height: 52px !important;
+  border-radius: 14px !important;
+}
+
+.compactSearchFilter .homeFilterInputWrap,
+.compactSearchFilter .homeFilterSelectWrap {
+  padding: 0 16px !important;
+}
+
+.compactSearchFilter .homeFilterInputWrap input,
+.compactSearchFilter .homeFilterSelectWrap select {
+  min-height: 50px !important;
+  font-size: .96rem !important;
+  font-weight: 700 !important;
+}
+
+.compactSearchFilter .mobileFilterButton {
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  width: 100%;
+  padding: 0 16px;
+  border: 1px solid #d6e0ee;
+  background: #ffffff;
+  color: #1f8ddd;
+  font-size: .95rem;
+  font-weight: 800;
+  box-shadow: none;
+  cursor: pointer;
+  transition: border-color .18s ease, background-color .18s ease, transform .18s ease;
+}
+
+.compactSearchFilter .mobileFilterButton:hover {
+  border-color: rgba(31, 141, 221, .45);
+  background: rgba(31, 141, 221, .05);
+  transform: translateY(-1px);
+}
+
+.compactSearchFilter .mobileFilterButton svg {
+  width: 20px;
+  height: 20px;
+}
+
+.compactSearchFilter .mobileFilterCheckbox:not(:checked) ~ .homeFilterTabs,
+.compactSearchFilter .mobileFilterCheckbox:not(:checked) ~ .homeFilterOptions,
+.compactSearchFilter .mobileFilterCheckbox:not(:checked) ~ .homeFilterFooter {
+  display: none !important;
+}
+
+.compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterTabs {
+  display: flex !important;
+  margin-top: 2px;
+  padding-top: 16px;
+  border-top: 1px solid #edf2f8;
+  border-bottom-color: #d8e2ef;
+}
+
+.compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterOptions {
+  display: grid !important;
+  min-height: 0 !important;
+}
+
+.compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterFooter {
+  display: flex !important;
+}
+
+.compactSearchFilter .homeFilterTabs {
+  gap: 8px !important;
+  border-bottom: 0 !important;
+  flex-wrap: wrap !important;
+}
+
+.compactSearchFilter .homeFilterTab,
+.compactSearchFilter .homeFilterTabActive {
+  min-height: 38px !important;
+  padding: 0 14px !important;
+  border: 1px solid #dce6f3 !important;
+  border-radius: 999px !important;
+  background: #fff !important;
+  font-size: .84rem !important;
+  font-weight: 800 !important;
+}
+
+.compactSearchFilter .homeFilterTabActive {
+  background: rgba(31, 141, 221, .09) !important;
+  border-color: rgba(31, 141, 221, .42) !important;
+  color: #1689e7 !important;
+}
+
+.compactSearchFilter .homeFilterOptions {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.compactSearchFilter .homeFilterOption,
+.compactSearchFilter .homeFilterOptionActive {
+  min-height: 40px !important;
+  padding: 8px 13px !important;
+  border-radius: 12px !important;
+  font-size: .86rem !important;
+  font-weight: 750 !important;
+}
+
+.compactSearchFilter .homeFilterFooter {
+  margin-top: -2px;
+}
+
+.compactSearchFilter .homeFilterReset {
+  min-height: 38px !important;
+  border-radius: 12px !important;
+}
+
+@media (max-width: 1024px) {
+  .compactSearchFilter .homeFilterSearchRow {
+    grid-template-columns: minmax(0, 1fr) minmax(180px, .75fr) 112px 112px !important;
+  }
+
+  .compactSearchFilter .homeFilterOptions {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .compactSearchFilter {
+    padding: 13px !important;
+    gap: 11px !important;
+    border-radius: 18px !important;
+  }
+
+  .compactSearchFilter .homeFilterSearchRow {
+    grid-template-columns: minmax(0, 1fr) 46px 46px !important;
+    gap: 8px !important;
+  }
+
+  .compactSearchFilter .homeFilterSelectWrap {
+    display: none !important;
+  }
+
+  .compactSearchFilter .homeFilterInputWrap,
+  .compactSearchFilter .homeFilterSubmit,
+  .compactSearchFilter .mobileFilterButton {
+    min-height: 46px !important;
+    border-radius: 15px !important;
+  }
+
+  .compactSearchFilter .mobileFilterButton {
+    width: 46px !important;
+    padding: 0 !important;
+  }
+
+  .compactSearchFilter .mobileFilterButton span {
+    display: none !important;
+  }
+
+  .compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterTabs {
+    overflow-x: auto;
+    flex-wrap: nowrap !important;
+    padding-top: 12px;
+    scrollbar-width: none;
+  }
+
+  .compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterTabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .compactSearchFilter .homeFilterTab,
+  .compactSearchFilter .homeFilterTabActive {
+    flex: 0 0 auto;
+    min-height: 34px !important;
+    font-size: .78rem !important;
+    padding: 0 11px !important;
+  }
+
+  .compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterOptions {
+    grid-template-columns: 1fr !important;
+    max-height: 52vh;
+    overflow-y: auto;
+    padding-right: 2px;
+  }
+}

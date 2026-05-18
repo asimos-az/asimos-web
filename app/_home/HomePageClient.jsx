@@ -1599,7 +1599,7 @@ export default function HomePageClient() {
       {activeSection === "home" ? (
         <section className={styles.homeFilterSection}>
           <div className="container">
-            <form className={styles.homeFilterCard} onSubmit={handleHeroSearchSubmit}>
+            <form className={`${styles.homeFilterCard} ${styles.compactSearchFilter}`} onSubmit={handleHeroSearchSubmit}>
               <div className={styles.homeFilterTitle}>
                 <span className={styles.homeFilterTitleIcon} aria-hidden="true">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -1913,6 +1913,7 @@ export default function HomePageClient() {
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
+                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
                   <h2>Son elanlar</h2>
                   <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
@@ -1974,6 +1975,7 @@ export default function HomePageClient() {
           <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
             <div className={styles.statsCard}>
               <div className={styles.statsIntro}>
+                <span>Asimos statistikası</span>
                 <h2>Platformanın canlı göstəriciləri</h2>
                 <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>
@@ -2023,7 +2025,7 @@ export default function HomePageClient() {
             </button>
           </div>
 
-          <form className={styles.homeFilterCard} onSubmit={(e) => {
+          <form className={`${styles.homeFilterCard} ${styles.compactSearchFilter}`} onSubmit={(e) => {
               e.preventDefault();
               const nextFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
               setAppliedFilters(nextFilters);
