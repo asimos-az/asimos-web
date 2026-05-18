@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 const LEAFLET_CSS_ID = 'asimos-detail-leaflet-css';
 const LEAFLET_SCRIPT_ID = 'asimos-detail-leaflet-script';
@@ -47,6 +47,88 @@ function formatJobDate(value) {
   return `${day}.${month}.${year}`;
 }
 
+function formatDateTime(value) {
+  if (!value) return 'Qeyd edilməyib';
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return formatJobDate(value);
+  const time = `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  return `${formatJobDate(value)} ${time}`;
+}
+
+function formatTimeValue(value) {
+  if (!value) return '';
+  const raw = String(value).trim();
+  if (!raw) return '';
+  const direct = raw.match(/^(\d{1,2}):(\d{2})/);
+  if (direct) return `${direct[1].padStart(2, '0')}:${direct[2]}`;
+  const date = new Date(raw);
+  if (!Number.isNaN(date.getTime())) {
+    return `${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`;
+  }
+  return raw;
+}
+
+function addDays(value, days) {
+  const base = new Date(value);
+  if (Number.isNaN(base.getTime())) return null;
+  base.setDate(base.getDate() + days);
+  return base;
+}
+
+function formatRemainingTime(expiresAt, now) {
+  if (!expiresAt || Number.isNaN(expiresAt.getTime())) return 'Qeyd edilməyib';
+  const diff = expiresAt.getTime() - now.getTime();
+  if (diff <= 0) return 'Elanın vaxtı bitib';
+  const totalHours = Math.floor(diff / (1000 * 60 * 60));
+  const days = Math.floor(totalHours / 24);
+  const hours = totalHours % 24;
+  if (days > 0) return `${days} gün ${hours} saat qalıb`;
+  const minutes = Math.max(1, Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60)));
+  return `${hours} saat ${minutes} dəqiqə qalıb`;
+}
+
+function getPublishedDate(job) {
+  return job?.publishedAt || job?.published_at || job?.createdAt || job?.created_at || job?.created || job?.date;
+}
+
+function getExpiryDate(job) {
+  const explicit = job?.validThrough || job?.valid_through || job?.expiresAt || job?.expires_at || job?.deadline || job?.expire_at;
+  if (explicit) {
+    const date = new Date(explicit);
+    if (!Number.isNaN(date.getTime())) return date;
+  }
+  return addDays(getPublishedDate(job), 28);
+}
+
+function getWorkSchedule(job) {
+  const start = formatTimeValue(job?.start_time || job?.startTime || job?.schedule_start || job?.work_start_time);
+  const end = formatTimeValue(job?.end_time || job?.endTime || job?.schedule_end || job?.work_end_time);
+  if (start && end) return `${start} - ${end}`;
+  if (start) return `${start}-dan`;
+  if (end) return `${end}-dək`;
+  return job?.schedule || job?.work_schedule || '';
+}
+
+function getJobLevel(job) {
+  const value = job?.jobLevel || job?.job_level || job?.positionLevel || job?.position_level || job?.level || job?.experience_level;
+  const labels = {
+    entry: 'Təcrübəsiz',
+    junior: 'Junior',
+    middle: 'Middle',
+    senior: 'Senior',
+    manager: 'Menecer',
+    lead: 'Rəhbər',
+  };
+  return labels[String(value || '').toLowerCase()] || value || '';
+}
+
+function getFirstValue(...values) {
+  for (const value of values) {
+    if (value !== undefined && value !== null && String(value).trim() !== '') return String(value).trim();
+  }
+  return '';
+}
+
 function getJobEmail(job) {
   const direct = job?.email || job?.contactEmail || job?.contact_email;
   if (direct) return String(direct).trim();
@@ -68,11 +150,23 @@ function getWage(job) {
 }
 
 function getJobTypeLabel(job) {
-  const type = String(job?.jobType || job?.job_type || '').toLowerCase();
-  if (type === 'permanent') return 'Daimi';
-  if (type === 'temporary') return 'Müvəqqəti';
-  if (type === 'daily') return 'Gündəlik';
-  return job?.jobType || job?.job_type || 'Qeyd edilməyib';
+  const type = String(job?.jobType || job?.job_type || job?.workType || job?.work_type || '').toLowerCase();
+  const labels = {
+    permanent: 'Daimi',
+    temporary: 'Müvəqqəti',
+    daily: 'Gündəlik',
+    full_time: 'Tam ştat',
+    part_time: 'Yarım ştat',
+    freelance: 'Frilans',
+    shift: 'Növbə əsasında',
+    commission: 'Komisyon haqqı',
+    volunteer: 'Könüllü',
+    seasonal: 'Mövsümi',
+    internship: 'Təcrübə',
+    scholarship: 'Təqaüd proqramı',
+    seeker: 'İş axtaran',
+  };
+  return labels[type] || job?.jobType || job?.job_type || job?.workType || job?.work_type || 'Qeyd edilməyib';
 }
 
 function getAddress(job) {
@@ -175,6 +269,23 @@ function JobDetailMap({ lat, lng, userLat, userLng, hasUserLocation, address, us
 }
 
 const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = null }) => {
+  const [now, setNow] = useState(() => new Date());
+  const [copiedShareLink, setCopiedShareLink] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(true);
+
+  useEffect(() => {
+    const timer = setInterval(() => setNow(new Date()), 60 * 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+    const syncInfoOpen = () => setInfoOpen(window.innerWidth > 760);
+    syncInfoOpen();
+    window.addEventListener('resize', syncInfoOpen);
+    return () => window.removeEventListener('resize', syncInfoOpen);
+  }, []);
+
   if (!job) return null;
 
   const isPage = mode === 'page';
@@ -182,7 +293,12 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const companyInitial = String(companyName || job.title || 'A').charAt(0).toUpperCase();
   const logoUrl = getJobLogoUrl(job);
   const cleanJobDescription = cleanDescription(job.description);
-  const jobDate = formatJobDate(job.createdAt || job.created_at || job.publishedAt || job.published_at);
+  const publishedDate = getPublishedDate(job);
+  const jobDate = formatJobDate(publishedDate);
+  const expiryDate = getExpiryDate(job);
+  const expiryDateLabel = expiryDate ? formatDateTime(expiryDate) : 'Qeyd edilməyib';
+  const expiryRemainingLabel = expiryDate ? formatRemainingTime(expiryDate, now) : 'Qeyd edilməyib';
+  const workSchedule = getWorkSchedule(job);
 
   const lat = Number(job.location?.lat ?? job.lat);
   const lng = Number(job.location?.lng ?? job.lng ?? job.lon);
@@ -191,15 +307,48 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const userLng = Number(userLocation?.lng);
   const hasUserLocation = Number.isFinite(userLat) && Number.isFinite(userLng);
   const routeUrl = hasLocation && hasUserLocation
-    ? `https://www.openstreetmap.org/directions?engine=fossgis_osrm_car&route=${userLat}%2C${userLng}%3B${lat}%2C${lng}`
+    ? `https://www.google.com/maps/dir/?api=1&origin=${userLat},${userLng}&destination=${lat},${lng}`
     : '';
   const mapViewUrl = hasLocation
-    ? `https://www.openstreetmap.org/?mlat=${lat}&mlon=${lng}#map=16/${lat}/${lng}`
+    ? `https://www.google.com/maps/search/?api=1&query=${lat},${lng}`
     : '';
+
+  const getShareUrl = () => {
+    if (typeof window === 'undefined') return '';
+    return window.location.href;
+  };
+
+  const copyShareLink = async () => {
+    const shareUrl = getShareUrl();
+    if (!shareUrl) return;
+
+    try {
+      if (navigator?.clipboard?.writeText) {
+        await navigator.clipboard.writeText(shareUrl);
+      } else {
+        const textarea = document.createElement('textarea');
+        textarea.value = shareUrl;
+        textarea.setAttribute('readonly', '');
+        textarea.style.position = 'fixed';
+        textarea.style.left = '-9999px';
+        document.body.appendChild(textarea);
+        textarea.select();
+        document.execCommand('copy');
+        document.body.removeChild(textarea);
+      }
+      setCopiedShareLink(true);
+      window.setTimeout(() => setCopiedShareLink(false), 2200);
+    } catch {
+      setCopiedShareLink(false);
+    }
+  };
 
   const renderContact = () => {
     const jobEmail = getJobEmail(job);
-    const hasAnyContact = job.link || job.whatsapp || job.phone || jobEmail;
+    const contactLink = getFirstValue(job.link, job.contact_link, job.contactLink);
+    const contactWhatsapp = getFirstValue(job.whatsapp, job.contact_whatsapp, job.contactWhatsapp);
+    const contactPhone = getFirstValue(job.phone, job.contact_phone, job.contactPhone);
+    const hasAnyContact = contactLink || contactWhatsapp || contactPhone || jobEmail;
 
     if (!user && hasAnyContact) {
       return <span className="contact-locked">Daxil olduqdan sonra görünəcək</span>;
@@ -208,14 +357,14 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
     if (jobEmail) {
       return <a href={`mailto:${jobEmail}`}>{jobEmail}</a>;
     }
-    if (job.link) {
-      return <a href={job.link} target="_blank" rel="noopener noreferrer">Müraciət linkinə keç</a>;
+    if (contactLink) {
+      return <a href={contactLink} target="_blank" rel="noopener noreferrer">Müraciət linkinə keç</a>;
     }
-    if (job.whatsapp) {
-      return <a href={`https://wa.me/${job.whatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">{job.whatsapp}</a>;
+    if (contactWhatsapp) {
+      return <a href={`https://wa.me/${contactWhatsapp.replace(/\D/g, '')}`} target="_blank" rel="noopener noreferrer">{contactWhatsapp}</a>;
     }
-    if (job.phone) {
-      return <a href={`tel:${job.phone}`}>{job.phone}</a>;
+    if (contactPhone) {
+      return <a href={`tel:${contactPhone}`}>{contactPhone}</a>;
     }
     return 'Qeyd edilməyib';
   };
@@ -229,9 +378,22 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
           <div className="job-detail-header-main">
             <div className="job-detail-logo">{logoUrl ? <img src={logoUrl} alt="" /> : companyInitial}</div>
             <div className="job-detail-title-section">
-              <div className="job-detail-badges">
-                <span className="job-detail-badge">Elan</span>
-                {job.category ? <span className="job-detail-badge muted">{job.category}</span> : null}
+              <div className="job-detail-badges-row">
+                <div className="job-detail-badges">
+                  <span className="job-detail-badge">Elan</span>
+                  {job.category ? <span className="job-detail-badge muted">{job.category}</span> : null}
+                </div>
+                {isPage ? (
+                  <button
+                    type="button"
+                    className={`job-detail-share-btn${copiedShareLink ? ' copied' : ''}`}
+                    onClick={copyShareLink}
+                    aria-label="Elan linkini kopyala"
+                  >
+                    <span aria-hidden="true">{copiedShareLink ? '✓' : '↗'}</span>
+                    {copiedShareLink ? 'Link kopyalandı' : 'Paylaş'}
+                  </button>
+                ) : null}
               </div>
               <h1 className="job-detail-title">{job.title}</h1>
               <p className="job-detail-company">{companyName}</p>
@@ -257,14 +419,14 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
           <strong>{getAddress(job)}</strong>
         </div>
         <div className="quick-stat-card">
-          <span className="quick-stat-icon">🧭</span>
-          <span className="quick-stat-label">İş növü</span>
-          <strong>{getJobTypeLabel(job)}</strong>
+          <span className="quick-stat-icon">🕘</span>
+          <span className="quick-stat-label">İş qrafiki</span>
+          <strong>{workSchedule || 'Qeyd edilməyib'}</strong>
         </div>
-        <div className="quick-stat-card">
-          <span className="quick-stat-icon">📅</span>
-          <span className="quick-stat-label">Tarix</span>
-          <strong>{jobDate}</strong>
+        <div className="quick-stat-card countdown">
+          <span className="quick-stat-icon">⏳</span>
+          <span className="quick-stat-label">Bitməsinə</span>
+          <strong>{expiryRemainingLabel}</strong>
         </div>
       </div>
 
@@ -280,25 +442,71 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
             <div className="job-detail-description">{cleanJobDescription || 'Təsvir qeyd edilməyib.'}</div>
           </section>
 
-          <section className="job-detail-card">
-            <span className="section-kicker">İş şərtləri</span>
-            <h2 className="job-detail-section-title">Əsas məlumatlar</h2>
-            <div className="job-detail-info-grid">
+          <section className={`job-detail-card job-detail-accordion-card${infoOpen ? ' is-open' : ''}`}>
+            <button
+              type="button"
+              className="job-detail-accordion-head"
+              onClick={() => setInfoOpen((value) => !value)}
+              aria-expanded={infoOpen}
+            >
+              <span>
+                <span className="section-kicker">İş şərtləri</span>
+                <strong>Əsas məlumatlar</strong>
+              </span>
+              <i aria-hidden="true">⌄</i>
+            </button>
+            <div className="job-detail-info-grid" hidden={!infoOpen}>
               <div className="info-item">
                 <span className="info-label">Kateqoriya</span>
                 <span className="info-value">{job.category || 'Qeyd edilməyib'}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">İş qrafiki</span>
-                <span className="info-value">{job.start_time && job.end_time ? `${job.start_time} - ${job.end_time}` : job.work_type || 'Qeyd edilməyib'}</span>
+                <span className="info-label">Vəzifə dərəcəsi</span>
+                <span className="info-value">{getJobLevel(job) || 'Qeyd edilməyib'}</span>
               </div>
               <div className="info-item">
-                <span className="info-label">Şirkət</span>
+                <span className="info-label">İş növü</span>
+                <span className="info-value">{getJobTypeLabel(job)}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">İş qrafiki</span>
+                <span className="info-value">{workSchedule || 'Qeyd edilməyib'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Şirkət / obyekt</span>
                 <span className="info-value">{companyName}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">VOEN</span>
+                <span className="info-value">{getFirstValue(job.voen, job.tax_id, job.taxId) || 'Qeyd edilməyib'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Müraciət linki</span>
+                <span className="info-value">{getFirstValue(job.link, job.contact_link, job.contactLink) ? <a href={getFirstValue(job.link, job.contact_link, job.contactLink)} target="_blank" rel="noopener noreferrer">Keçidə bax</a> : 'Qeyd edilməyib'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Yayım tipi</span>
+                <span className="info-value">{job.publishMode === 'scheduled' || job.publish_mode === 'scheduled' ? 'Planlı yayım' : 'Dərhal yayım'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Əlaqə email</span>
+                <span className="info-value">{getJobEmail(job) || 'Qeyd edilməyib'}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Telefon / WhatsApp</span>
+                <span className="info-value">{getFirstValue(job.phone, job.contact_phone, job.contactPhone, job.whatsapp) || 'Qeyd edilməyib'}</span>
               </div>
               <div className="info-item">
                 <span className="info-label">Elan tarixi</span>
                 <span className="info-value">{jobDate}</span>
+              </div>
+              <div className="info-item">
+                <span className="info-label">Bitmə tarixi</span>
+                <span className="info-value">{expiryDateLabel}</span>
+              </div>
+              <div className="info-item info-item-accent">
+                <span className="info-label">Elanın bitməsinə</span>
+                <span className="info-value">{expiryRemainingLabel}</span>
               </div>
             </div>
           </section>
@@ -351,7 +559,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
                     ) : null}
                     <a className="map-text-action" href={mapViewUrl} target="_blank" rel="noopener noreferrer">
                       <span>🗺️</span>
-                      Xəritədə bax
+                      Google Maps-də aç
                     </a>
                   </div>
                 </div>

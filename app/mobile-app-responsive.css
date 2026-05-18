@@ -1720,3 +1720,38 @@
   .statsGrid { gap: 8px !important; }
   .statItem { min-height: 102px !important; padding: 12px 10px !important; }
 }
+
+/* Final support modal overlay fix: modal must cover header and stay inside viewport */
+.support-modal-backdrop {
+  z-index: 100000 !important;
+  inset: 0 !important;
+  top: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  left: 0 !important;
+  padding: 18px !important;
+  display: grid !important;
+  place-items: center !important;
+  align-items: center !important;
+}
+.support-modal.support-modal-chat {
+  width: min(1180px, calc(100vw - 36px)) !important;
+  height: min(820px, calc(100dvh - 36px)) !important;
+  max-height: calc(100dvh - 36px) !important;
+  border-radius: 28px !important;
+  overflow: hidden !important;
+}
+@media (max-width: 720px) {
+  .support-modal-backdrop {
+    padding: 0 !important;
+    place-items: stretch !important;
+    align-items: stretch !important;
+  }
+  .support-modal,
+  .support-modal.support-modal-chat {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+  }
+}

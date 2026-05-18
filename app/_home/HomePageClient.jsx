@@ -8,13 +8,17 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
+import { io } from "socket.io-client";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
+
 import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 
 import styles from "./HomePage.module.css";
 import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
+
+const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
 
 const JobsMap = dynamic(() => import("../components/JobsMap"), {
   ssr: false,
@@ -209,6 +213,74 @@ function extractWageNumber(wageText) {
   return Number.isFinite(value) ? value : null;
 }
 
+
+function normalizeAiSelectValue(value, options = []) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  const lower = raw.toLowerCase();
+  const found = options.find((item) =>
+    String(item?.value || "").toLowerCase() === lower ||
+    String(item?.label || "").toLowerCase() === lower ||
+    lower.includes(String(item?.label || "").toLowerCase()) ||
+    String(item?.label || "").toLowerCase().includes(lower)
+  );
+  return found?.value || raw;
+}
+
+function buildAiJobDraftFromPrompt(prompt = {}, fallbackOptions = {}) {
+  const text = String(prompt?.prompt || prompt?.text || prompt || "").trim();
+  const source = text.toLowerCase();
+  const draft = { ...(typeof prompt === "object" ? prompt : {}) };
+
+  const exact = {};
+
+  const salaryRange = text.match(/(?:maaş|maas|salary)?\s*(\d{2,5})\s*(?:-|–|—|ilə|ile|arası|arasi)\s*(\d{2,5})\s*(?:azn|manat)?/i);
+  const salarySingle = text.match(/(?:maaş|maas|salary)\s*(?:[:=])?\s*(\d{2,5})\s*(?:azn|manat)?/i) || text.match(/(\d{2,5})\s*(?:azn|manat)/i);
+  if (salaryRange) exact.wage = `${salaryRange[1]}-${salaryRange[2]} AZN`;
+  else if (salarySingle) exact.wage = `${salarySingle[1]} AZN`;
+
+  const timeMatch = text.match(/(\b[01]?\d|2[0-3])[:.](\d{2})\b\s*(?:-|–|—|dən|dan|ile|ilə|to)?\s*(\b[01]?\d|2[0-3])[:.](\d{2})\b/i);
+  if (timeMatch) {
+    exact.startTime = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
+    exact.endTime = `${String(timeMatch[3]).padStart(2, "0")}:${timeMatch[4]}`;
+  }
+
+  const cityMatch = text.match(/\b(bakı|baki|sumqayıt|sumqayit|gəncə|gence|mingəçevir|sheki|şəki|lənkəran|lenkeran|şirvan|sirvan|naxçıvan|naxcivan|quba|xaçmaz|xacmaz|masallı|masalli|salyan)\b/i);
+  if (cityMatch) {
+    const cityMap = { baki: "Bakı", bakı: "Bakı", sumqayit: "Sumqayıt", sumqayıt: "Sumqayıt", gence: "Gəncə", gəncə: "Gəncə", sheki: "Şəki", şəki: "Şəki", lenkeran: "Lənkəran", lənkəran: "Lənkəran", sirvan: "Şirvan", şirvan: "Şirvan", naxcivan: "Naxçıvan", naxçıvan: "Naxçıvan", quba: "Quba", xacmaz: "Xaçmaz", xaçmaz: "Xaçmaz", masalli: "Masallı", masallı: "Masallı", salyan: "Salyan" };
+    exact.city = cityMap[cityMatch[1].toLowerCase()] || cityMatch[1];
+  }
+
+  const addressMatch = text.match(/(?:iş yeri|is yeri|ünvan|unvan|lokasiya|məkan|mekan)\s*(?:[:=])?\s*([^,.\n]+)/i);
+  if (addressMatch) {
+    const address = addressMatch[1].trim();
+    exact.location = exact.city && !address.toLowerCase().includes(exact.city.toLowerCase()) ? `${address}, ${exact.city}` : address;
+  }
+
+  if (/yarım|yarim|part/.test(source)) exact.jobType = "part_time";
+  else if (/növb|novb|shift|iş saati|is saati|saatı|saati/.test(source)) exact.jobType = "shift";
+  else if (/frilans|freelance/.test(source)) exact.jobType = "freelance";
+  else if (/müvəqqəti|muveqqeti|temporary/.test(source)) exact.jobType = "temporary";
+  else if (!draft.jobType && !draft.job_type) exact.jobType = "full_time";
+
+  if (/təcrübə vacib deyil|tecrube vacib deyil|təcrübəsiz|tecrubesiz|təcrübə tələb olunmur|tecrube teleb olunmur|təcrübə vacib deyil/.test(source)) {
+    exact.jobLevel = "entry";
+  } else if (!draft.jobLevel && !draft.job_level) {
+    exact.jobLevel = "entry";
+  }
+
+  if (/ofisiant|ofisant|waiter/.test(source)) exact.title = "Ofisiant";
+  else if (/satıcı|satici|satış|satis/.test(source)) exact.title = "Satış məsləhətçisi";
+  else if (/kuryer|courier/.test(source)) exact.title = "Kuryer";
+  else if (/operator/.test(source)) exact.title = "Operator";
+
+  if (!draft.description && text) draft.description = text;
+
+  // User-in yazdığı konkret faktlar AI cavabından üstün olmalıdır.
+  // Məsələn: "maaş 500 manat" yazılıbsa AI bunu "razılaşma yolu" edə bilməz.
+  return { ...draft, ...exact };
+}
+
 function getJobStatus(job) {
   return String(job?.status || job?.jobStatus || "open").toLowerCase();
 }
@@ -391,6 +463,14 @@ export default function HomePageClient() {
   const [supportModalOpen, setSupportModalOpen] = useState(false);
   const [supportMode, setSupportMode] = useState("list");
   const [activeTicketId, setActiveTicketId] = useState(null);
+  const supportSocketRef = useRef(null);
+
+  const [aiPanelOpen, setAiPanelOpen] = useState(false);
+  const [aiMode, setAiMode] = useState("generate-job");
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [aiResult, setAiResult] = useState(null);
+  const [aiBusy, setAiBusy] = useState(false);
+
 
   const [editingName, setEditingName] = useState("");
   const [editingPhone, setEditingPhone] = useState("");
@@ -418,6 +498,58 @@ export default function HomePageClient() {
   const activeUnreadCount = unreadNotifications.length;
   const hasHomeJobs = homeJobs.length > 0;
   const hasHomeMapJobs = homeMapJobs.length > 0;
+
+  useEffect(() => {
+    if (!user || !token) {
+      if (supportSocketRef.current) {
+        supportSocketRef.current.disconnect();
+        supportSocketRef.current = null;
+      }
+      return;
+    }
+
+    const socket = io(SOCKET_URL, {
+      transports: ["websocket", "polling"],
+      auth: { token },
+      reconnection: true,
+      reconnectionAttempts: 20,
+      reconnectionDelay: 800,
+    });
+
+    supportSocketRef.current = socket;
+
+    const refreshSupport = async (payload = {}) => {
+      try {
+        const res = await api.listTickets();
+        const nextTickets = res.items || [];
+        setTickets(nextTickets);
+        if (payload.ticketId && activeTicketId === payload.ticketId) {
+          setActiveTicketId(payload.ticketId);
+          await api.markTicketRead(payload.ticketId).catch(() => null);
+        }
+        const notifRes = await api.listMyNotifications({ limit: 50 }).catch(() => null);
+        if (notifRes?.items) setNotifications(notifRes.items);
+      } catch {}
+    };
+
+    socket.on("support:updated", refreshSupport);
+    socket.on("connect", () => {
+      if (activeTicketId) socket.emit("support:join", { ticketId: activeTicketId });
+    });
+
+    return () => {
+      socket.off("support:updated", refreshSupport);
+      socket.disconnect();
+      if (supportSocketRef.current === socket) supportSocketRef.current = null;
+    };
+  }, [user?.id, token, activeTicketId]);
+
+  useEffect(() => {
+    const socket = supportSocketRef.current;
+    if (!socket || !activeTicketId) return;
+    socket.emit("support:join", { ticketId: activeTicketId });
+    return () => socket.emit("support:leave", { ticketId: activeTicketId });
+  }, [activeTicketId]);
 
   useEffect(() => {
     if (!user && activeSection !== "home" && activeSection !== "about" && activeSection !== "auth") {
@@ -1551,6 +1683,96 @@ export default function HomePageClient() {
     node.scrollBy({ left: direction * amount, behavior: "smooth" });
   }
 
+  function applyAiJobDraft(draft = {}, { goToCreate = true } = {}) {
+    const mergedDraft = buildAiJobDraftFromPrompt({ ...(draft || {}), prompt: aiPrompt }, jobFilterOptions);
+    const vacancyOptions = jobFilterOptions?.vacancyTypes?.length ? jobFilterOptions.vacancyTypes : vacancyTypeOptions;
+    const levelOptions = jobFilterOptions?.jobLevels?.length ? jobFilterOptions.jobLevels : jobLevelOptions;
+
+    if (mergedDraft.title) setTitle(mergedDraft.title);
+    if (mergedDraft.companyName || mergedDraft.company_name || mergedDraft.companyObject) setCompanyObject(mergedDraft.companyName || mergedDraft.company_name || mergedDraft.companyObject);
+    if (mergedDraft.wage || mergedDraft.salary) setWage(mergedDraft.wage || mergedDraft.salary);
+    if (mergedDraft.location || mergedDraft.address || mergedDraft.city) setLocationText(mergedDraft.location || mergedDraft.address || mergedDraft.city);
+    if (mergedDraft.description) setDescription(mergedDraft.description);
+    if (mergedDraft.category) setCategory(mergedDraft.category);
+    if (mergedDraft.jobType || mergedDraft.job_type) setJobType(normalizeAiSelectValue(mergedDraft.jobType || mergedDraft.job_type, vacancyOptions));
+    if (mergedDraft.jobLevel || mergedDraft.job_level) setJobLevel(normalizeAiSelectValue(mergedDraft.jobLevel || mergedDraft.job_level, levelOptions));
+    if (mergedDraft.startTime || mergedDraft.start_time || mergedDraft.scheduleStart) setScheduleStart(mergedDraft.startTime || mergedDraft.start_time || mergedDraft.scheduleStart);
+    if (mergedDraft.endTime || mergedDraft.end_time || mergedDraft.scheduleEnd) setScheduleEnd(mergedDraft.endTime || mergedDraft.end_time || mergedDraft.scheduleEnd);
+    if (mergedDraft.voen) setVoen(mergedDraft.voen);
+    if (mergedDraft.phone || mergedDraft.contactPhone || mergedDraft.whatsapp) {
+      const phoneValue = mergedDraft.phone || mergedDraft.contactPhone || mergedDraft.whatsapp;
+      setContactPhone(phoneValue);
+      setWhatsapp(phoneValue);
+    }
+    if (mergedDraft.email || mergedDraft.contactEmail) setContactEmail(mergedDraft.email || mergedDraft.contactEmail);
+    if (mergedDraft.link || mergedDraft.contactLink) setLink(mergedDraft.link || mergedDraft.contactLink);
+    if (mergedDraft.requirements && Array.isArray(mergedDraft.requirements)) {
+      setDescription((current) => {
+        const base = mergedDraft.description || current || "";
+        const req = mergedDraft.requirements.map((item) => `- ${item}`).join("\n");
+        return `${base}\n\nTələblər:\n${req}`.trim();
+      });
+    }
+    if (goToCreate) {
+      setAiPanelOpen(false);
+      setActiveSection("create");
+      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
+    }
+    setOk("AI məlumatları elan formasına əlavə etdi");
+  }
+
+  async function handleAiAction(mode = aiMode, extraPayload = {}) {
+    setAiBusy(true);
+    setError("");
+    setOk("");
+    try {
+      const basePayload = {
+        prompt: aiPrompt,
+        title,
+        companyName: companyObject || companyName || user?.companyName || "",
+        wage,
+        city: locationText,
+        category,
+        jobType,
+        jobLevel,
+        description,
+        filterOptions: jobFilterOptions,
+        profile: user,
+        ...extraPayload,
+      };
+      let data;
+      data = await api.aiGenerateJob(basePayload);
+      const fallbackJob = buildAiJobDraftFromPrompt({ ...basePayload, ...(data?.job || {}) }, jobFilterOptions);
+      setAiResult(data?.job ? data : { ...(data || {}), job: fallbackJob });
+      setAiPanelOpen(true);
+      setAiMode("generate-job");
+      setOk("AI elan məlumatlarını hazırladı");
+    } catch (e) {
+      setError(e?.message || "AI köməkçi cavab verə bilmədi");
+    } finally {
+      setAiBusy(false);
+    }
+  }
+
+  async function handleCreateAiGenerate() {
+    const prompt = aiPrompt || description || title || `${category} ${wage} ${locationText}`.trim();
+    if (!prompt) {
+      setAiPanelOpen(true);
+      setAiMode("generate-job");
+      setError("AI ilə doldurmaq üçün qısa məlumat yazın");
+      return;
+    }
+    await handleAiAction("generate-job", { prompt });
+  }
+
+  async function handleImproveDescription() {
+    if (!description.trim() && !title.trim()) {
+      setError("Əvvəl elan haqqında qısa məlumat yazın");
+      return;
+    }
+    await handleAiAction("improve-job", { prompt: description || title });
+  }
+
 
   useEffect(() => {
     let ignore = false;
@@ -1594,6 +1816,7 @@ export default function HomePageClient() {
         handleSignOut={handleSignOut}
         canCreateJob={canCreateJob}
         onOpenSupport={openSupportModal}
+        showSupport={roleName === "employer"}
         unreadNotificationsCount={activeUnreadCount}
       />
       {activeSection === "home" ? (
@@ -1759,7 +1982,7 @@ export default function HomePageClient() {
 
       {supportModalOpen ? (
         <div className="support-modal-backdrop" role="dialog" aria-modal="true" aria-label="Dəstək müraciətləri" onMouseDown={closeSupportModal}>
-          <div className="support-modal" onMouseDown={(event) => event.stopPropagation()}>
+          <div className={`support-modal ${supportMode === "detail" ? "support-modal-chat" : ""}`} onMouseDown={(event) => event.stopPropagation()}>
             <header className="support-modal-header">
               <button
                 type="button"
@@ -1776,8 +1999,8 @@ export default function HomePageClient() {
                 ‹
               </button>
               <div>
-                <h2>{supportMode === "create" ? "Yeni Müraciət" : supportMode === "detail" ? "Adminlə Əlaqə" : "Dəstək"}</h2>
-                <p>{supportMode === "list" ? "Müraciətləriniz və cavablarınız" : "Asimos dəstək komandası ilə yazışma"}</p>
+                <h2>{supportMode === "create" ? "Yeni müraciət" : supportMode === "detail" ? getTicketSubject(activeTicket) : "Dəstək"}</h2>
+                <p>{supportMode === "detail" ? "Asimos dəstək komandası ilə canlı yazışma" : supportMode === "list" ? "Müraciətləriniz və cavablarınız" : "Probleminizi qısa yazın"}</p>
               </div>
               <button type="button" className="support-close-button" onClick={closeSupportModal} aria-label="Bağla">
                 ×
@@ -1862,10 +2085,6 @@ export default function HomePageClient() {
                 </div>
 
                 <div className="support-chat">
-                  <div className="support-message user">
-                    <p>{activeTicket.message}</p>
-                    <small>{activeTicket.created_at || activeTicket.createdAt ? new Date(activeTicket.created_at || activeTicket.createdAt).toLocaleTimeString("az-AZ", { hour: "2-digit", minute: "2-digit" }) : ""}</small>
-                  </div>
                   {getTicketMessages(activeTicket).map((message) => (
                     <div key={message.id} className={`support-message ${message.is_admin ? "admin" : "user"}`}>
                       {message.is_admin ? <strong>ASIMOS DƏSTƏK</strong> : null}
@@ -2232,6 +2451,15 @@ export default function HomePageClient() {
 
           {user ? (
             <form className="form-grid" onSubmit={handleCreateJob}>
+              <div className="asimos-ai-create-card full-row">
+                <div>
+                  <strong>Asimos AI elan köməkçisi</strong>
+                  <p>Qısa yazın, AI başlıq, təsvir, kateqoriya və uyğun filterləri təklif etsin.</p>
+                </div>
+                <div className="asimos-ai-create-actions">
+                  <button type="button" className="btn-primary" disabled={aiBusy} onClick={() => { setAiPanelOpen(true); setAiMode("generate-job"); }}>AI ilə elan yarat</button>
+                </div>
+              </div>
               <div className={`${styles.homeFilterCard} full-row`}>
                 <div className={styles.homeFilterTitle}>
                   <span className={styles.homeFilterTitleIcon} aria-hidden="true">
@@ -3109,6 +3337,85 @@ export default function HomePageClient() {
         />
       ) : null}
 
+
+      <button type="button" className="asimos-ai-floating" onClick={() => { setAiMode("generate-job"); setAiPanelOpen(true); }} aria-label="Asimos AI elan köməkçisi">
+        <span className="asimos-ai-orb" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none">
+            <path d="M12 3l1.65 4.35L18 9l-4.35 1.65L12 15l-1.65-4.35L6 9l4.35-1.65L12 3Z" fill="currentColor"/>
+            <path d="M18.5 13l.9 2.2 2.1.8-2.1.8-.9 2.2-.9-2.2-2.1-.8 2.1-.8.9-2.2Z" fill="currentColor" opacity=".75"/>
+          </svg>
+        </span>
+        <span>AI</span>
+      </button>
+
+      {aiPanelOpen ? (
+        <div className="asimos-ai-backdrop" onMouseDown={() => setAiPanelOpen(false)}>
+          <aside className="asimos-ai-panel" onMouseDown={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Asimos AI köməkçi">
+            <header className="asimos-ai-panel-head">
+              <div>
+                <span className="asimos-ai-kicker">Asimos AI</span>
+                <h3>AI elan köməkçisi</h3>
+              </div>
+              <button type="button" className="asimos-ai-close" onClick={() => setAiPanelOpen(false)}>×</button>
+            </header>
+
+            <div className="asimos-ai-single-tool">
+              <span className="asimos-ai-tool-icon" aria-hidden="true">✦</span>
+              <div>
+                <strong>AI ilə elan yarat</strong>
+                <p>Bir cümlə yazın, AI onu elan yaratma formasındakı uyğun sahələrə çevirsin.</p>
+              </div>
+            </div>
+
+            <label className="asimos-ai-prompt">
+              <span>Elan haqqında qısa məlumat yazın</span>
+              <textarea
+                value={aiPrompt}
+                onChange={(e) => setAiPrompt(e.target.value)}
+                rows={5}
+                placeholder="Məs: Bakıda mağaza üçün satıcı lazımdır, maaş 800-1000 AZN, təcrübə vacib deyil, iş saatı 09:00-18:00"
+              />
+            </label>
+
+            <button type="button" className="btn-primary asimos-ai-run" disabled={aiBusy} onClick={() => handleAiAction("generate-job")}>
+              {aiBusy ? "AI elan hazırlayır..." : "Elanı hazırla"}
+            </button>
+
+            {aiResult ? (
+              <div className="asimos-ai-result">
+                <div className="asimos-ai-result-head">
+                  <strong>Nəticə</strong>
+                  {aiResult.job ? <button type="button" onClick={() => applyAiJobDraft(aiResult.job)}>Elan formasına keçirt</button> : null}
+                </div>
+                {aiResult.reply ? <p>{aiResult.reply}</p> : null}
+                {aiResult.bio ? <p>{aiResult.bio}</p> : null}
+                {aiResult.summary ? <p>{aiResult.summary}</p> : null}
+                {aiResult.riskLevel ? <p><strong>Risk:</strong> {aiResult.riskLevel} — {aiResult.reason}</p> : null}
+                {aiResult.job ? (
+                  <div className="asimos-ai-job-preview">
+                    <strong>{aiResult.job.title}</strong>
+                    <span>{aiResult.job.category} · {aiResult.job.jobType || aiResult.job.job_type} · {aiResult.job.jobLevel || aiResult.job.job_level}</span>
+                    <p>{aiResult.job.description}</p>
+                  </div>
+                ) : null}
+                {Array.isArray(aiResult.items) && aiResult.items.length ? (
+                  <div className="asimos-ai-matches">
+                    {aiResult.items.slice(0, 5).map((item) => (
+                      <button key={item.id} type="button" onClick={() => { setAiPanelOpen(false); openJobDetail(item.id); }}>
+                        <strong>{item.title}</strong>
+                        <span>{item.matchPercent || item.score || 0}% uyğun · {item.reason || item.location || ""}</span>
+                      </button>
+                    ))}
+                  </div>
+                ) : null}
+                {!aiResult.reply && !aiResult.bio && !aiResult.job && !aiResult.items && !aiResult.riskLevel ? (
+                  <pre>{JSON.stringify(aiResult, null, 2)}</pre>
+                ) : null}
+              </div>
+            ) : null}
+          </aside>
+        </div>
+      ) : null}
 
       {roleSwitchConfirmOpen ? (
         <div className="confirm-modal-backdrop" role="presentation" onClick={() => setRoleSwitchConfirmOpen(false)}>

@@ -94,7 +94,7 @@ function getNavIcon(key) {
   return <ArrowUpRightIcon />;
 }
 
-const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, unreadNotificationsCount = 0 }) => {
+const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, showSupport = false, unreadNotificationsCount = 0 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -168,7 +168,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
     { key: "profile", label: "Profil", icon: <ProfileIcon /> },
     { key: "alerts", label: "Elan bildirişləri", icon: <BellIcon /> },
     { key: "notifications", label: "İş bildirişləri", icon: <BellIcon /> },
-    { key: "support", label: "Əlaqə", icon: <SupportIcon /> },
+    ...(showSupport ? [{ key: "support", label: "Əlaqə", icon: <SupportIcon /> }] : []),
   ];
 
   return (
