@@ -1849,3 +1849,14 @@
     min-height: auto;
   }
 }
+
+/* Create job form refinements */
+.createIntroRow {
+  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.8fr) !important;
+}
+
+@media (max-width: 900px) {
+  .createIntroRow {
+    grid-template-columns: 1fr !important;
+  }
+}

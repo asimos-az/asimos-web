@@ -1874,3 +1874,14 @@
   }
 }
 
+/* Create job form refinements */
+.HomePage_createIntroRow__lFey0 {
+  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.8fr) !important;
+}
+
+@media (max-width: 900px) {
+  .HomePage_createIntroRow__lFey0 {
+    grid-template-columns: 1fr !important;
+  }
+}
+

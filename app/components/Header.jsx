@@ -172,6 +172,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
   ];
 
   return (
+    <>
     <header className={`site-header ${isScrolled ? "is-scrolled" : ""}`.trim()}>
       <div className="site-header-top">
         <div className="container header-inner">
@@ -266,6 +267,44 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
         </nav>
       </div>
     </header>
+
+      <nav className="mobile-bottom-nav" aria-label="Mobil əsas menyu">
+        <button type="button" className={activeSection === "home" ? "active" : ""} onClick={() => handleNavigate("home")} aria-label="Ana səhifə">
+          <HomeIcon />
+          <span>Ana səhifə</span>
+        </button>
+        <button type="button" className={activeSection === "jobs" ? "active" : ""} onClick={() => handleNavigate("jobs")} aria-label="Elanlar">
+          <BriefcaseIcon />
+          <span>Elanlar</span>
+        </button>
+        {user && canCreateJob ? (
+          <button type="button" className={`mobile-bottom-create ${activeSection === "create" ? "active" : ""}`} onClick={() => handleNavigate("create")} aria-label="Elan yarat">
+            <PlusIcon />
+            <span>Yarat</span>
+          </button>
+        ) : null}
+        {user ? (
+          <button type="button" className={activeSection === "notifications" ? "active" : ""} onClick={() => handleNavigate("notifications")} aria-label="Bildirişlər">
+            <span className="mobile-bottom-badge-wrap">
+              <BellIcon />
+              {unreadNotificationsCount > 0 ? <em>{unreadNotificationsCount > 99 ? "99+" : unreadNotificationsCount}</em> : null}
+            </span>
+            <span>Bildiriş</span>
+          </button>
+        ) : null}
+        {user ? (
+          <button type="button" className={activeSection === "profile" ? "active" : ""} onClick={() => handleNavigate("profile")} aria-label="Profil">
+            <ProfileIcon />
+            <span>Profil</span>
+          </button>
+        ) : (
+          <button type="button" className={activeSection === "auth" ? "active" : ""} onClick={() => handleNavigate("auth")} aria-label="Daxil ol">
+            <ProfileIcon />
+            <span>Daxil ol</span>
+          </button>
+        )}
+      </nav>
+    </>
   );
 };
 

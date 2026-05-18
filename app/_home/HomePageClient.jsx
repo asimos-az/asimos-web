@@ -213,74 +213,6 @@ function extractWageNumber(wageText) {
   return Number.isFinite(value) ? value : null;
 }
 
-
-function normalizeAiSelectValue(value, options = []) {
-  const raw = String(value || "").trim();
-  if (!raw) return "";
-  const lower = raw.toLowerCase();
-  const found = options.find((item) =>
-    String(item?.value || "").toLowerCase() === lower ||
-    String(item?.label || "").toLowerCase() === lower ||
-    lower.includes(String(item?.label || "").toLowerCase()) ||
-    String(item?.label || "").toLowerCase().includes(lower)
-  );
-  return found?.value || raw;
-}
-
-function buildAiJobDraftFromPrompt(prompt = {}, fallbackOptions = {}) {
-  const text = String(prompt?.prompt || prompt?.text || prompt || "").trim();
-  const source = text.toLowerCase();
-  const draft = { ...(typeof prompt === "object" ? prompt : {}) };
-
-  const exact = {};
-
-  const salaryRange = text.match(/(?:maaş|maas|salary)?\s*(\d{2,5})\s*(?:-|–|—|ilə|ile|arası|arasi)\s*(\d{2,5})\s*(?:azn|manat)?/i);
-  const salarySingle = text.match(/(?:maaş|maas|salary)\s*(?:[:=])?\s*(\d{2,5})\s*(?:azn|manat)?/i) || text.match(/(\d{2,5})\s*(?:azn|manat)/i);
-  if (salaryRange) exact.wage = `${salaryRange[1]}-${salaryRange[2]} AZN`;
-  else if (salarySingle) exact.wage = `${salarySingle[1]} AZN`;
-
-  const timeMatch = text.match(/(\b[01]?\d|2[0-3])[:.](\d{2})\b\s*(?:-|–|—|dən|dan|ile|ilə|to)?\s*(\b[01]?\d|2[0-3])[:.](\d{2})\b/i);
-  if (timeMatch) {
-    exact.startTime = `${String(timeMatch[1]).padStart(2, "0")}:${timeMatch[2]}`;
-    exact.endTime = `${String(timeMatch[3]).padStart(2, "0")}:${timeMatch[4]}`;
-  }
-
-  const cityMatch = text.match(/\b(bakı|baki|sumqayıt|sumqayit|gəncə|gence|mingəçevir|sheki|şəki|lənkəran|lenkeran|şirvan|sirvan|naxçıvan|naxcivan|quba|xaçmaz|xacmaz|masallı|masalli|salyan)\b/i);
-  if (cityMatch) {
-    const cityMap = { baki: "Bakı", bakı: "Bakı", sumqayit: "Sumqayıt", sumqayıt: "Sumqayıt", gence: "Gəncə", gəncə: "Gəncə", sheki: "Şəki", şəki: "Şəki", lenkeran: "Lənkəran", lənkəran: "Lənkəran", sirvan: "Şirvan", şirvan: "Şirvan", naxcivan: "Naxçıvan", naxçıvan: "Naxçıvan", quba: "Quba", xacmaz: "Xaçmaz", xaçmaz: "Xaçmaz", masalli: "Masallı", masallı: "Masallı", salyan: "Salyan" };
-    exact.city = cityMap[cityMatch[1].toLowerCase()] || cityMatch[1];
-  }
-
-  const addressMatch = text.match(/(?:iş yeri|is yeri|ünvan|unvan|lokasiya|məkan|mekan)\s*(?:[:=])?\s*([^,.\n]+)/i);
-  if (addressMatch) {
-    const address = addressMatch[1].trim();
-    exact.location = exact.city && !address.toLowerCase().includes(exact.city.toLowerCase()) ? `${address}, ${exact.city}` : address;
-  }
-
-  if (/yarım|yarim|part/.test(source)) exact.jobType = "part_time";
-  else if (/növb|novb|shift|iş saati|is saati|saatı|saati/.test(source)) exact.jobType = "shift";
-  else if (/frilans|freelance/.test(source)) exact.jobType = "freelance";
-  else if (/müvəqqəti|muveqqeti|temporary/.test(source)) exact.jobType = "temporary";
-  else if (!draft.jobType && !draft.job_type) exact.jobType = "full_time";
-
-  if (/təcrübə vacib deyil|tecrube vacib deyil|təcrübəsiz|tecrubesiz|təcrübə tələb olunmur|tecrube teleb olunmur|təcrübə vacib deyil/.test(source)) {
-    exact.jobLevel = "entry";
-  } else if (!draft.jobLevel && !draft.job_level) {
-    exact.jobLevel = "entry";
-  }
-
-  if (/ofisiant|ofisant|waiter/.test(source)) exact.title = "Ofisiant";
-  else if (/satıcı|satici|satış|satis/.test(source)) exact.title = "Satış məsləhətçisi";
-  else if (/kuryer|courier/.test(source)) exact.title = "Kuryer";
-  else if (/operator/.test(source)) exact.title = "Operator";
-
-  if (!draft.description && text) draft.description = text;
-
-  // User-in yazdığı konkret faktlar AI cavabından üstün olmalıdır.
-  // Məsələn: "maaş 500 manat" yazılıbsa AI bunu "razılaşma yolu" edə bilməz.
-  return { ...draft, ...exact };
-}
-
 function getJobStatus(job) {
   return String(job?.status || job?.jobStatus || "open").toLowerCase();
 }
@@ -450,6 +382,7 @@ export default function HomePageClient() {
   const [publishAt, setPublishAt] = useState("");
   const [locationText, setLocationText] = useState("");
   const [jobImagePreview, setJobImagePreview] = useState("");
+  const [createErrors, setCreateErrors] = useState({});
   const [lat, setLat] = useState("40.4093");
   const [lng, setLng] = useState("49.8671");
 
@@ -464,13 +397,6 @@ export default function HomePageClient() {
   const [supportMode, setSupportMode] = useState("list");
   const [activeTicketId, setActiveTicketId] = useState(null);
   const supportSocketRef = useRef(null);
-
-  const [aiPanelOpen, setAiPanelOpen] = useState(false);
-  const [aiMode, setAiMode] = useState("generate-job");
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiResult, setAiResult] = useState(null);
-  const [aiBusy, setAiBusy] = useState(false);
-
 
   const [editingName, setEditingName] = useState("");
   const [editingPhone, setEditingPhone] = useState("");
@@ -1130,6 +1056,7 @@ export default function HomePageClient() {
     setPublishMode("instant");
     setPublishAt("");
     setJobImagePreview("");
+    setCreateErrors({});
   }
 
   function startEditJob(job) {
@@ -1173,6 +1100,55 @@ export default function HomePageClient() {
     setOk("Elan redaktə rejimində açıldı");
   }
 
+
+  function getOptionLabel(options, value) {
+    return options?.find?.((item) => String(item.value) === String(value))?.label || value || "";
+  }
+
+  function getCreateTabMeta(tabKey) {
+    if (tabKey === "type") return { selected: Boolean(jobType), value: getOptionLabel(activeVacancyTypeOptions, jobType) };
+    if (tabKey === "category") return { selected: Boolean(category), value: category };
+    if (tabKey === "level") return { selected: Boolean(jobLevel), value: getOptionLabel(activeJobLevelOptions, jobLevel) };
+    if (tabKey === "salary") return { selected: Boolean(String(wage || "").trim()), value: wage };
+    return { selected: false, value: "" };
+  }
+
+  function touchCreateField(field) {
+    if (!createErrors[field]) return;
+    setCreateErrors((current) => {
+      const next = { ...current };
+      delete next[field];
+      return next;
+    });
+  }
+
+  function validateCreateJobForm() {
+    const nextErrors = {};
+    if (!String(title || "").trim()) nextErrors.title = "Vakansiya adını yazın";
+    if (!String(city || locationText || "").trim()) nextErrors.city = "Şəhər seçin";
+    if (!jobType) nextErrors.jobType = "Vakansiyanın növünü seçin";
+    if (!category) nextErrors.category = "Kateqoriya seçin";
+    if (!String(wage || "").trim()) nextErrors.wage = "Maaş məlumatını yazın";
+    if (!String(companyObject || companyName || "").trim()) nextErrors.companyObject = "Şirkət və ya obyekt adını yazın";
+    if (!String(contactPhone || "").trim() || String(contactPhone || "").trim() === "+994") nextErrors.contactPhone = "Əlaqə nömrəsini yazın";
+    if (!String(description || "").trim()) nextErrors.description = "Elan təsvirini yazın";
+    if (publishMode === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) nextErrors.publishAt = "Planlı yayım üçün gələcək tarix və saat seçin";
+
+    setCreateErrors(nextErrors);
+    const firstMessage = Object.values(nextErrors)[0];
+    if (firstMessage) {
+      setError(firstMessage);
+      setOk("");
+      const firstField = Object.keys(nextErrors)[0];
+      setTimeout(() => {
+        const el = document.querySelector(`[data-create-field="${firstField}"]`) || document.querySelector('[data-create-required="true"]');
+        el?.scrollIntoView?.({ behavior: "smooth", block: "center" });
+      }, 50);
+      return false;
+    }
+    return true;
+  }
+
   async function handleCreateJob(e, saveAsDraft = false) {
     e.preventDefault();
     if (!user?.id) return;
@@ -1187,9 +1163,10 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      if (!title.trim()) throw new Error("Elanın adını yazın");
-      if (!category) throw new Error("Kateqoriya seçin");
-      if (!jobType) throw new Error("Vakansiyanın növünü seçin");
+      if (!validateCreateJobForm()) {
+        setLoading(false);
+        return;
+      }
 
       const resolvedDuration =
         jobType === "temporary"
@@ -1683,96 +1660,6 @@ export default function HomePageClient() {
     node.scrollBy({ left: direction * amount, behavior: "smooth" });
   }
 
-  function applyAiJobDraft(draft = {}, { goToCreate = true } = {}) {
-    const mergedDraft = buildAiJobDraftFromPrompt({ ...(draft || {}), prompt: aiPrompt }, jobFilterOptions);
-    const vacancyOptions = jobFilterOptions?.vacancyTypes?.length ? jobFilterOptions.vacancyTypes : vacancyTypeOptions;
-    const levelOptions = jobFilterOptions?.jobLevels?.length ? jobFilterOptions.jobLevels : jobLevelOptions;
-
-    if (mergedDraft.title) setTitle(mergedDraft.title);
-    if (mergedDraft.companyName || mergedDraft.company_name || mergedDraft.companyObject) setCompanyObject(mergedDraft.companyName || mergedDraft.company_name || mergedDraft.companyObject);
-    if (mergedDraft.wage || mergedDraft.salary) setWage(mergedDraft.wage || mergedDraft.salary);
-    if (mergedDraft.location || mergedDraft.address || mergedDraft.city) setLocationText(mergedDraft.location || mergedDraft.address || mergedDraft.city);
-    if (mergedDraft.description) setDescription(mergedDraft.description);
-    if (mergedDraft.category) setCategory(mergedDraft.category);
-    if (mergedDraft.jobType || mergedDraft.job_type) setJobType(normalizeAiSelectValue(mergedDraft.jobType || mergedDraft.job_type, vacancyOptions));
-    if (mergedDraft.jobLevel || mergedDraft.job_level) setJobLevel(normalizeAiSelectValue(mergedDraft.jobLevel || mergedDraft.job_level, levelOptions));
-    if (mergedDraft.startTime || mergedDraft.start_time || mergedDraft.scheduleStart) setScheduleStart(mergedDraft.startTime || mergedDraft.start_time || mergedDraft.scheduleStart);
-    if (mergedDraft.endTime || mergedDraft.end_time || mergedDraft.scheduleEnd) setScheduleEnd(mergedDraft.endTime || mergedDraft.end_time || mergedDraft.scheduleEnd);
-    if (mergedDraft.voen) setVoen(mergedDraft.voen);
-    if (mergedDraft.phone || mergedDraft.contactPhone || mergedDraft.whatsapp) {
-      const phoneValue = mergedDraft.phone || mergedDraft.contactPhone || mergedDraft.whatsapp;
-      setContactPhone(phoneValue);
-      setWhatsapp(phoneValue);
-    }
-    if (mergedDraft.email || mergedDraft.contactEmail) setContactEmail(mergedDraft.email || mergedDraft.contactEmail);
-    if (mergedDraft.link || mergedDraft.contactLink) setLink(mergedDraft.link || mergedDraft.contactLink);
-    if (mergedDraft.requirements && Array.isArray(mergedDraft.requirements)) {
-      setDescription((current) => {
-        const base = mergedDraft.description || current || "";
-        const req = mergedDraft.requirements.map((item) => `- ${item}`).join("\n");
-        return `${base}\n\nTələblər:\n${req}`.trim();
-      });
-    }
-    if (goToCreate) {
-      setAiPanelOpen(false);
-      setActiveSection("create");
-      setTimeout(() => window.scrollTo({ top: 0, behavior: "smooth" }), 80);
-    }
-    setOk("AI məlumatları elan formasına əlavə etdi");
-  }
-
-  async function handleAiAction(mode = aiMode, extraPayload = {}) {
-    setAiBusy(true);
-    setError("");
-    setOk("");
-    try {
-      const basePayload = {
-        prompt: aiPrompt,
-        title,
-        companyName: companyObject || companyName || user?.companyName || "",
-        wage,
-        city: locationText,
-        category,
-        jobType,
-        jobLevel,
-        description,
-        filterOptions: jobFilterOptions,
-        profile: user,
-        ...extraPayload,
-      };
-      let data;
-      data = await api.aiGenerateJob(basePayload);
-      const fallbackJob = buildAiJobDraftFromPrompt({ ...basePayload, ...(data?.job || {}) }, jobFilterOptions);
-      setAiResult(data?.job ? data : { ...(data || {}), job: fallbackJob });
-      setAiPanelOpen(true);
-      setAiMode("generate-job");
-      setOk("AI elan məlumatlarını hazırladı");
-    } catch (e) {
-      setError(e?.message || "AI köməkçi cavab verə bilmədi");
-    } finally {
-      setAiBusy(false);
-    }
-  }
-
-  async function handleCreateAiGenerate() {
-    const prompt = aiPrompt || description || title || `${category} ${wage} ${locationText}`.trim();
-    if (!prompt) {
-      setAiPanelOpen(true);
-      setAiMode("generate-job");
-      setError("AI ilə doldurmaq üçün qısa məlumat yazın");
-      return;
-    }
-    await handleAiAction("generate-job", { prompt });
-  }
-
-  async function handleImproveDescription() {
-    if (!description.trim() && !title.trim()) {
-      setError("Əvvəl elan haqqında qısa məlumat yazın");
-      return;
-    }
-    await handleAiAction("improve-job", { prompt: description || title });
-  }
-
 
   useEffect(() => {
     let ignore = false;
@@ -1902,7 +1789,7 @@ export default function HomePageClient() {
                     key={item.value}
                     type="button"
                     className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                    onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
                   >
                     {item.label}
                   </button>
@@ -1913,7 +1800,7 @@ export default function HomePageClient() {
                     key={item}
                     type="button"
                     className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => setCategory((current) => current === item ? "" : item)}
+                    onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
                   >
                     {item}
                   </button>
@@ -1924,7 +1811,7 @@ export default function HomePageClient() {
                     key={item.value}
                     type="button"
                     className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                    onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
                   >
                     {item.label}
                   </button>
@@ -2309,7 +2196,7 @@ export default function HomePageClient() {
                   key={item.value}
                   type="button"
                   className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                  onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
                 >
                   {item.label}
                 </button>
@@ -2320,7 +2207,7 @@ export default function HomePageClient() {
                   key={item}
                   type="button"
                   className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => setCategory((current) => current === item ? "" : item)}
+                  onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
                 >
                   {item}
                 </button>
@@ -2331,7 +2218,7 @@ export default function HomePageClient() {
                   key={item.value}
                   type="button"
                   className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                  onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
                 >
                   {item.label}
                 </button>
@@ -2451,16 +2338,7 @@ export default function HomePageClient() {
 
           {user ? (
             <form className="form-grid" onSubmit={handleCreateJob}>
-              <div className="asimos-ai-create-card full-row">
-                <div>
-                  <strong>Asimos AI elan köməkçisi</strong>
-                  <p>Qısa yazın, AI başlıq, təsvir, kateqoriya və uyğun filterləri təklif etsin.</p>
-                </div>
-                <div className="asimos-ai-create-actions">
-                  <button type="button" className="btn-primary" disabled={aiBusy} onClick={() => { setAiPanelOpen(true); setAiMode("generate-job"); }}>AI ilə elan yarat</button>
-                </div>
-              </div>
-              <div className={`${styles.homeFilterCard} full-row`}>
+              <div className={`${styles.homeFilterCard} full-row create-filter-card`}>
                 <div className={styles.homeFilterTitle}>
                   <span className={styles.homeFilterTitleIcon} aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2471,22 +2349,24 @@ export default function HomePageClient() {
                   <h1>Elan yerləşdir</h1>
                 </div>
 
-                <div className={styles.homeFilterSearchRow}>
-                  <div className={styles.homeFilterInputWrap}>
+                <div className={`${styles.homeFilterSearchRow} ${styles.createIntroRow}`}>
+                  <div className={`${styles.homeFilterInputWrap} ${createErrors.title ? "create-field-invalid" : ""}`} data-create-field="title" data-create-required="true">
                     <span aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <circle cx="11" cy="11" r="7" />
-                        <path d="m20 20-3.5-3.5" strokeLinecap="round" />
+                        <path d="M4 7h16" strokeLinecap="round" />
+                        <path d="M4 12h10" strokeLinecap="round" />
+                        <path d="M4 17h7" strokeLinecap="round" />
                       </svg>
                     </span>
                     <input
                       value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Vakansiya adı və ya açar söz"
+                      onChange={(e) => { setTitle(e.target.value); touchCreateField("title"); }}
+                      placeholder="Vakansiya adı: məsələn Satış təmsilçisi"
+                      aria-invalid={Boolean(createErrors.title)}
                     />
                   </div>
 
-                  <div className={styles.homeFilterSelectWrap}>
+                  <div className={`${styles.homeFilterSelectWrap} ${createErrors.city ? "create-field-invalid" : ""}`} data-create-field="city" data-create-required="true">
                     <span aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
@@ -2497,9 +2377,11 @@ export default function HomePageClient() {
                       value={city}
                       onChange={(e) => {
                         setCity(e.target.value);
+                        touchCreateField("city");
                         if (e.target.value) setLocationText(e.target.value);
                       }}
                       aria-label="Şəhəri seç"
+                      aria-invalid={Boolean(createErrors.city)}
                     >
                       <option value="">Şəhəri seç</option>
                       {cityOptions.map((item) => (
@@ -2507,32 +2389,40 @@ export default function HomePageClient() {
                       ))}
                     </select>
                   </div>
+                </div>
+                {(createErrors.title || createErrors.city) ? (
+                  <div className="create-inline-errors">
+                    {createErrors.title ? <span>{createErrors.title}</span> : null}
+                    {createErrors.city ? <span>{createErrors.city}</span> : null}
+                  </div>
+                ) : null}
 
-                  <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
-                    {loading ? "Saxlanılır..." : editingJobId ? "Yenilə" : "Yerləşdir"}
-                  </button>
+                <div className={`${styles.homeFilterTabs} create-filter-tabs`} role="tablist" aria-label="Elan yerləşdirmə filterləri">
+                  {homeFilterTabs.map((tab) => {
+                    const meta = getCreateTabMeta(tab.key);
+                    const hasError = Boolean(createErrors.jobType && tab.key === "type") || Boolean(createErrors.category && tab.key === "category") || Boolean(createErrors.jobLevel && tab.key === "level") || Boolean(createErrors.wage && tab.key === "salary");
+                    return (
+                      <button
+                        key={tab.key}
+                        type="button"
+                        className={`${activeCreateFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab} ${meta.selected ? "create-tab-filled" : ""} ${hasError ? "create-tab-error" : ""}`}
+                        onClick={() => setActiveCreateFilterTab(tab.key)}
+                      >
+                        <span>{tab.label}</span>
+                        {meta.selected ? <small title={meta.value}>✓</small> : null}
+                        {hasError ? <em>!</em> : null}
+                      </button>
+                    );
+                  })}
                 </div>
 
-                <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan yerləşdirmə filterləri">
-                  {homeFilterTabs.map((tab) => (
-                    <button
-                      key={tab.key}
-                      type="button"
-                      className={activeCreateFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab}
-                      onClick={() => setActiveCreateFilterTab(tab.key)}
-                    >
-                      {tab.label}
-                    </button>
-                  ))}
-                </div>
-
-                <div className={styles.homeFilterOptions}>
+                <div className={`${styles.homeFilterOptions} create-filter-options`}>
                   {activeCreateFilterTab === "type" ? activeVacancyTypeOptions.map((item) => (
                     <button
                       key={item.value}
                       type="button"
                       className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
+                      onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
                     >
                       {item.label}
                     </button>
@@ -2543,7 +2433,7 @@ export default function HomePageClient() {
                       key={item}
                       type="button"
                       className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => setCategory((current) => current === item ? "" : item)}
+                      onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
                     >
                       {item}
                     </button>
@@ -2554,7 +2444,7 @@ export default function HomePageClient() {
                       key={item.value}
                       type="button"
                       className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
+                      onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
                     >
                       {item.label}
                     </button>
@@ -2567,7 +2457,7 @@ export default function HomePageClient() {
                           key={item.label}
                           type="button"
                           className={activeCreateSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                          onClick={() => setWage((current) => current === item.label ? "" : item.label)}
+                          onClick={() => { setWage((current) => current === item.label ? "" : item.label); touchCreateField("wage"); }}
                         >
                           {item.label}
                         </button>
@@ -2576,7 +2466,7 @@ export default function HomePageClient() {
                         className={styles.homeFilterOption}
                         style={{ textAlign: "left", cursor: "text" }}
                         value={wage}
-                        onChange={(e) => setWage(e.target.value)}
+                        onChange={(e) => { setWage(e.target.value); touchCreateField("wage"); }}
                         placeholder="Maaşı əl ilə yaz: məsələn 900 AZN"
                       />
                     </>
@@ -2590,9 +2480,10 @@ export default function HomePageClient() {
                 </div>
               </div>
 
-              <label>
+              <label className={createErrors.companyObject ? "create-label invalid" : "create-label"} data-create-field="companyObject" data-create-required="true">
                 Şirkət / obyekt
-                <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Direkt və ya obyekt adı" />
+                <input value={companyObject} onChange={(e) => { setCompanyObject(e.target.value); touchCreateField("companyObject"); }} placeholder="Direkt və ya obyekt adı" aria-invalid={Boolean(createErrors.companyObject)} />
+                {createErrors.companyObject ? <small className="field-error-text">{createErrors.companyObject}</small> : null}
               </label>
 
               <label className="asimos-upload-field">
@@ -2652,9 +2543,10 @@ export default function HomePageClient() {
                 </>
               ) : null}
 
-              <label>
+              <label className={createErrors.wage ? "create-label invalid" : "create-label"} data-create-field="wage" data-create-required="true">
                 Maaş
-                <input value={wage} onChange={(e) => setWage(e.target.value)} placeholder="Məs: 800 AZN və ya razılaşma yolu ilə" />
+                <input value={wage} onChange={(e) => { setWage(e.target.value); touchCreateField("wage"); }} placeholder="Məs: 800 AZN və ya razılaşma yolu ilə" aria-invalid={Boolean(createErrors.wage)} />
+                {createErrors.wage ? <small className="field-error-text">{createErrors.wage}</small> : null}
               </label>
 
               <label>
@@ -2682,9 +2574,10 @@ export default function HomePageClient() {
                 <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
               </label>
 
-              <label>
+              <label className={createErrors.contactPhone ? "create-label invalid" : "create-label"} data-create-field="contactPhone" data-create-required="true">
                 Əlaqə nömrəsi
-                <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
+                <input value={contactPhone} onChange={(e) => { setContactPhone(e.target.value); touchCreateField("contactPhone"); }} aria-invalid={Boolean(createErrors.contactPhone)} />
+                {createErrors.contactPhone ? <small className="field-error-text">{createErrors.contactPhone}</small> : null}
               </label>
 
               <label>
@@ -2706,15 +2599,17 @@ export default function HomePageClient() {
               </label>
 
               {publishMode === "scheduled" ? (
-                <label>
+                <label className={createErrors.publishAt ? "create-label invalid" : "create-label"} data-create-field="publishAt">
                   Tarix və saat
-                  <input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} />
+                  <input type="datetime-local" value={publishAt} onChange={(e) => { setPublishAt(e.target.value); touchCreateField("publishAt"); }} aria-invalid={Boolean(createErrors.publishAt)} />
+                  {createErrors.publishAt ? <small className="field-error-text">{createErrors.publishAt}</small> : null}
                 </label>
               ) : null}
 
-              <label className="full-row">
+              <label className={`full-row create-label ${createErrors.description ? "invalid" : ""}`} data-create-field="description" data-create-required="true">
                 Təsvir
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={6} required />
+                <textarea value={description} onChange={(e) => { setDescription(e.target.value); touchCreateField("description"); }} rows={6} required aria-invalid={Boolean(createErrors.description)} />
+                {createErrors.description ? <small className="field-error-text">{createErrors.description}</small> : null}
               </label>
 
               <div className="full-row create-map-shell">
@@ -3337,85 +3232,6 @@ export default function HomePageClient() {
         />
       ) : null}
 
-
-      <button type="button" className="asimos-ai-floating" onClick={() => { setAiMode("generate-job"); setAiPanelOpen(true); }} aria-label="Asimos AI elan köməkçisi">
-        <span className="asimos-ai-orb" aria-hidden="true">
-          <svg viewBox="0 0 24 24" fill="none">
-            <path d="M12 3l1.65 4.35L18 9l-4.35 1.65L12 15l-1.65-4.35L6 9l4.35-1.65L12 3Z" fill="currentColor"/>
-            <path d="M18.5 13l.9 2.2 2.1.8-2.1.8-.9 2.2-.9-2.2-2.1-.8 2.1-.8.9-2.2Z" fill="currentColor" opacity=".75"/>
-          </svg>
-        </span>
-        <span>AI</span>
-      </button>
-
-      {aiPanelOpen ? (
-        <div className="asimos-ai-backdrop" onMouseDown={() => setAiPanelOpen(false)}>
-          <aside className="asimos-ai-panel" onMouseDown={(event) => event.stopPropagation()} role="dialog" aria-modal="true" aria-label="Asimos AI köməkçi">
-            <header className="asimos-ai-panel-head">
-              <div>
-                <span className="asimos-ai-kicker">Asimos AI</span>
-                <h3>AI elan köməkçisi</h3>
-              </div>
-              <button type="button" className="asimos-ai-close" onClick={() => setAiPanelOpen(false)}>×</button>
-            </header>
-
-            <div className="asimos-ai-single-tool">
-              <span className="asimos-ai-tool-icon" aria-hidden="true">✦</span>
-              <div>
-                <strong>AI ilə elan yarat</strong>
-                <p>Bir cümlə yazın, AI onu elan yaratma formasındakı uyğun sahələrə çevirsin.</p>
-              </div>
-            </div>
-
-            <label className="asimos-ai-prompt">
-              <span>Elan haqqında qısa məlumat yazın</span>
-              <textarea
-                value={aiPrompt}
-                onChange={(e) => setAiPrompt(e.target.value)}
-                rows={5}
-                placeholder="Məs: Bakıda mağaza üçün satıcı lazımdır, maaş 800-1000 AZN, təcrübə vacib deyil, iş saatı 09:00-18:00"
-              />
-            </label>
-
-            <button type="button" className="btn-primary asimos-ai-run" disabled={aiBusy} onClick={() => handleAiAction("generate-job")}>
-              {aiBusy ? "AI elan hazırlayır..." : "Elanı hazırla"}
-            </button>
-
-            {aiResult ? (
-              <div className="asimos-ai-result">
-                <div className="asimos-ai-result-head">
-                  <strong>Nəticə</strong>
-                  {aiResult.job ? <button type="button" onClick={() => applyAiJobDraft(aiResult.job)}>Elan formasına keçirt</button> : null}
-                </div>
-                {aiResult.reply ? <p>{aiResult.reply}</p> : null}
-                {aiResult.bio ? <p>{aiResult.bio}</p> : null}
-                {aiResult.summary ? <p>{aiResult.summary}</p> : null}
-                {aiResult.riskLevel ? <p><strong>Risk:</strong> {aiResult.riskLevel} — {aiResult.reason}</p> : null}
-                {aiResult.job ? (
-                  <div className="asimos-ai-job-preview">
-                    <strong>{aiResult.job.title}</strong>
-                    <span>{aiResult.job.category} · {aiResult.job.jobType || aiResult.job.job_type} · {aiResult.job.jobLevel || aiResult.job.job_level}</span>
-                    <p>{aiResult.job.description}</p>
-                  </div>
-                ) : null}
-                {Array.isArray(aiResult.items) && aiResult.items.length ? (
-                  <div className="asimos-ai-matches">
-                    {aiResult.items.slice(0, 5).map((item) => (
-                      <button key={item.id} type="button" onClick={() => { setAiPanelOpen(false); openJobDetail(item.id); }}>
-                        <strong>{item.title}</strong>
-                        <span>{item.matchPercent || item.score || 0}% uyğun · {item.reason || item.location || ""}</span>
-                      </button>
-                    ))}
-                  </div>
-                ) : null}
-                {!aiResult.reply && !aiResult.bio && !aiResult.job && !aiResult.items && !aiResult.riskLevel ? (
-                  <pre>{JSON.stringify(aiResult, null, 2)}</pre>
-                ) : null}
-              </div>
-            ) : null}
-          </aside>
-        </div>
-      ) : null}
 
       {roleSwitchConfirmOpen ? (
         <div className="confirm-modal-backdrop" role="presentation" onClick={() => setRoleSwitchConfirmOpen(false)}>
