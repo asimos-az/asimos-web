@@ -1913,7 +1913,6 @@ export default function HomePageClient() {
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
-                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
                   <h2>Son elanlar</h2>
                   <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
@@ -1975,7 +1974,6 @@ export default function HomePageClient() {
           <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
             <div className={styles.statsCard}>
               <div className={styles.statsIntro}>
-                <span>Asimos statistikası</span>
                 <h2>Platformanın canlı göstəriciləri</h2>
                 <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>

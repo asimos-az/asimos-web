@@ -526,18 +526,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
       </header>
 
       <div className="jobs-map-shell card">
-        {jobsWithCoordinates.length ? (
-          <div className="jobs-map-toolbar jobs-map-toolbar--auto">
-            <div>
-              <strong>{jobsWithCoordinates.length}</strong> elan markerləri cluster-lənir.
-              {!jobsRendered ? <span> Markerlər hissə-hissə yüklənir...</span> : null}
-              {poiLoading ? <span> Metro və universitetlər yüklənir...</span> : null}
-              {!poiLoading && poiData.universities.length + poiData.metros.length > 0 ? (
-                <span> {poiData.universities.length} universitet, {poiData.metros.length} metro marker kimi əlavə edildi.</span>
-              ) : null}
-            </div>
-          </div>
-        ) : null}
+        
         {loadError ? <p className="jobs-map-empty">{loadError}</p> : null}
         {!loadError && poiError ? <p className="jobs-map-empty">{poiError}</p> : null}
         {!loadError && !jobsWithCoordinates.length ? (
