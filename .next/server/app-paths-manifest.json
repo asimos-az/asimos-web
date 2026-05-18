@@ -1,5 +1,4 @@
 {
   "/page": "app/page.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
-  "/jobs/[id]/page": "app/jobs/[id]/page.js"
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js"
 }

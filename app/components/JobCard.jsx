@@ -111,7 +111,10 @@ export default function JobCard({ job, onClick, onPrefetch, showEdit = false, on
         className={`job-card-save ${isFavorite ? "saved" : ""}`}
         aria-label={isFavorite ? "Favoritdən sil" : "Yadda saxla"}
         title={isFavorite ? "Favoritdən sil" : "Yadda saxla"}
-        onClick={(event) => onToggleFavorite?.(event)}
+        onClick={(event) => {
+          event.stopPropagation();
+          onToggleFavorite?.(event);
+        }}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
           <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V21l-5-3.2L7 21V4.75Z" strokeLinecap="round" strokeLinejoin="round" />

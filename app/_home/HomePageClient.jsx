@@ -1956,7 +1956,7 @@ export default function HomePageClient() {
                       job={job}
                       onClick={() => openJobDetail(job.id)}
                       onPrefetch={() => prefetchJobDetail(job.id)}
-                      isFavorite={favoriteJobIds.has(String(job.id)) || Boolean(job.isFavorite || job.is_favorite)}
+                      isFavorite={favoriteJobIds.has(String(job.id))}
                       onToggleFavorite={(event) => handleToggleFavorite(job, event)}
                     />
                   </div>
@@ -2200,7 +2200,7 @@ export default function HomePageClient() {
                 onPrefetch={() => prefetchJobDetail(job.id)}
                 showEdit={(job?.createdBy || job?.created_by) === user?.id}
                 onEdit={() => startEditJob(job)}
-                isFavorite={favoriteJobIds.has(String(job.id)) || Boolean(job.isFavorite || job.is_favorite)}
+                isFavorite={favoriteJobIds.has(String(job.id))}
                 onToggleFavorite={(event) => handleToggleFavorite(job, event)}
               />
             ))}
