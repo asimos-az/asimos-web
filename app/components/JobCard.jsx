@@ -1,3 +1,5 @@
+import { useState } from "react";
+
 function formatDate(value) {
   if (!value) return "";
   const date = new Date(value);
@@ -62,11 +64,13 @@ export default function JobCard({ job, onClick, onPrefetch, showEdit = false, on
   const jobTypeLabel = getJobTypeLabel(job);
   const premium = isPremiumJob(job);
   const logoUrl = job?.logoUrl || job?.logo_url || job?.imageUrl || job?.image_url || job?.companyLogo || job?.company_logo || "";
+  const [logoFailed, setLogoFailed] = useState(false);
+  const hasValidLogo = Boolean(logoUrl && !logoFailed);
 
   return (
     <article className="job-card" onClick={onClick} onMouseEnter={onPrefetch} onFocus={onPrefetch} tabIndex={0}>
       <div className="job-card-logo" aria-hidden="true">
-        {logoUrl ? <img src={logoUrl} alt="" /> : <DefaultJobLogoIcon />}
+        {hasValidLogo ? <img src={logoUrl} alt="" onError={() => setLogoFailed(true)} /> : <DefaultJobLogoIcon />}
       </div>
 
       <div className="job-card-content">

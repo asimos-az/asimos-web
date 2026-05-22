@@ -440,7 +440,7 @@
 
 .HomePage_latestJobsHead__8Hvwf {
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   justify-content: space-between;
   gap: 18px;
 }
@@ -1874,34 +1874,66 @@
   }
 }
 
-/* Create job form refinements */
-.HomePage_createIntroRow__lFey0 {
-  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.8fr) !important;
+.HomePage_createSalaryChooser__NjxnR {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-gap: 12px;
+  gap: 12px;
+  width: 100%;
 }
 
-@media (max-width: 900px) {
-  .HomePage_createIntroRow__lFey0 {
-    grid-template-columns: 1fr !important;
+.HomePage_salaryChoiceGrid__HmzPI {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-gap: 10px;
+  gap: 10px;
+}
+
+.HomePage_salaryRangeInputs__m4cyh {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-gap: 10px;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, .08);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, .92);
+}
+
+.HomePage_salaryRangeInputs__m4cyh label {
+  display: grid;
+  grid-gap: 6px;
+  gap: 6px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.HomePage_salaryRangeInputs__m4cyh input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 13px;
+  border: 1px solid rgba(15, 23, 42, .12);
+  background: #fff;
+  padding: 0 12px;
+  font: inherit;
+  outline: none;
+}
+
+.HomePage_salaryRangeInputs__m4cyh input:focus {
+  border-color: rgba(37, 99, 235, .55);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+@media (max-width: 720px) {
+  .HomePage_salaryChoiceGrid__HmzPI {
+    grid-template-columns: 1fr;
   }
-}
 
-
-/* User fix: reduce bottom whitespace under statistics section/card */
-.HomePage_statsSectionBottom__h1QYf {
-  padding-bottom: 30px !important;
-}
-
-.HomePage_statsSectionBottom__h1QYf .HomePage_statsCard__8xyq4 {
-  padding-bottom: 30px !important;
-}
-
-@media (max-width: 640px) {
-  .HomePage_statsSectionBottom__h1QYf {
-    padding-bottom: 30px !important;
-  }
-
-  .HomePage_statsSectionBottom__h1QYf .HomePage_statsCard__8xyq4 {
-    padding-bottom: 30px !important;
+  .HomePage_salaryRangeInputs__m4cyh {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    border-radius: 14px;
   }
 }
 

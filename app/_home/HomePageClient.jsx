@@ -290,6 +290,7 @@ export default function HomePageClient() {
   const router = useRouter();
   const prefetchedJobIds = useRef(new Set());
   const latestJobsCarouselRef = useRef(null);
+  const jobsLoadMoreRef = useRef(null);
   const [booting, setBooting] = useState(true);
   const [activeSection, setActiveSection] = useState("home");
 
@@ -361,11 +362,15 @@ export default function HomePageClient() {
   });
   const [radiusM, setRadiusM] = useState("0");
   const [myJobsStatus, setMyJobsStatus] = useState("open");
+  const [jobsVisibleCount, setJobsVisibleCount] = useState(10);
   const [editingJobId, setEditingJobId] = useState(null);
 
   const [title, setTitle] = useState("");
   const [companyObject, setCompanyObject] = useState("");
   const [wage, setWage] = useState("");
+  const [wageMode, setWageMode] = useState("agreement");
+  const [wageMin, setWageMin] = useState("");
+  const [wageMax, setWageMax] = useState("");
   const [description, setDescription] = useState("");
   const [whatsapp, setWhatsapp] = useState("+994");
   const [contactPhone, setContactPhone] = useState("+994");
@@ -382,7 +387,6 @@ export default function HomePageClient() {
   const [publishAt, setPublishAt] = useState("");
   const [locationText, setLocationText] = useState("");
   const [jobImagePreview, setJobImagePreview] = useState("");
-  const [createErrors, setCreateErrors] = useState({});
   const [lat, setLat] = useState("40.4093");
   const [lng, setLng] = useState("49.8671");
 
@@ -568,6 +572,7 @@ export default function HomePageClient() {
           minWage: appliedFilters.minWage || undefined,
           maxWage: appliedFilters.maxWage || undefined,
           categories: appliedFilters.category || undefined,
+          limit: 1000,
         })
         .catch(() => ({ items: [] })),
       api.getContent("terms").catch(() => null),
@@ -671,6 +676,7 @@ export default function HomePageClient() {
       minWage: filters.minWage || undefined,
       maxWage: filters.maxWage || undefined,
       categories: filters.category || undefined,
+      limit: 1000,
     });
     const nextJobs = normalizeList(res);
     setJobs(nextJobs);
@@ -1039,7 +1045,10 @@ export default function HomePageClient() {
     setEditingJobId(null);
     setTitle("");
     setCompanyObject("");
-    setWage("");
+    setWage("Razılaşma əsasında");
+    setWageMode("agreement");
+    setWageMin("");
+    setWageMax("");
     setDescription("");
     setContactEmail(user?.email || "");
     setLink("");
@@ -1056,7 +1065,6 @@ export default function HomePageClient() {
     setPublishMode("instant");
     setPublishAt("");
     setJobImagePreview("");
-    setCreateErrors({});
   }
 
   function startEditJob(job) {
@@ -1070,7 +1078,23 @@ export default function HomePageClient() {
     setEditingJobId(job.id);
     setTitle(job.title || "");
     setCompanyObject(job.companyName || job.company_name || "");
-    setWage(job.wage || "");
+    const nextWage = job.wage || "";
+    const nextWageLower = String(nextWage).toLowerCase();
+    setWage(nextWage || "Razılaşma əsasında");
+    if (nextWageLower.includes("bacar")) {
+      setWageMode("skill");
+      setWageMin("");
+      setWageMax("");
+    } else if (/\d/.test(nextWageLower)) {
+      const wageNumbers = String(nextWage).match(/\d+/g) || [];
+      setWageMode("range");
+      setWageMin(wageNumbers[0] || "");
+      setWageMax(wageNumbers[1] || "");
+    } else {
+      setWageMode("agreement");
+      setWageMin("");
+      setWageMax("");
+    }
     setCategory(job.category || "");
     setWhatsapp(job.whatsapp || "+994");
     setContactPhone(job.phone || "+994");
@@ -1100,53 +1124,14 @@ export default function HomePageClient() {
     setOk("Elan redaktə rejimində açıldı");
   }
 
-
-  function getOptionLabel(options, value) {
-    return options?.find?.((item) => String(item.value) === String(value))?.label || value || "";
-  }
-
-  function getCreateTabMeta(tabKey) {
-    if (tabKey === "type") return { selected: Boolean(jobType), value: getOptionLabel(activeVacancyTypeOptions, jobType) };
-    if (tabKey === "category") return { selected: Boolean(category), value: category };
-    if (tabKey === "level") return { selected: Boolean(jobLevel), value: getOptionLabel(activeJobLevelOptions, jobLevel) };
-    if (tabKey === "salary") return { selected: Boolean(String(wage || "").trim()), value: wage };
-    return { selected: false, value: "" };
-  }
-
-  function touchCreateField(field) {
-    if (!createErrors[field]) return;
-    setCreateErrors((current) => {
-      const next = { ...current };
-      delete next[field];
-      return next;
-    });
-  }
-
-  function validateCreateJobForm() {
-    const nextErrors = {};
-    if (!String(title || "").trim()) nextErrors.title = "Vakansiya adını yazın";
-    if (!String(city || locationText || "").trim()) nextErrors.city = "Şəhər seçin";
-    if (!jobType) nextErrors.jobType = "Vakansiyanın növünü seçin";
-    if (!category) nextErrors.category = "Kateqoriya seçin";
-    if (!String(wage || "").trim()) nextErrors.wage = "Maaş məlumatını yazın";
-    if (!String(companyObject || companyName || "").trim()) nextErrors.companyObject = "Şirkət və ya obyekt adını yazın";
-    if (!String(contactPhone || "").trim() || String(contactPhone || "").trim() === "+994") nextErrors.contactPhone = "Əlaqə nömrəsini yazın";
-    if (!String(description || "").trim()) nextErrors.description = "Elan təsvirini yazın";
-    if (publishMode === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) nextErrors.publishAt = "Planlı yayım üçün gələcək tarix və saat seçin";
-
-    setCreateErrors(nextErrors);
-    const firstMessage = Object.values(nextErrors)[0];
-    if (firstMessage) {
-      setError(firstMessage);
-      setOk("");
-      const firstField = Object.keys(nextErrors)[0];
-      setTimeout(() => {
-        const el = document.querySelector(`[data-create-field="${firstField}"]`) || document.querySelector('[data-create-required="true"]');
-        el?.scrollIntoView?.({ behavior: "smooth", block: "center" });
-      }, 50);
-      return false;
-    }
-    return true;
+  function getResolvedWageValue() {
+    if (wageMode === "agreement") return "Razılaşma əsasında";
+    if (wageMode === "skill") return "Bacarığa uyğun";
+    const min = String(wageMin || "").replace(/[^0-9]/g, "");
+    const max = String(wageMax || "").replace(/[^0-9]/g, "");
+    if (min && max) return `${min} - ${max} AZN`;
+    if (min) return `${min} AZN`;
+    return "";
   }
 
   async function handleCreateJob(e, saveAsDraft = false) {
@@ -1163,10 +1148,9 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      if (!validateCreateJobForm()) {
-        setLoading(false);
-        return;
-      }
+      if (!title.trim()) throw new Error("Elanın adını yazın");
+      if (!category) throw new Error("Kateqoriya seçin");
+      if (!jobType) throw new Error("Vakansiyanın növünü seçin");
 
       const resolvedDuration =
         jobType === "temporary"
@@ -1178,10 +1162,14 @@ export default function HomePageClient() {
       if (publishMode === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
         throw new Error("Planlı yayım üçün gələcək tarix və saat seçin");
       }
+      const resolvedWage = getResolvedWageValue();
+      if (wageMode === "range" && !resolvedWage) {
+        throw new Error("Minimum və ya maksimum maaş rəqəmini yazın");
+      }
 
       const payload = {
         title,
-        wage,
+        wage: resolvedWage,
         category,
         whatsapp,
         phone: contactPhone,
@@ -1226,10 +1214,10 @@ export default function HomePageClient() {
 
       if (editingJobId) {
         await api.updateJob(editingJobId, payload);
-        setOk("Dəyişikliklər admin təsdiqinə göndərildi. Təsdiqlənənə qədər elan yayımlanmayacaq.");
+        setOk("Elan yeniləndi");
       } else {
-        const created = await api.createJob(payload);
-        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : (created?.status === "pending" ? "Elan admin təsdiqinə göndərildi. Təsdiqlənəndən sonra yayımlanacaq." : "Elan yayımlandı"));
+        await api.createJob(payload);
+        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : "Elan yayımlandı");
       }
 
       resetJobForm();
@@ -1248,7 +1236,7 @@ export default function HomePageClient() {
   async function handlePublishJob(id) {
     try {
       await api.publishJob(id);
-      setOk("Elan admin təsdiqinə göndərildi. Təsdiqlənəndən sonra aktiv olacaq.");
+      setOk("Elan aktiv edildi");
       await loadAuthedData();
       await refreshJobs();
     } catch (err) {
@@ -1587,11 +1575,33 @@ export default function HomePageClient() {
   }, [minWage, maxWage, activeSalaryRangeOptions]);
 
   const activeCreateSalaryLabel = useMemo(() => {
-    const selected = activeSalaryRangeOptions.find((item) => wage === item.label);
-    return selected?.label || "";
-  }, [wage, activeSalaryRangeOptions]);
+    if (wageMode === "agreement") return "Razılaşma əsasında";
+    if (wageMode === "skill") return "Bacarığa uyğun";
+    if (wageMode === "range") return "Minimum / maksimum";
+    return "";
+  }, [wageMode]);
 
   const shownJobs = filteredJobs;
+  const visibleShownJobs = useMemo(() => shownJobs.slice(0, jobsVisibleCount), [shownJobs, jobsVisibleCount]);
+  const hasMoreShownJobs = shownJobs.length > visibleShownJobs.length;
+  useEffect(() => {
+    setJobsVisibleCount(10);
+  }, [appliedFilters, jobsMode]);
+
+  useEffect(() => {
+    if (activeSection !== "jobs") return;
+    if (!hasMoreShownJobs) return;
+    const node = jobsLoadMoreRef.current;
+    if (!node || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver((entries) => {
+      if (entries.some((entry) => entry.isIntersecting)) {
+        setJobsVisibleCount((current) => Math.min(current + 10, shownJobs.length));
+      }
+    }, { rootMargin: "240px 0px" });
+    observer.observe(node);
+    return () => observer.disconnect();
+  }, [activeSection, hasMoreShownJobs, shownJobs.length]);
+
   const profileJobs = useMemo(() => {
     return myJobs.filter((job) => {
       const status = getJobStatus(job);
@@ -1789,7 +1799,7 @@ export default function HomePageClient() {
                     key={item.value}
                     type="button"
                     className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
+                    onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
                   >
                     {item.label}
                   </button>
@@ -1800,7 +1810,7 @@ export default function HomePageClient() {
                     key={item}
                     type="button"
                     className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
+                    onClick={() => setCategory((current) => current === item ? "" : item)}
                   >
                     {item}
                   </button>
@@ -1811,7 +1821,7 @@ export default function HomePageClient() {
                     key={item.value}
                     type="button"
                     className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                    onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
+                    onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
                   >
                     {item.label}
                   </button>
@@ -2019,7 +2029,9 @@ export default function HomePageClient() {
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
+                  <span className={styles.latestJobsKicker}>Yeni imkanlar</span>
                   <h2>Son elanlar</h2>
+                  <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
                 <div className={styles.latestJobsActions}>
                   {homeJobs.length > 9 ? (
@@ -2065,7 +2077,9 @@ export default function HomePageClient() {
           <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
             <div className={styles.statsCard}>
               <div className={styles.statsIntro}>
+                <span>Asimos statistikası</span>
                 <h2>Platformanın canlı göstəriciləri</h2>
+                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>
               <div className={styles.statsGrid}>
                 <div className={styles.statItem}>
@@ -2192,7 +2206,7 @@ export default function HomePageClient() {
                   key={item.value}
                   type="button"
                   className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
+                  onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
                 >
                   {item.label}
                 </button>
@@ -2203,7 +2217,7 @@ export default function HomePageClient() {
                   key={item}
                   type="button"
                   className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
+                  onClick={() => setCategory((current) => current === item ? "" : item)}
                 >
                   {item}
                 </button>
@@ -2214,7 +2228,7 @@ export default function HomePageClient() {
                   key={item.value}
                   type="button"
                   className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                  onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
+                  onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
                 >
                   {item.label}
                 </button>
@@ -2280,7 +2294,7 @@ export default function HomePageClient() {
           </form>
 
           <div className="mobile-job-list">
-            {shownJobs.map((job) => (
+            {visibleShownJobs.map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -2293,6 +2307,21 @@ export default function HomePageClient() {
               />
             ))}
           </div>
+
+          {hasMoreShownJobs ? (
+            <div className="jobs-lazy-load" ref={jobsLoadMoreRef}>
+              <button
+                type="button"
+                className="btn-secondary"
+                onClick={() => setJobsVisibleCount((current) => Math.min(current + 10, shownJobs.length))}
+              >
+                Daha 10 elan göstər
+              </button>
+              <span>{visibleShownJobs.length} / {shownJobs.length}</span>
+            </div>
+          ) : shownJobs.length > 10 ? (
+            <div className="jobs-lazy-load completed">Bütün elanlar göstərildi</div>
+          ) : null}
 
           {shownJobs.length === 0 ? (
             <div className="empty-state-card">
@@ -2325,11 +2354,16 @@ export default function HomePageClient() {
 
       {activeSection === "create" && canCreateJob ? (
         <section className="container page-section">
+          <header className="section-head">
+            <h2>{editingJobId ? "Elanı redaktə et" : "İşçi axtaran profili üçün elan yarat"}</h2>
+            <p>{editingJobId ? "Məlumatları yeniləyin və yenidən yadda saxlayın." : "Elan məlumatlarını doldurun, xəritədə ünvan seçin və yayımlanma formasını müəyyən edin."}</p>
+          </header>
+
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
 
           {user ? (
             <form className="form-grid" onSubmit={handleCreateJob}>
-              <div className={`${styles.homeFilterCard} full-row create-filter-card`}>
+              <div className={`${styles.homeFilterCard} full-row`}>
                 <div className={styles.homeFilterTitle}>
                   <span className={styles.homeFilterTitleIcon} aria-hidden="true">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -2340,24 +2374,22 @@ export default function HomePageClient() {
                   <h1>Elan yerləşdir</h1>
                 </div>
 
-                <div className={`${styles.homeFilterSearchRow} ${styles.createIntroRow}`}>
-                  <div className={`${styles.homeFilterInputWrap} ${createErrors.title ? "create-field-invalid" : ""}`} data-create-field="title" data-create-required="true">
+                <div className={styles.homeFilterSearchRow}>
+                  <div className={styles.homeFilterInputWrap}>
                     <span aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M4 7h16" strokeLinecap="round" />
-                        <path d="M4 12h10" strokeLinecap="round" />
-                        <path d="M4 17h7" strokeLinecap="round" />
+                        <circle cx="11" cy="11" r="7" />
+                        <path d="m20 20-3.5-3.5" strokeLinecap="round" />
                       </svg>
                     </span>
                     <input
                       value={title}
-                      onChange={(e) => { setTitle(e.target.value); touchCreateField("title"); }}
-                      placeholder="Vakansiya adı: məsələn Satış təmsilçisi"
-                      aria-invalid={Boolean(createErrors.title)}
+                      onChange={(e) => setTitle(e.target.value)}
+                      placeholder="Vakansiya adı və ya açar söz"
                     />
                   </div>
 
-                  <div className={`${styles.homeFilterSelectWrap} ${createErrors.city ? "create-field-invalid" : ""}`} data-create-field="city" data-create-required="true">
+                  <div className={styles.homeFilterSelectWrap}>
                     <span aria-hidden="true">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                         <path d="M12 21s7-4.35 7-11a7 7 0 1 0-14 0c0 6.65 7 11 7 11Z" />
@@ -2368,11 +2400,9 @@ export default function HomePageClient() {
                       value={city}
                       onChange={(e) => {
                         setCity(e.target.value);
-                        touchCreateField("city");
                         if (e.target.value) setLocationText(e.target.value);
                       }}
                       aria-label="Şəhəri seç"
-                      aria-invalid={Boolean(createErrors.city)}
                     >
                       <option value="">Şəhəri seç</option>
                       {cityOptions.map((item) => (
@@ -2380,40 +2410,32 @@ export default function HomePageClient() {
                       ))}
                     </select>
                   </div>
-                </div>
-                {(createErrors.title || createErrors.city) ? (
-                  <div className="create-inline-errors">
-                    {createErrors.title ? <span>{createErrors.title}</span> : null}
-                    {createErrors.city ? <span>{createErrors.city}</span> : null}
-                  </div>
-                ) : null}
 
-                <div className={`${styles.homeFilterTabs} create-filter-tabs`} role="tablist" aria-label="Elan yerləşdirmə filterləri">
-                  {homeFilterTabs.map((tab) => {
-                    const meta = getCreateTabMeta(tab.key);
-                    const hasError = Boolean(createErrors.jobType && tab.key === "type") || Boolean(createErrors.category && tab.key === "category") || Boolean(createErrors.jobLevel && tab.key === "level") || Boolean(createErrors.wage && tab.key === "salary");
-                    return (
-                      <button
-                        key={tab.key}
-                        type="button"
-                        className={`${activeCreateFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab} ${meta.selected ? "create-tab-filled" : ""} ${hasError ? "create-tab-error" : ""}`}
-                        onClick={() => setActiveCreateFilterTab(tab.key)}
-                      >
-                        <span>{tab.label}</span>
-                        {meta.selected ? <small title={meta.value}>✓</small> : null}
-                        {hasError ? <em>!</em> : null}
-                      </button>
-                    );
-                  })}
+                  <button type="submit" className={styles.homeFilterSubmit} disabled={loading}>
+                    {loading ? "Saxlanılır..." : editingJobId ? "Yenilə" : "Yerləşdir"}
+                  </button>
                 </div>
 
-                <div className={`${styles.homeFilterOptions} create-filter-options`}>
+                <div className={styles.homeFilterTabs} role="tablist" aria-label="Elan yerləşdirmə filterləri">
+                  {homeFilterTabs.map((tab) => (
+                    <button
+                      key={tab.key}
+                      type="button"
+                      className={activeCreateFilterTab === tab.key ? styles.homeFilterTabActive : styles.homeFilterTab}
+                      onClick={() => setActiveCreateFilterTab(tab.key)}
+                    >
+                      {tab.label}
+                    </button>
+                  ))}
+                </div>
+
+                <div className={styles.homeFilterOptions}>
                   {activeCreateFilterTab === "type" ? activeVacancyTypeOptions.map((item) => (
                     <button
                       key={item.value}
                       type="button"
                       className={jobType === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => { setJobType((current) => current === item.value ? "" : item.value); touchCreateField("jobType"); }}
+                      onClick={() => setJobType((current) => current === item.value ? "" : item.value)}
                     >
                       {item.label}
                     </button>
@@ -2424,7 +2446,7 @@ export default function HomePageClient() {
                       key={item}
                       type="button"
                       className={category === item ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => { setCategory((current) => current === item ? "" : item); touchCreateField("category"); }}
+                      onClick={() => setCategory((current) => current === item ? "" : item)}
                     >
                       {item}
                     </button>
@@ -2435,32 +2457,86 @@ export default function HomePageClient() {
                       key={item.value}
                       type="button"
                       className={jobLevel === item.value ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                      onClick={() => { setJobLevel((current) => current === item.value ? "" : item.value); touchCreateField("jobLevel"); }}
+                      onClick={() => setJobLevel((current) => current === item.value ? "" : item.value)}
                     >
                       {item.label}
                     </button>
                   )) : null}
 
                   {activeCreateFilterTab === "salary" ? (
-                    <>
-                      {activeSalaryRangeOptions.map((item) => (
+                    <div className={styles.createSalaryChooser}>
+                      <div className={styles.salaryChoiceGrid}>
                         <button
-                          key={item.label}
                           type="button"
-                          className={activeCreateSalaryLabel === item.label ? styles.homeFilterOptionActive : styles.homeFilterOption}
-                          onClick={() => { setWage((current) => current === item.label ? "" : item.label); touchCreateField("wage"); }}
+                          className={wageMode === "agreement" ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                          onClick={() => {
+                            setWageMode("agreement");
+                            setWage("Razılaşma əsasında");
+                            setWageMin("");
+                            setWageMax("");
+                          }}
                         >
-                          {item.label}
+                          Razılaşma əsasında
                         </button>
-                      ))}
-                      <input
-                        className={styles.homeFilterOption}
-                        style={{ textAlign: "left", cursor: "text" }}
-                        value={wage}
-                        onChange={(e) => { setWage(e.target.value); touchCreateField("wage"); }}
-                        placeholder="Maaşı əl ilə yaz: məsələn 900 AZN"
-                      />
-                    </>
+                        <button
+                          type="button"
+                          className={wageMode === "skill" ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                          onClick={() => {
+                            setWageMode("skill");
+                            setWage("Bacarığa uyğun");
+                            setWageMin("");
+                            setWageMax("");
+                          }}
+                        >
+                          Bacarığa uyğun
+                        </button>
+                        <button
+                          type="button"
+                          className={wageMode === "range" ? styles.homeFilterOptionActive : styles.homeFilterOption}
+                          onClick={() => {
+                            setWageMode("range");
+                            const min = String(wageMin || "").replace(/[^0-9]/g, "");
+                            const max = String(wageMax || "").replace(/[^0-9]/g, "");
+                            setWage(min && max ? `${min} - ${max} AZN` : min ? `${min} AZN` : "");
+                          }}
+                        >
+                          Minimum / maksimum
+                        </button>
+                      </div>
+
+                      {wageMode === "range" ? (
+                        <div className={styles.salaryRangeInputs}>
+                          <label>
+                            Minimum
+                            <input
+                              value={wageMin}
+                              onChange={(event) => {
+                                const value = event.target.value.replace(/[^0-9]/g, "");
+                                setWageMin(value);
+                                const max = String(wageMax || "").replace(/[^0-9]/g, "");
+                                setWage(value && max ? `${value} - ${max} AZN` : value ? `${value} AZN` : "");
+                              }}
+                              inputMode="numeric"
+                              placeholder="Məs: 500"
+                            />
+                          </label>
+                          <label>
+                            Maksimum
+                            <input
+                              value={wageMax}
+                              onChange={(event) => {
+                                const value = event.target.value.replace(/[^0-9]/g, "");
+                                setWageMax(value);
+                                const min = String(wageMin || "").replace(/[^0-9]/g, "");
+                                setWage(min && value ? `${min} - ${value} AZN` : min ? `${min} AZN` : value ? `${value} AZN` : "");
+                              }}
+                              inputMode="numeric"
+                              placeholder="Məs: 900"
+                            />
+                          </label>
+                        </div>
+                      ) : null}
+                    </div>
                   ) : null}
                 </div>
 
@@ -2471,10 +2547,9 @@ export default function HomePageClient() {
                 </div>
               </div>
 
-              <label className={createErrors.companyObject ? "create-label invalid" : "create-label"} data-create-field="companyObject" data-create-required="true">
+              <label>
                 Şirkət / obyekt
-                <input value={companyObject} onChange={(e) => { setCompanyObject(e.target.value); touchCreateField("companyObject"); }} placeholder="Direkt və ya obyekt adı" aria-invalid={Boolean(createErrors.companyObject)} />
-                {createErrors.companyObject ? <small className="field-error-text">{createErrors.companyObject}</small> : null}
+                <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Direkt və ya obyekt adı" />
               </label>
 
               <label className="asimos-upload-field">
@@ -2507,6 +2582,26 @@ export default function HomePageClient() {
                 ) : null}
               </label>
 
+              <div className="full-row daily-job-choice-card">
+                <div>
+                  <strong>Gündəlik iş elanı</strong>
+                  <span>Bu elan gündəlik/müvəqqəti iş üçündürsə aktiv edin.</span>
+                </div>
+                <button
+                  type="button"
+                  className={jobType === "temporary" ? "daily-job-toggle active" : "daily-job-toggle"}
+                  onClick={() => {
+                    const nextIsDaily = jobType !== "temporary";
+                    setJobType(nextIsDaily ? "temporary" : "");
+                    setDurationPreset(nextIsDaily ? "1" : durationPreset);
+                    setDurationDays(nextIsDaily ? "1" : durationDays);
+                  }}
+                  aria-pressed={jobType === "temporary"}
+                >
+                  {jobType === "temporary" ? "Gündəlik aktivdir" : "Gündəlik iş et"}
+                </button>
+              </div>
+
               {jobType === "temporary" ? (
                 <>
                   <label>
@@ -2534,12 +2629,6 @@ export default function HomePageClient() {
                 </>
               ) : null}
 
-              <label className={createErrors.wage ? "create-label invalid" : "create-label"} data-create-field="wage" data-create-required="true">
-                Maaş
-                <input value={wage} onChange={(e) => { setWage(e.target.value); touchCreateField("wage"); }} placeholder="Məs: 800 AZN və ya razılaşma yolu ilə" aria-invalid={Boolean(createErrors.wage)} />
-                {createErrors.wage ? <small className="field-error-text">{createErrors.wage}</small> : null}
-              </label>
-
               <label>
                 Başlama saatı
                 <input type="time" value={scheduleStart} onChange={(e) => setScheduleStart(e.target.value)} />
@@ -2565,10 +2654,9 @@ export default function HomePageClient() {
                 <input value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
               </label>
 
-              <label className={createErrors.contactPhone ? "create-label invalid" : "create-label"} data-create-field="contactPhone" data-create-required="true">
+              <label>
                 Əlaqə nömrəsi
-                <input value={contactPhone} onChange={(e) => { setContactPhone(e.target.value); touchCreateField("contactPhone"); }} aria-invalid={Boolean(createErrors.contactPhone)} />
-                {createErrors.contactPhone ? <small className="field-error-text">{createErrors.contactPhone}</small> : null}
+                <input value={contactPhone} onChange={(e) => setContactPhone(e.target.value)} />
               </label>
 
               <label>
@@ -2590,17 +2678,15 @@ export default function HomePageClient() {
               </label>
 
               {publishMode === "scheduled" ? (
-                <label className={createErrors.publishAt ? "create-label invalid" : "create-label"} data-create-field="publishAt">
+                <label>
                   Tarix və saat
-                  <input type="datetime-local" value={publishAt} onChange={(e) => { setPublishAt(e.target.value); touchCreateField("publishAt"); }} aria-invalid={Boolean(createErrors.publishAt)} />
-                  {createErrors.publishAt ? <small className="field-error-text">{createErrors.publishAt}</small> : null}
+                  <input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} />
                 </label>
               ) : null}
 
-              <label className={`full-row create-label ${createErrors.description ? "invalid" : ""}`} data-create-field="description" data-create-required="true">
+              <label className="full-row">
                 Təsvir
-                <textarea value={description} onChange={(e) => { setDescription(e.target.value); touchCreateField("description"); }} rows={6} required aria-invalid={Boolean(createErrors.description)} />
-                {createErrors.description ? <small className="field-error-text">{createErrors.description}</small> : null}
+                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={6} required />
               </label>
 
               <div className="full-row create-map-shell">
@@ -2878,16 +2964,6 @@ export default function HomePageClient() {
                 <small>Lokasiya</small>
               </div>
             </div>
-            {roleName === "employer" ? (
-              <div className="profile-mobile-actions">
-                <button type="button" className="btn-secondary profile-support-button" onClick={openSupportModal}>
-                  Əlaqə / Dəstək
-                </button>
-                <button type="button" className="btn-secondary profile-logout-button" onClick={handleSignOut}>
-                  Çıxış et
-                </button>
-              </div>
-            ) : null}
           </header>
 
           {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
@@ -2935,9 +3011,6 @@ export default function HomePageClient() {
                     <button type="submit" className="btn-primary" disabled={loading}>
                       Profili yenilə
                     </button>
-                    <button type="button" className="btn-secondary profile-signout-action" onClick={handleSignOut}>
-                      Çıxış et
-                    </button>
                     <button type="button" className="btn-danger" onClick={handleDeleteAccount}>
                       Hesabı sil
                     </button>
@@ -2957,7 +3030,6 @@ export default function HomePageClient() {
                     <div className="status-tabs">
                       {[
                         ["open", "Aktiv elanlar"],
-                        ["pending", "Təsdiq gözləyən"],
                         ["draft", "Yadda saxlanılanlar"],
                         ["closed", "Deaktiv elanlar"],
                         ["rejected", "Rədd edilmiş"],

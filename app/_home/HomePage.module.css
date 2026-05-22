@@ -1850,33 +1850,61 @@
   }
 }
 
-/* Create job form refinements */
-.createIntroRow {
-  grid-template-columns: minmax(260px, 1fr) minmax(240px, 0.8fr) !important;
+.createSalaryChooser {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 12px;
+  width: 100%;
 }
 
-@media (max-width: 900px) {
-  .createIntroRow {
-    grid-template-columns: 1fr !important;
+.salaryChoiceGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.salaryRangeInputs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid rgba(15, 23, 42, .08);
+  border-radius: 16px;
+  background: rgba(248, 250, 252, .92);
+}
+
+.salaryRangeInputs label {
+  display: grid;
+  gap: 6px;
+  font-size: .78rem;
+  font-weight: 700;
+  color: #64748b;
+}
+
+.salaryRangeInputs input {
+  width: 100%;
+  min-height: 44px;
+  border-radius: 13px;
+  border: 1px solid rgba(15, 23, 42, .12);
+  background: #fff;
+  padding: 0 12px;
+  font: inherit;
+  outline: none;
+}
+
+.salaryRangeInputs input:focus {
+  border-color: rgba(37, 99, 235, .55);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, .1);
+}
+
+@media (max-width: 720px) {
+  .salaryChoiceGrid {
+    grid-template-columns: 1fr;
   }
-}
 
-
-/* User fix: reduce bottom whitespace under statistics section/card */
-.statsSectionBottom {
-  padding-bottom: 30px !important;
-}
-
-.statsSectionBottom .statsCard {
-  padding-bottom: 30px !important;
-}
-
-@media (max-width: 640px) {
-  .statsSectionBottom {
-    padding-bottom: 30px !important;
-  }
-
-  .statsSectionBottom .statsCard {
-    padding-bottom: 30px !important;
+  .salaryRangeInputs {
+    grid-template-columns: 1fr;
+    padding: 10px;
+    border-radius: 14px;
   }
 }

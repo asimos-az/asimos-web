@@ -569,6 +569,17 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         </aside>
       </div>
 
+
+
+      <section className="job-detail-security-note" aria-label="Asimos təhlükəsizlik qaydası">
+        <span aria-hidden="true">🛡️</span>
+        <div>
+          <strong>Asimos Təhlükəsizlik Qaydası</strong>
+          <p>İşə qəbul prosesində sizdən heç bir ödəniş tələb oluna bilməz, bütün müraciətlər ödənişsizdir. Təhlükəsizliyiniz üçün bu növ hallardan uzaq durun.</p>
+        </div>
+      </section>
+
+
       {hasLocation ? (
         <section className="job-detail-map-card job-detail-card job-detail-map-card-wide">
           <div className="map-card-head">
