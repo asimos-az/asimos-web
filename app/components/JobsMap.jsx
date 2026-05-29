@@ -315,6 +315,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
   const [poiRequested, setPoiRequested] = useState(false);
   const [poiLoading, setPoiLoading] = useState(false);
   const [jobsRendered, setJobsRendered] = useState(false);
+  const [visibleLayers, setVisibleLayers] = useState({ jobs: true, metros: false, universities: false });
 
   const jobsWithCoordinates = useMemo(
     () => (Array.isArray(jobs) ? jobs.map(getJobCoordinates).filter(Boolean) : []),
@@ -323,8 +324,13 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
   useEffect(() => {
     setShouldLoadMap(true);
-    setPoiRequested(true);
   }, []);
+
+  useEffect(() => {
+    if ((visibleLayers.metros || visibleLayers.universities) && !poiRequested) {
+      setPoiRequested(true);
+    }
+  }, [visibleLayers.metros, visibleLayers.universities, poiRequested]);
 
   useEffect(() => {
     if (!shouldLoadMap || !poiRequested) return;
@@ -431,7 +437,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
     userLayer?.clearLayers();
     activeMarkerRef.current = null;
 
-    if (!jobsWithCoordinates.length) {
+    if (!visibleLayers.jobs || !jobsWithCoordinates.length) {
       mapRef.current.setView(DEFAULT_CENTER, 7);
       setJobsRendered(true);
       return;
@@ -488,7 +494,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     mapRef.current.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
     setJobsRendered(true);
-  }, [jobsWithCoordinates, focusedJobId, shouldLoadMap, userLocation?.lat, userLocation?.lng, poiData.universities, poiData.metros]);
+  }, [jobsWithCoordinates, focusedJobId, shouldLoadMap, userLocation?.lat, userLocation?.lng, poiData.universities, poiData.metros, visibleLayers.jobs]);
 
   useEffect(() => {
     if (!shouldLoadMap || !mapRef.current || !layersRef.current || !window.L) return;
@@ -503,16 +509,20 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     if (!poiRequested) return;
 
-    universitiesLayer.addLayers(
-      poiData.universities.map((poi) =>
-        L.marker([poi.lat, poi.lng], { icon: universityIcon }).bindPopup(buildPoiPopup(poi, "Universitet"))
-      )
-    );
+    if (visibleLayers.universities) {
+      universitiesLayer.addLayers(
+        poiData.universities.map((poi) =>
+          L.marker([poi.lat, poi.lng], { icon: universityIcon }).bindPopup(buildPoiPopup(poi, "Universitet"))
+        )
+      );
+    }
 
-    poiData.metros.forEach((poi) => {
-      L.marker([poi.lat, poi.lng], { icon: metroIcon }).bindPopup(buildPoiPopup(poi, "Metro")).addTo(metrosLayer);
-    });
-  }, [poiData, poiRequested, shouldLoadMap]);
+    if (visibleLayers.metros) {
+      poiData.metros.forEach((poi) => {
+        L.marker([poi.lat, poi.lng], { icon: metroIcon }).bindPopup(buildPoiPopup(poi, "Metro")).addTo(metrosLayer);
+      });
+    }
+  }, [poiData, poiRequested, shouldLoadMap, visibleLayers.metros, visibleLayers.universities]);
 
   return (
     <section ref={sectionRef} className="container page-section jobs-map-section">
@@ -532,9 +542,11 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
               <strong>{jobsWithCoordinates.length}</strong> elan markerləri cluster-lənir.
               {!jobsRendered ? <span> Markerlər hissə-hissə yüklənir...</span> : null}
               {poiLoading ? <span> Metro və universitetlər yüklənir...</span> : null}
-              {!poiLoading && poiData.universities.length + poiData.metros.length > 0 ? (
-                <span> {poiData.universities.length} universitet, {poiData.metros.length} metro marker kimi əlavə edildi.</span>
-              ) : null}
+            </div>
+            <div className="jobs-map-layer-toggles" role="group" aria-label="Xəritə markerləri">
+              <button type="button" className={visibleLayers.jobs ? "active" : ""} onClick={() => setVisibleLayers((current) => ({ ...current, jobs: !current.jobs }))}>İş elanları</button>
+              <button type="button" className={visibleLayers.metros ? "active" : ""} onClick={() => setVisibleLayers((current) => ({ ...current, metros: !current.metros }))}>Metro</button>
+              <button type="button" className={visibleLayers.universities ? "active" : ""} onClick={() => setVisibleLayers((current) => ({ ...current, universities: !current.universities }))}>Universitet</button>
             </div>
           </div>
         ) : null}

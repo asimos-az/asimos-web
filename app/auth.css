@@ -1,1 +1,9 @@
 /* Auth styles moved to app/_home/components/AuthSection.css and LocationPermissionPrompt.css. */
+
+
+.auth-logo-upload input[type="file"] { display: none; }
+.auth-logo-upload__row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.auth-logo-upload__button { display: inline-flex; align-items: center; justify-content: center; min-height: 42px; padding: 0 16px; border-radius: 14px; background: #eef6ff; color: #1f8ee8; border: 1px solid #cfe2ff; font-weight: 800; cursor: pointer; }
+.auth-logo-upload__preview { display: flex; align-items: center; gap: 12px; margin-top: 12px; }
+.auth-logo-upload__preview img { width: 54px; height: 54px; object-fit: cover; border-radius: 16px; border: 1px solid #dbe7f7; background: #f8fbff; }
+.auth-logo-upload__preview button { border: 0; background: transparent; color: #ef4444; font-weight: 800; cursor: pointer; }

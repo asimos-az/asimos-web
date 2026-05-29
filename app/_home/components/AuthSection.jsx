@@ -42,6 +42,9 @@ export default function AuthSection({
   setFullName,
   companyName,
   setCompanyName,
+  registerLogoPreview,
+  setRegisterLogoPreview,
+  onRegisterLogoFileChange,
   phone,
   setPhone,
   role,
@@ -172,6 +175,24 @@ export default function AuthSection({
                   <>
                     <div className="input-group">
                       <input placeholder="Şirkət adı" value={companyName} onChange={(event) => setCompanyName(event.target.value)} />
+                    </div>
+                    <div className="input-group auth-logo-upload">
+                      <div className="auth-logo-upload__row">
+                        <label htmlFor="register-logo-upload" className="auth-logo-upload__button">Loqo seç</label>
+                        <span>{registerLogoPreview ? "Loqo seçildi" : "Loqo əlavə etmək məcburi deyil"}</span>
+                      </div>
+                      <input
+                        id="register-logo-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={onRegisterLogoFileChange}
+                      />
+                      {registerLogoPreview ? (
+                        <div className="auth-logo-upload__preview">
+                          <img src={registerLogoPreview} alt="Şirkət loqosu" />
+                          <button type="button" onClick={() => setRegisterLogoPreview("")}>Sil</button>
+                        </div>
+                      ) : null}
                     </div>
                     <div className="input-group">
                       <select value={registerCategory} onChange={(event) => setRegisterCategory(event.target.value)}>

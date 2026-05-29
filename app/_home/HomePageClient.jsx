@@ -316,6 +316,8 @@ export default function HomePageClient() {
   const [showResetPassword, setShowResetPassword] = useState(false);
   const [fullName, setFullName] = useState("");
   const [companyName, setCompanyName] = useState("");
+  const [registerLogoPreview, setRegisterLogoPreview] = useState("");
+  const [profileLogoPreview, setProfileLogoPreview] = useState("");
   const [phone, setPhone] = useState("+994");
   const [role, setRole] = useState("seeker");
   const [registerCategory, setRegisterCategory] = useState("");
@@ -421,6 +423,17 @@ export default function HomePageClient() {
   const effectiveLocation = user?.location || deviceLocation || null;
   const homeJobs = useMemo(() => jobs.filter(isPublicHomeJob), [jobs]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
+  const statsChartItems = useMemo(() => {
+    const values = [
+      { label: "İstifadəçi", value: Number(siteStats?.users || 0) },
+      { label: "Aktiv elan", value: Number(siteStats?.activeJobs || 0) },
+      { label: "Online", value: Number(siteStats?.onlineUsers || 0) },
+      { label: "Bugün", value: Number(siteStats?.visitsToday || 0) },
+      { label: "Bu ay", value: Number(siteStats?.visitsThisMonth || 0) },
+    ];
+    const max = Math.max(1, ...values.map((item) => item.value));
+    return values.map((item) => ({ ...item, percent: Math.max(8, Math.round((item.value / max) * 100)) }));
+  }, [siteStats]);
   const unreadNotifications = useMemo(
     () => notifications.filter((item) => !Boolean(item.readAt || item.read_at)),
     [notifications]
@@ -540,6 +553,10 @@ export default function HomePageClient() {
 
       setEditingName(saved.user?.fullName || "");
       setEditingPhone(saved.user?.phone || "");
+      setCompanyName(saved.user?.companyName || saved.user?.company_name || "");
+      setProfileLogoPreview(saved.user?.logoUrl || saved.user?.logo_url || saved.user?.profileLogoUrl || "");
+      setJobImagePreview(saved.user?.logoUrl || saved.user?.logo_url || saved.user?.profileLogoUrl || "");
+      if (saved.user?.companyName || saved.user?.company_name) setCompanyObject(saved.user.companyName || saved.user.company_name || "");
     }
 
     setTokenUpdateHandler(({ token: nextToken, refreshToken: nextRefresh, user: nextUser }) => {
@@ -556,6 +573,22 @@ export default function HomePageClient() {
       window.setTimeout(() => setLocationPromptOpen(true), 500);
     }
   }, []);
+
+
+  useEffect(() => {
+    if (roleName !== "employer" || !user) return;
+    const userCompany = user.companyName || user.company_name || "";
+    const userLogo = user.logoUrl || user.logo_url || user.profileLogoUrl || "";
+    if (userCompany && !companyName) setCompanyName(userCompany);
+    if (userCompany && !companyObject) setCompanyObject(userCompany);
+    if (userLogo && !profileLogoPreview) setProfileLogoPreview(userLogo);
+    if (userLogo && !jobImagePreview) setJobImagePreview(userLogo);
+    if (user.phone) {
+      if (!contactPhone || contactPhone === "+994") setContactPhone(user.phone);
+      if (!whatsapp || whatsapp === "+994") setWhatsapp(user.phone);
+    }
+    if (user.email && !contactEmail) setContactEmail(user.email);
+  }, [roleName, user?.id]);
 
   async function loadBaseData() {
     const [categoryRes, jobsRes, termsRes, filterOptionsRes] = await Promise.all([
@@ -872,6 +905,36 @@ export default function HomePageClient() {
     }
   }
 
+  async function handleRegisterLogoFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setRegisterLogoPreview("");
+      return;
+    }
+    if (file.size > 900 * 1024) {
+      setError("Loqo maksimum 900KB olmalıdır. Kiçik ölçülü şəkil seçin.");
+      event.target.value = "";
+      return;
+    }
+    const dataUrl = await fileToDataUrl(file);
+    setRegisterLogoPreview(dataUrl);
+  }
+
+  async function handleProfileLogoFileChange(event) {
+    const file = event.target.files?.[0];
+    if (!file) {
+      setProfileLogoPreview("");
+      return;
+    }
+    if (file.size > 900 * 1024) {
+      setError("Profil loqosu maksimum 900KB olmalıdır.");
+      event.target.value = "";
+      return;
+    }
+    const dataUrl = await fileToDataUrl(file);
+    setProfileLogoPreview(dataUrl);
+  }
+
   async function handleRegister(e) {
     e.preventDefault();
     setLoading(true);
@@ -885,6 +948,8 @@ export default function HomePageClient() {
         role,
         fullName,
         companyName: role === "employer" ? companyName : undefined,
+        logoUrl: role === "employer" ? registerLogoPreview || undefined : undefined,
+        profileLogoUrl: role === "employer" ? registerLogoPreview || undefined : undefined,
         category: role === "employer" ? registerCategory || undefined : undefined,
         email,
         password,
@@ -928,6 +993,7 @@ export default function HomePageClient() {
         role: base.role,
         fullName: base.fullName,
         companyName: base.companyName,
+        logoUrl: base.logoUrl || base.profileLogoUrl || null,
         phone: base.phone,
         code: otp,
       });
@@ -1189,7 +1255,9 @@ export default function HomePageClient() {
           contactEmail,
           description,
         }),
-        companyName: roleName === "employer" ? companyName || user?.companyName : undefined,
+        companyName: roleName === "employer" ? (companyObject || companyName || user?.companyName || user?.company_name) : undefined,
+        company_logo_url: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
+        logoUrl: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
         createdBy: user.id,
         jobType: jobType || (roleName === "seeker" ? "seeker" : "permanent"),
         jobLevel: jobLevel || undefined,
@@ -1204,7 +1272,7 @@ export default function HomePageClient() {
         publishedAt: saveAsDraft ? null : (publishMode === "scheduled" ? new Date(publishAt).toISOString() : null),
         status: saveAsDraft ? "draft" : undefined,
         saveAsDraft,
-        imageUrl: jobImagePreview || undefined,
+        imageUrl: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
         location: {
           address: locationText || "Bakı",
           lat: Number(lat),
@@ -1415,22 +1483,31 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      const nextUser = {
+      const nextLocation = {
+        address: locationText || user?.location?.address || "Bakı",
+        lat: Number(lat),
+        lng: Number(lng),
+      };
+      const payload = {
+        fullName: editingName,
+        phone: editingPhone,
+        location: nextLocation,
+        companyName: roleName === "employer" ? (companyName || user?.companyName || user?.company_name || "") : undefined,
+        logoUrl: roleName === "employer" ? (profileLogoPreview || null) : undefined,
+      };
+      const response = await api.updateProfile(payload);
+      const nextUser = response?.user || {
         ...(user || {}),
         fullName: editingName,
         phone: editingPhone,
-        location: {
-          address: locationText || user?.location?.address || "Bakı",
-          lat: Number(lat),
-          lng: Number(lng),
-        },
+        location: nextLocation,
+        companyName: payload.companyName ?? user?.companyName,
+        logoUrl: payload.logoUrl ?? user?.logoUrl,
       };
 
-      await api.updateProfile({ fullName: editingName });
-      await api.updateProfile({ phone: editingPhone });
-      await api.updateMyLocation(nextUser.location);
-
       setUser(nextUser);
+      setCompanyName(nextUser?.companyName || nextUser?.company_name || "");
+      setProfileLogoPreview(nextUser?.logoUrl || nextUser?.logo_url || "");
       saveAuth({ token, refreshToken, user: nextUser });
       setOk("Profil yeniləndi");
     } catch (err) {
@@ -2082,27 +2159,30 @@ export default function HomePageClient() {
                 <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
               </div>
               <div className={styles.statsGrid}>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.users ?? 0}</strong>
-                  <span>Qeydiyyatdan keçən istifadəçi</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.activeJobs ?? 0}</strong>
-                  <span>Aktiv elan</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.onlineUsers ?? 0}</strong>
-                  <span>Hazırda online</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.visitsToday ?? 0}</strong>
-                  <span>Bu gün giriş</span>
-                </div>
-                <div className={styles.statItem}>
-                  <strong>{siteStats?.visitsThisMonth ?? 0}</strong>
-                  <span>Bu ay giriş</span>
-                </div>
+                {statsChartItems.map((item) => (
+                  <div className={`${styles.statItem} ${styles.statItemChart}`} key={item.label}>
+                    <strong>{item.value}</strong>
+                    <span>{item.label}</span>
+                    <div className={styles.statBarTrack} aria-hidden="true">
+                      <i style={{ width: `${item.percent}%` }} />
+                    </div>
+                  </div>
+                ))}
               </div>
+              {Array.isArray(siteStats?.dailyVisits) && siteStats.dailyVisits.length ? (
+                <div className={styles.statsMiniChart} aria-label="Son günlər üzrə giriş qrafiki">
+                  {siteStats.dailyVisits.slice(-7).map((row) => {
+                    const maxValue = Math.max(1, ...siteStats.dailyVisits.map((item) => Number(item.count || 0)));
+                    const height = Math.max(14, Math.round((Number(row.count || 0) / maxValue) * 92));
+                    return (
+                      <span key={row.date}>
+                        <i style={{ height }} />
+                        <small>{Number(row.count || 0)}</small>
+                      </span>
+                    );
+                  })}
+                </div>
+              ) : null}
             </div>
           </section>
         </>
@@ -2943,7 +3023,7 @@ export default function HomePageClient() {
         <section className="container page-section profile-page">
           <header className="profile-hero">
             <div className="profile-identity">
-              <div className="profile-avatar">{String(editingName || user?.fullName || user?.companyName || "A").trim()[0]?.toUpperCase()}</div>
+              <div className="profile-avatar">{profileLogoPreview || user?.logoUrl || user?.logo_url ? <img src={profileLogoPreview || user?.logoUrl || user?.logo_url} alt="Profil loqosu" /> : String(editingName || user?.fullName || user?.companyName || "A").trim()[0]?.toUpperCase()}</div>
               <div>
                 <span className="profile-eyebrow">{roleName === "employer" ? "İşçi axtaran profil" : "İş axtaran profil"}</span>
                 <h2>{editingName || user?.fullName || user?.companyName || "Profil"}</h2>
@@ -2990,6 +3070,29 @@ export default function HomePageClient() {
                       Telefon
                       <input value={editingPhone} onChange={(e) => setEditingPhone(e.target.value)} required />
                     </label>
+
+                    {roleName === "employer" ? (
+                      <>
+                        <label>
+                          Şirkət adı
+                          <input value={companyName} onChange={(e) => setCompanyName(e.target.value)} placeholder="Şirkət adı" />
+                        </label>
+                        <label className="full-row profile-logo-editor">
+                          Şirkət loqosu
+                          <div className="asimos-file-upload">
+                            <input id="profile-logo-upload" type="file" accept="image/*" onChange={handleProfileLogoFileChange} />
+                            <label htmlFor="profile-logo-upload" className="asimos-file-button">Loqo seç</label>
+                            <span>{profileLogoPreview ? "Loqo seçildi" : "Loqo əlavə edilməyib"}</span>
+                          </div>
+                          {profileLogoPreview ? (
+                            <div className="asimos-upload-preview profile-logo-preview">
+                              <img src={profileLogoPreview} alt="Profil loqosu" />
+                              <button type="button" className="btn-secondary" onClick={() => setProfileLogoPreview("")}>Loqonu sil</button>
+                            </div>
+                          ) : null}
+                        </label>
+                      </>
+                    ) : null}
 
                     <label className="full-row">
                       Ünvan
@@ -3280,6 +3383,9 @@ export default function HomePageClient() {
           setFullName={setFullName}
           companyName={companyName}
           setCompanyName={setCompanyName}
+          registerLogoPreview={registerLogoPreview}
+          setRegisterLogoPreview={setRegisterLogoPreview}
+          onRegisterLogoFileChange={handleRegisterLogoFileChange}
           phone={phone}
           setPhone={setPhone}
           role={role}

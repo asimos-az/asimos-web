@@ -258,3 +258,10 @@
     width: 100%;
   }
 }
+
+
+.jobs-map-toolbar--auto { justify-content: space-between; align-items: center; gap: 14px; }
+.jobs-map-layer-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+.jobs-map-layer-toggles button { border: 1px solid #d3e2f5; background: #fff; color: #1f2a44; border-radius: 999px; min-height: 36px; padding: 0 12px; font-weight: 800; cursor: pointer; }
+.jobs-map-layer-toggles button.active { background: #e9f4ff; color: #1f8ee8; border-color: #9fcfff; }
+@media (max-width: 720px) { .jobs-map-toolbar--auto { align-items: stretch; } .jobs-map-layer-toggles button { flex: 1; } }
