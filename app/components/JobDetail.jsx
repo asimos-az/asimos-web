@@ -217,10 +217,11 @@ function formatContactVisibility(job) {
 
 function getVisibleContactItems(job) {
   const visibility = getContactVisibility(job);
-  const contactPhone = visibility.phone ? getFirstValue(job?.phone, job?.contact_phone, job?.contactPhone) : '';
-  const contactWhatsapp = visibility.whatsapp ? getFirstValue(job?.whatsapp, job?.contact_whatsapp, job?.contactWhatsapp) : '';
+  const rawPhone = getFirstValue(job?.phone, job?.contact_phone, job?.contactPhone, job?.mobile_number, job?.mobileNumber);
+  const rawWhatsapp = getFirstValue(job?.whatsapp, job?.contact_whatsapp, job?.contactWhatsapp);
+  const contactPhone = visibility.phone ? (rawPhone || rawWhatsapp) : '';
+  const contactWhatsapp = visibility.whatsapp ? (rawWhatsapp || rawPhone) : '';
   const contactEmail = visibility.email ? getJobEmail(job) : '';
-  const atsLink = getAtsLink(job);
 
   const items = {
     phone: contactPhone
@@ -232,13 +233,10 @@ function getVisibleContactItems(job) {
     email: contactEmail
       ? { key: 'email', label: 'Email', icon: '✉️', value: contactEmail, href: `mailto:${contactEmail}` }
       : null,
-    link: atsLink
-      ? { key: 'link', label: 'ATS linki', icon: '🔗', value: 'Müraciət et', href: atsLink, external: true }
-      : null,
   };
 
   const primary = String(job?.primaryContact || job?.primary_contact || 'phone').toLowerCase();
-  const order = [primary, 'phone', 'whatsapp', 'email', 'link'];
+  const order = [primary, 'phone', 'whatsapp', 'email'];
   const seen = new Set();
 
   return order

@@ -1754,18 +1754,36 @@ export default function HomePageClient() {
         getSafeUserLogo(user) ||
         undefined;
 
+      const resolvedContactPhone =
+        String(contactPhone || "").trim() && String(contactPhone || "").trim() !== "+994"
+          ? String(contactPhone).trim()
+          : String(user?.phone || "").trim();
+      const resolvedWhatsapp =
+        String(whatsapp || "").trim() && String(whatsapp || "").trim() !== "+994"
+          ? String(whatsapp).trim()
+          : resolvedContactPhone;
+      const resolvedContactEmail =
+        String(contactEmail || "").trim() || String(user?.email || "").trim();
+      const resolvedContactVisibility = {
+        phone: Boolean(contactVisibility?.phone),
+        whatsapp: Boolean(contactVisibility?.whatsapp),
+        email: Boolean(contactVisibility?.email),
+      };
+
       const payload = {
         title,
         wage: resolvedWage,
         category,
 
-        whatsapp,
-        phone: contactPhone,
-        contactPhone,
+        whatsapp: resolvedWhatsapp,
+        contact_whatsapp: resolvedWhatsapp,
+        phone: resolvedContactPhone,
+        contactPhone: resolvedContactPhone,
+        contact_phone: resolvedContactPhone,
 
-        email: contactEmail,
-        contactEmail,
-        contact_email: contactEmail,
+        email: resolvedContactEmail,
+        contactEmail: resolvedContactEmail,
+        contact_email: resolvedContactEmail,
 
         link,
         atsLink: link,
@@ -1776,8 +1794,8 @@ export default function HomePageClient() {
         vacancy_start_date: vacancyStartDate || null,
         vacancyEndDate,
         vacancy_end_date: vacancyEndDate || null,
-        contactVisibility,
-        contact_visibility: contactVisibility,
+        contactVisibility: resolvedContactVisibility,
+        contact_visibility: resolvedContactVisibility,
         primaryContact,
         primary_contact: primaryContact,
         voen,
