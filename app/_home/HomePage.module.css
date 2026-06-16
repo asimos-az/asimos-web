@@ -1910,11 +1910,69 @@
 }
 
 
-.statItemChart { position: relative; overflow: hidden; }
-.statBarTrack { height: 8px; width: 100%; margin-top: 12px; border-radius: 999px; background: #e8f1ff; overflow: hidden; }
-.statBarTrack i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #218be6, #17b8b7); transition: width .45s ease; }
-.statsMiniChart { grid-column: 1 / -1; min-height: 120px; display: flex; align-items: end; gap: 12px; padding: 16px 18px; border: 1px solid #d8e7fb; background: rgba(248,251,255,.75); border-radius: 24px; }
-.statsMiniChart span { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: end; gap: 8px; min-width: 26px; }
-.statsMiniChart i { width: 100%; max-width: 34px; min-height: 14px; border-radius: 12px 12px 6px 6px; background: linear-gradient(180deg, #1f8ee8, #14b8a6); box-shadow: 0 12px 26px rgba(31,142,232,.18); }
-.statsMiniChart small { color: #63738b; font-size: 12px; font-weight: 800; }
-@media (max-width: 720px) { .statsMiniChart { gap: 7px; padding: 12px; border-radius: 18px; } }
+.statItemChart {
+  position: relative;
+  overflow: hidden;
+}
+
+.statBarTrack {
+  height: 8px;
+  width: 100%;
+  margin-top: 12px;
+  border-radius: 999px;
+  background: #e8f1ff;
+  overflow: hidden;
+}
+
+.statBarTrack i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #218be6, #17b8b7);
+  transition: width 0.45s ease;
+}
+
+.statsMiniChart {
+  grid-column: 1 / -1;
+  min-height: 120px;
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+  padding: 16px 18px;
+  border: 1px solid #d8e7fb;
+  background: rgba(248, 251, 255, 0.75);
+  border-radius: 24px;
+}
+
+.statsMiniChart span {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  min-width: 26px;
+}
+
+.statsMiniChart i {
+  width: 100%;
+  max-width: 34px;
+  min-height: 14px;
+  border-radius: 12px 12px 6px 6px;
+  background: linear-gradient(180deg, #1f8ee8, #14b8a6);
+  box-shadow: 0 12px 26px rgba(31, 142, 232, 0.18);
+}
+
+.statsMiniChart small {
+  color: #63738b;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+@media (max-width: 720px) {
+  .statsMiniChart {
+    gap: 7px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+}

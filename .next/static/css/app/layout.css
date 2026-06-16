@@ -2532,84 +2532,98 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: rgba(8, 14, 28, 0.48);
-  -webkit-backdrop-filter: blur(8px);
-          backdrop-filter: blur(8px);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.58);
 }
 
 .location-permission-card {
-  width: min(100%, 560px);
-  padding: 30px;
-  border-radius: 22px;
+  width: min(540px, calc(100vw - 24px));
+  padding: 38px 36px 36px;
+  border-radius: 30px;
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 28px 70px rgba(13, 21, 44, 0.2);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
 }
 
-.location-permission-badge {
+.location-permission-icon {
   display: inline-flex;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(212, 240, 106, 0.3);
-  color: #365314;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: #ddf6ee;
+  color: #1fa47b;
+  font-size: 30px;
+  line-height: 1;
 }
 
 .location-permission-card h3 {
-  margin: 18px 0 10px;
-  font-size: 2rem;
-  color: #14213d;
+  margin: 0 0 12px;
+  color: #060914;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
-.location-permission-card p {
-  margin: 0;
-  color: #5f6e8b;
-  line-height: 1.8;
+.location-permission-copy {
+  max-width: 440px;
+  margin: 0 auto;
+  color: #676767;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
 }
 
-.location-permission-list {
-  display: grid;
-  grid-gap: 14px;
-  gap: 14px;
-  margin: 24px 0;
-}
-
-.location-permission-list div {
-  padding: 16px 18px;
-  border-radius: 22px;
-  background: rgba(244, 247, 255, 0.9);
-  border: 1px solid rgba(123, 138, 184, 0.15);
-}
-
-.location-permission-list strong,
-.location-permission-list span {
-  display: block;
-}
-
-.location-permission-list strong {
-  margin-bottom: 6px;
-  color: #17233e;
-}
-
-.location-permission-list span {
-  color: #62708d;
-  line-height: 1.6;
+.location-permission-copy strong {
+  color: #1fa47b;
+  font-weight: 800;
 }
 
 .location-permission-actions {
-  display: flex;
+  display: grid;
+  grid-gap: 12px;
   gap: 12px;
+  margin-top: 28px;
 }
 
 .location-permission-actions .btn-primary,
 .location-permission-actions .btn-secondary {
-  flex: 1 1;
-  min-height: 54px;
+  width: 100%;
+  min-height: 58px;
   border-radius: 18px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.location-permission-actions .btn-primary {
+  border: 1px solid #1fa47b;
+  background: #1fa47b;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.location-permission-actions .btn-secondary {
+  border: 1px solid #d4d4d4;
+  background: #ffffff;
+  color: #676767;
+  box-shadow: none;
+}
+
+.location-permission-actions .btn-primary:hover:not(:disabled) {
+  background: #1a956f;
+  border-color: #1a956f;
+  transform: none;
+}
+
+.location-permission-actions .btn-secondary:hover:not(:disabled) {
+  background: #f8f8f8;
+  color: #5c5c5c;
+  transform: none;
 }
 
 @media (max-width: 768px) {
@@ -2626,8 +2640,7 @@ button {
     padding: 22px;
   }
 
-  .auth-actions,
-  .location-permission-actions {
+  .auth-actions {
     flex-direction: column;
     align-items: stretch;
   }
@@ -2665,11 +2678,35 @@ button {
   }
 
   .location-permission-card {
-    padding: 22px;
-    border-radius: 24px;
+    width: min(100%, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    padding: 34px 24px 32px;
+    border-radius: 28px;
+    overflow: auto;
+  }
+
+  .location-permission-icon {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+
+  .location-permission-card h3 {
+    font-size: 23px;
+  }
+
+  .location-permission-copy {
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .location-permission-actions .btn-primary,
+  .location-permission-actions .btn-secondary {
+    min-height: 56px;
+    font-size: 18px;
   }
 }
-
 /*!*************************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/_home/components/AppLaunchPanel.css ***!
   \*************************************************************************************************************************************************************************************************************************************************************************************/
@@ -3857,29 +3894,27 @@ button {
   \************************************************************************************************************************************************************************************************************************************************************************/
 .job-card {
   position: relative;
-  min-height: 112px;
+  min-height: 136px;
   width: 100%;
   background: #ffffff;
-  border: 1px solid #e4ebf5;
-  border-left: 4px solid transparent;
-  border-radius: 18px;
-  padding: 16px 62px 16px 16px;
+  border: 1px solid #e6ecf3;
+  border-radius: 26px;
+  padding: 16px 20px;
   display: grid;
-  grid-template-columns: 58px minmax(0, 1fr);
-  grid-gap: 14px;
-  gap: 14px;
-  align-items: center;
+  grid-template-columns: 58px minmax(0, 1fr) auto;
+  grid-gap: 16px;
+  gap: 16px;
+  align-items: start;
   cursor: pointer;
-  box-shadow: 0 10px 28px rgba(15, 23, 42, 0.045);
-  transition: border-color 0.22s ease, box-shadow 0.22s ease, transform 0.22s ease;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, 0.035);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
 }
 
 .job-card:hover,
 .job-card:focus-visible {
-  transform: translateY(-2px);
-  border-color: #d7e2f1;
-  border-left-color: #7c3aed;
-  box-shadow: 0 16px 38px rgba(15, 23, 42, 0.08);
+  transform: translateY(-1px);
+  border-color: #d9e3ee;
+  box-shadow: 0 14px 34px rgba(15, 23, 42, 0.07);
   outline: none;
 }
 
@@ -3891,31 +3926,34 @@ button {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  background: #f4f7fb;
-  color: #2487e8;
-  border: 1px solid #edf2f8;
+  background: #e8f6f1;
+  color: #419b7a;
+  border: 1px solid #d0e9df;
   overflow: hidden;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 0;
 }
 
 .job-card-logo img {
   width: 100%;
   height: 100%;
   object-fit: contain;
-  padding: 7px;
-  background: #fff;
+  padding: 8px;
+  background: #ffffff;
 }
 
 .job-card-logo svg {
-  width: 30px;
-  height: 30px;
-  color: #2487e8;
+  width: 28px;
+  height: 28px;
+  color: #419b7a;
 }
 
 .job-card-content {
   min-width: 0;
   display: grid;
-  grid-gap: 4px;
-  gap: 4px;
+  grid-gap: 8px;
+  gap: 8px;
 }
 
 .job-card-title-row {
@@ -3927,11 +3965,11 @@ button {
 
 .job-card-title {
   margin: 0;
-  color: #172033;
-  font-size: clamp(1rem, 1.05vw, 1.13rem);
+  color: #1f2430;
+  font-size: 20px;
   line-height: 1.25;
-  font-weight: 650;
-  letter-spacing: -0.015em;
+  font-weight: 700;
+  letter-spacing: 0;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -3942,24 +3980,23 @@ button {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  min-height: 23px;
-  padding: 2px 9px;
+  min-height: 24px;
+  padding: 3px 10px;
   border-radius: 999px;
-  background: linear-gradient(90deg, #7c3aed, #2563eb);
-  color: #ffffff;
+  background: #f2eafd;
+  color: #7c3aed;
   font-size: 0.72rem;
   line-height: 1;
   font-weight: 700;
   white-space: nowrap;
-  box-shadow: 0 8px 18px rgba(79, 70, 229, 0.2);
 }
 
 .job-card-company {
   margin: 0;
-  color: #7c8798;
-  font-size: 0.95rem;
+  color: #85858b;
+  font-size: 16px;
   line-height: 1.35;
-  font-weight: 450;
+  font-weight: 500;
   display: -webkit-box;
   -webkit-line-clamp: 1;
   -webkit-box-orient: vertical;
@@ -3967,80 +4004,102 @@ button {
 }
 
 .job-card-company span {
-  color: #a1aab8;
-}
-
-.job-card-location {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  color: #7c8798;
-  font-size: 0.9rem;
-  line-height: 1.25;
-  font-weight: 500;
-  margin-top: 4px;
-}
-
-.job-card-location svg {
-  width: 17px;
-  height: 17px;
-  color: #2487e8;
-  flex: 0 0 auto;
-}
-
-.job-card-location span {
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  color: #c5c5c8;
 }
 
 .job-card-meta {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 8px 14px;
-  color: #8b96a8;
-  font-size: 0.86rem;
-  font-weight: 500;
-  margin-top: 6px;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .job-card-meta-item {
   display: inline-flex;
   align-items: center;
+  min-height: 36px;
   gap: 6px;
+  padding: 7px 13px;
+  border-radius: 999px;
+  color: #7f858d;
+  background: #f3f6f9;
+  font-size: 15px;
+  line-height: 1;
+  font-weight: 650;
   white-space: nowrap;
 }
 
-.job-card-meta-item svg {
-  width: 16px;
-  height: 16px;
-  color: #8b96a8;
+.job-card-meta-category {
+  background: #e6f7f1;
+  color: #4b9b7f;
+}
+
+.job-card-meta-wage {
+  background: #f3f5f8;
+  color: #7c848e;
+}
+
+.job-card-meta-level {
+  background: #fff2df;
+  color: #b67b2b;
+}
+
+.job-card-meta-distance {
+  background: #eef4ff;
+  color: #3769b2;
+}
+
+.job-card-side {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 16px;
+  padding-left: 12px;
+  padding-top: 64px;
+}
+
+.job-card-remaining {
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: #fff1f1;
+  color: #c45f5f;
+  font-size: 14px;
+  line-height: 1;
+  font-weight: 700;
+  white-space: nowrap;
 }
 
 .job-card-save {
   position: absolute;
-  right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 42px;
-  height: 42px;
+  right: 16px;
+  top: 12px;
+  width: 34px;
+  height: 34px;
   border: 0;
-  border-radius: 14px;
-  background: #f4f7fb;
-  color: #8c98aa;
+  border-radius: 50%;
+  background: transparent;
+  color: #8c929b;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 .job-card-save:hover {
-  background: #eaf2ff;
-  color: #2487e8;
-  transform: translateY(-50%) scale(1.04);
+  background: #f2f5f8;
+  color: #5f6873;
+}
+
+.job-card-save svg {
+  width: 20px;
+  height: 20px;
 }
 
 .job-card-save.saved {
@@ -4048,13 +4107,13 @@ button {
   color: #2487e8;
 }
 
-.job-card-save.saved svg {
-  fill: currentColor;
+.job-card-save.copied {
+  background: #e6f7f1;
+  color: #2f9b75;
 }
 
-.job-card-save svg {
-  width: 21px;
-  height: 21px;
+.job-card-save.saved svg {
+  fill: none;
 }
 
 .job-card-edit {
@@ -4072,74 +4131,83 @@ button {
   cursor: pointer;
 }
 
+@media (max-width: 900px) {
+  .job-card {
+    grid-template-columns: 54px minmax(0, 1fr);
+    padding: 15px;
+  }
+
+  .job-card-side {
+    grid-column: 2;
+    min-height: auto;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding-left: 0;
+    padding-top: 0;
+  }
+}
+
 @media (max-width: 640px) {
   .job-card {
-    min-height: 96px;
-    padding: 13px 56px 13px 13px;
-    grid-template-columns: 52px minmax(0, 1fr);
+    min-height: auto;
+    grid-template-columns: 50px minmax(0, 1fr);
     gap: 12px;
-    border-radius: 16px;
+    border-radius: 20px;
+    padding: 14px;
   }
 
   .job-card-logo {
-    width: 52px;
-    height: 52px;
+    width: 50px;
+    height: 50px;
     border-radius: 13px;
-  }
-
-  .job-card-logo svg {
-    width: 27px;
-    height: 27px;
-  }
-
-  .job-card-title-row {
-    gap: 6px;
+    font-size: 13px;
   }
 
   .job-card-title {
-    font-size: 0.98rem;
-    line-height: 1.22;
-  }
-
-  .job-card-premium-badge {
-    min-height: 20px;
-    padding: 2px 7px;
-    font-size: 0.66rem;
+    font-size: 16px;
   }
 
   .job-card-company {
-    font-size: 0.88rem;
+    font-size: 13px;
   }
 
-  .job-card-location,
   .job-card-meta {
-    font-size: 0.8rem;
+    gap: 6px;
+    margin-top: 4px;
   }
 
-  .job-card-save {
-    width: 38px;
-    height: 38px;
-    border-radius: 13px;
-    right: 10px;
+  .job-card-meta-item {
+    min-height: 30px;
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .job-card-side {
+    gap: 8px;
+  }
+
+  .job-card-remaining {
+    min-height: 28px;
+    padding: 6px 10px;
+    font-size: 12px;
   }
 }
 
 @media (max-width: 390px) {
   .job-card {
-    padding-right: 50px;
-    grid-template-columns: 48px minmax(0, 1fr);
+    grid-template-columns: 46px minmax(0, 1fr);
   }
 
   .job-card-logo {
-    width: 48px;
-    height: 48px;
+    width: 46px;
+    height: 46px;
   }
 
   .job-card-premium-badge {
     display: none;
   }
 }
-
 /*!**************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/JobDetail.css ***!
   \**************************************************************************************************************************************************************************************************************************************************************************/
@@ -6981,18 +7049,27 @@ button {
     border-radius: 22px !important;
   }
 
-  .support-modal-backdrop,
-  .location-permission-overlay {
+  .support-modal-backdrop {
     align-items: flex-end !important;
     padding: 12px !important;
   }
 
-  .support-modal,
-  .location-permission-card {
+  .support-modal {
     width: 100% !important;
     max-height: min(86vh, 760px);
     overflow: auto;
     border-radius: 30px !important;
+  }
+
+  .location-permission-overlay {
+    align-items: center !important;
+    padding: 12px !important;
+  }
+
+  .location-permission-card {
+    width: min(100%, calc(100vw - 24px)) !important;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
   }
 }
 
@@ -8281,4 +8358,3 @@ button {
     border-radius: 0 !important;
   }
 }
-

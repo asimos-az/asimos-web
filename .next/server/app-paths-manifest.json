@@ -1,3 +1,8 @@
 {
-  "/page": "app/page.js"
+  "/gundelik-isler/page": "app/gundelik-isler/page.js",
+  "/xeritede-is-elanlari/page": "app/xeritede-is-elanlari/page.js",
+  "/vakansiyalar/page": "app/vakansiyalar/page.js",
+  "/page": "app/page.js",
+  "/jobs/[id]/page": "app/jobs/[id]/page.js",
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js"
 }

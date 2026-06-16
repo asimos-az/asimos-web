@@ -1,23 +1,129 @@
 import { useState } from "react";
 
-function formatDate(value) {
+function formatDistance(distanceM) {
+  const value = Number(distanceM);
+  if (!Number.isFinite(value)) return null;
+  if (value >= 1000) {
+    const km = value / 1000;
+    return `${Number.isInteger(km) ? km : km.toFixed(1)} km`;
+  }
+  return `${Math.round(value)} m`;
+}
+
+function formatNotifyRadius(value) {
+  const meters = Number(value);
+  if (!Number.isFinite(meters) || meters <= 0) return "";
+  if (meters >= 1000) {
+    const km = meters / 1000;
+    return `${Number.isInteger(km) ? km : km.toFixed(1)} km radius`;
+  }
+  return `${Math.round(meters)} m radius`;
+}
+
+function getJobUrl(job) {
+  const path = `/jobs/${job?.id || ""}`;
+  if (typeof window === "undefined") return path;
+  return new URL(path, window.location.origin).toString();
+}
+
+function normalizeText(value) {
+  return String(value || "").trim();
+}
+
+function copyTextFallback(text) {
+  if (typeof document === "undefined") return false;
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.left = "-9999px";
+  document.body.appendChild(textarea);
+  textarea.select();
+  let copied = false;
+  try {
+    copied = document.execCommand("copy");
+  } catch {
+    copied = false;
+  }
+  textarea.remove();
+  return copied;
+}
+
+async function copyText(text) {
+  if (typeof navigator !== "undefined" && navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return true;
+  }
+  return copyTextFallback(text);
+}
+
+function formatDateTime(value) {
   if (!value) return "";
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) return "";
-  return date.toLocaleDateString("az-AZ", {
+  return date.toLocaleString("az-AZ", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
-function formatDistance(distanceM) {
-  if (typeof distanceM !== "number") return null;
-  if (distanceM >= 1000) {
-    const km = distanceM / 1000;
-    return `${Number.isInteger(km) ? km : km.toFixed(1)} km`;
+function getExpiryDate(job) {
+  const explicit = job?.validThrough || job?.valid_through || job?.expiresAt || job?.expires_at || job?.deadline || job?.expire_at;
+  if (explicit) {
+    const explicitDate = new Date(explicit);
+    if (!Number.isNaN(explicitDate.getTime())) return explicitDate;
   }
-  return `${Math.round(distanceM)} m`;
+
+  const rawType = String(job?.jobType || job?.job_type || "").toLowerCase();
+  const isTemporary = job?.isDaily || job?.is_daily || rawType === "temporary";
+  const durationDays = isTemporary ? Number(job?.durationDays ?? job?.duration_days ?? 1) : 28;
+  const startValue = job?.publishedAt || job?.published_at || job?.createdAt || job?.created_at;
+  const startDate = startValue ? new Date(startValue) : null;
+  if (!startDate || Number.isNaN(startDate.getTime())) return null;
+
+  return new Date(startDate.getTime() + Math.max(1, durationDays || 1) * 86400000);
+}
+
+function getRemainingLabel(job) {
+  const expiryDate = getExpiryDate(job);
+  if (!expiryDate) return "";
+  const diff = expiryDate.getTime() - Date.now();
+  if (diff <= 0) return "Bu gün bitir";
+  const days = Math.ceil(diff / 86400000);
+  if (days >= 1) return `${days} gün qaldı`;
+  const hours = Math.max(1, Math.ceil(diff / 3600000));
+  return `${hours} saat qaldı`;
+}
+
+function getCopyText(job, values) {
+  return [
+    normalizeText(job?.title || "Adsız elan"),
+    `Şirkət: ${values.companyLabel}`,
+    `Növ: ${values.typeLabel}`,
+    `Maaş: ${values.wageLabel}`,
+    values.levelLabel ? `Səviyyə: ${values.levelLabel}` : "",
+    `Lokasiya: ${values.locationLabel}`,
+    values.distanceLabel ? `Məsafə: ${values.distanceLabel}` : "",
+    values.remainingLabel ? `Müddət: ${values.remainingLabel}` : "",
+    values.expiryLabel ? `Bitmə tarixi: ${values.expiryLabel}` : "",
+    `Link: ${getJobUrl(job)}`,
+  ].filter(Boolean).join("\n");
+}
+
+function getInitials(value) {
+  const words = String(value || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+  if (!words.length) return "AS";
+  return words
+    .slice(0, 2)
+    .map((word) => word[0])
+    .join("")
+    .toUpperCase();
 }
 
 function getCompanyLabel(job) {
@@ -39,38 +145,64 @@ function isPremiumJob(job) {
 
 function getJobTypeLabel(job) {
   const type = String(job?.jobType || job?.job_type || "").toLowerCase();
+  const labels = {
+    shift: "Növbə əsasında",
+    full_time: "Tam ştat",
+    permanent: "Daimi",
+    freelance: "Frilans",
+    commission: "Komisyon haqqı",
+    volunteer: "Könüllü",
+    seasonal: "Mövsümi",
+    temporary: "Müvəqqəti",
+    internship: "Təcrübə",
+    scholarship: "Təqaüd proqramı",
+    part_time: "Yarım ştat",
+  };
   if (job?.isDaily || job?.is_daily || type === "temporary") return "Gündəlik iş";
   if (type === "seeker") return "İş axtaran";
-  return "Elan";
+  return labels[type] || job?.jobType || job?.job_type || "Elan";
 }
 
-
-function DefaultJobLogoIcon() {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-      <path strokeLinecap="round" strokeLinejoin="round" d="M9 7V6a3 3 0 0 1 6 0v1" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 8.5h15v9A2.5 2.5 0 0 1 17 20H7a2.5 2.5 0 0 1-2.5-2.5v-9Z" />
-      <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15M10 12v1.2h4V12" />
-    </svg>
-  );
+function getWageLabel(job) {
+  const wage = job?.wage || job?.salary || job?.salaryRange || job?.salary_range;
+  return wage ? String(wage) : "Razılaşma əsasında";
 }
 
-export default function JobCard({ job, onClick, onPrefetch, showEdit = false, onEdit, isFavorite = false, onToggleFavorite }) {
+function getLevelLabel(job) {
+  const level = job?.jobLevel || job?.job_level || job?.positionLevel || job?.level;
+  const labels = {
+    entry: "Təcrübəsiz",
+    junior: "Junior",
+    middle: "Middle",
+    senior: "Senior",
+    manager: "Menecer",
+    lead: "Rəhbər",
+  };
+  if (!level) return "";
+  return labels[String(level).toLowerCase()] || String(level);
+}
+
+export default function JobCard({ job, onClick, onPrefetch, showEdit = false, onEdit }) {
   const companyLabel = getCompanyLabel(job);
-  const createdAt = formatDate(job.publishedAt || job.published_at || job.createdAt || job.created_at);
   const distance = formatDistance(job.distanceM);
-  const views = Number.isFinite(Number(job.views)) ? Number(job.views) : 0;
   const locationLabel = getLocationLabel(job, distance);
   const jobTypeLabel = getJobTypeLabel(job);
+  const typeLabel = job.category || jobTypeLabel;
+  const wageLabel = getWageLabel(job);
+  const levelLabel = getLevelLabel(job);
+  const remainingLabel = getRemainingLabel(job);
+  const expiryLabel = formatDateTime(getExpiryDate(job));
+  const distanceLabel = distance || formatNotifyRadius(job?.notifyRadiusM || job?.notify_radius_m);
   const premium = isPremiumJob(job);
   const logoUrl = job?.logoUrl || job?.logo_url || job?.imageUrl || job?.image_url || job?.companyLogo || job?.company_logo || "";
   const [logoFailed, setLogoFailed] = useState(false);
+  const [copied, setCopied] = useState(false);
   const hasValidLogo = Boolean(logoUrl && !logoFailed);
 
   return (
     <article className="job-card" onClick={onClick} onMouseEnter={onPrefetch} onFocus={onPrefetch} tabIndex={0}>
       <div className="job-card-logo" aria-hidden="true">
-        {hasValidLogo ? <img src={logoUrl} alt="" onError={() => setLogoFailed(true)} /> : <DefaultJobLogoIcon />}
+        {hasValidLogo ? <img src={logoUrl} alt="" onError={() => setLogoFailed(true)} /> : <span>{getInitials(companyLabel)}</span>}
       </div>
 
       <div className="job-card-content">
@@ -84,44 +216,62 @@ export default function JobCard({ job, onClick, onPrefetch, showEdit = false, on
         </div>
         <p className="job-card-company">{companyLabel} <span>•</span> {jobTypeLabel}</p>
 
-        <div className="job-card-location">
-          <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.1} d="M12 21s7-5.1 7-11a7 7 0 1 0-14 0c0 5.9 7 11 7 11Z" />
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.1} d="M12 10.3a2.2 2.2 0 1 0 0-.1v.1Z" />
-          </svg>
-          <span>{locationLabel}</span>
-        </div>
-
         <div className="job-card-meta">
-          <span className="job-card-meta-item">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M12 8v4l2.5 1.5" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-            </svg>
-            {createdAt || "Yeni"}
+          <span className="job-card-meta-item job-card-meta-category">
+            {typeLabel}
           </span>
-          <span className="job-card-meta-item">
-            <svg fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M2.5 12s3.5-6 9.5-6 9.5 6 9.5 6-3.5 6-9.5 6-9.5-6-9.5-6Z" />
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.9} d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-            </svg>
-            {views}
+          <span className="job-card-meta-item job-card-meta-wage">
+            {wageLabel}
           </span>
+          {levelLabel ? (
+            <span className="job-card-meta-item job-card-meta-level">
+              {levelLabel}
+            </span>
+          ) : null}
+          {distanceLabel ? (
+            <span className="job-card-meta-item job-card-meta-distance">
+              <span aria-hidden="true">📍</span>
+              {distanceLabel}
+            </span>
+          ) : null}
         </div>
+      </div>
+
+      <div className="job-card-side">
+        {remainingLabel ? <span className="job-card-remaining">⏰ {remainingLabel}</span> : null}
       </div>
 
       <button
         type="button"
-        className={`job-card-save ${isFavorite ? "saved" : ""}`}
-        aria-label={isFavorite ? "Favoritdən sil" : "Yadda saxla"}
-        title={isFavorite ? "Favoritdən sil" : "Yadda saxla"}
-        onClick={(event) => {
+        className={`job-card-save ${copied ? "copied" : ""}`}
+        aria-label={copied ? "Kopyalandı" : "Elan məlumatlarını kopyala"}
+        title={copied ? "Kopyalandı" : "Elan məlumatlarını kopyala"}
+        onClick={async (event) => {
           event.stopPropagation();
-          onToggleFavorite?.(event);
+          let didCopy = false;
+          try {
+            didCopy = await copyText(getCopyText(job, {
+              companyLabel,
+              typeLabel,
+              wageLabel,
+              levelLabel,
+              locationLabel,
+              distanceLabel,
+              remainingLabel,
+              expiryLabel,
+            }));
+          } catch {
+            didCopy = false;
+          }
+          if (didCopy) {
+            setCopied(true);
+            window.setTimeout(() => setCopied(false), 1400);
+          }
         }}
       >
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true">
-          <path d="M7 4.75A2.75 2.75 0 0 1 9.75 2h4.5A2.75 2.75 0 0 1 17 4.75V21l-5-3.2L7 21V4.75Z" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.03" strokeLinecap="round" strokeLinejoin="round" />
+          <path d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.22-1.22" strokeLinecap="round" strokeLinejoin="round" />
         </svg>
       </button>
 

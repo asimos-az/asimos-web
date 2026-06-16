@@ -5,82 +5,97 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 24px;
-  background: rgba(8, 14, 28, 0.48);
-  backdrop-filter: blur(8px);
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.58);
 }
 
 .location-permission-card {
-  width: min(100%, 560px);
-  padding: 30px;
-  border-radius: 22px;
+  width: min(540px, calc(100vw - 24px));
+  padding: 38px 36px 36px;
+  border-radius: 30px;
   background: #ffffff;
-  border: 1px solid rgba(226, 232, 240, 0.95);
-  box-shadow: 0 28px 70px rgba(13, 21, 44, 0.2);
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.22);
+  text-align: center;
 }
 
-.location-permission-badge {
+.location-permission-icon {
   display: inline-flex;
-  padding: 7px 12px;
-  border-radius: 999px;
-  background: rgba(212, 240, 106, 0.3);
-  color: #365314;
-  font-size: 0.82rem;
-  font-weight: 800;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  margin-bottom: 22px;
+  border-radius: 50%;
+  background: #ddf6ee;
+  color: #1fa47b;
+  font-size: 30px;
+  line-height: 1;
 }
 
 .location-permission-card h3 {
-  margin: 18px 0 10px;
-  font-size: 2rem;
-  color: #14213d;
+  margin: 0 0 12px;
+  color: #060914;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1.25;
+  letter-spacing: 0;
 }
 
-.location-permission-card p {
-  margin: 0;
-  color: #5f6e8b;
-  line-height: 1.8;
+.location-permission-copy {
+  max-width: 440px;
+  margin: 0 auto;
+  color: #676767;
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.55;
+  letter-spacing: 0;
 }
 
-.location-permission-list {
-  display: grid;
-  gap: 14px;
-  margin: 24px 0;
-}
-
-.location-permission-list div {
-  padding: 16px 18px;
-  border-radius: 22px;
-  background: rgba(244, 247, 255, 0.9);
-  border: 1px solid rgba(123, 138, 184, 0.15);
-}
-
-.location-permission-list strong,
-.location-permission-list span {
-  display: block;
-}
-
-.location-permission-list strong {
-  margin-bottom: 6px;
-  color: #17233e;
-}
-
-.location-permission-list span {
-  color: #62708d;
-  line-height: 1.6;
+.location-permission-copy strong {
+  color: #1fa47b;
+  font-weight: 800;
 }
 
 .location-permission-actions {
-  display: flex;
+  display: grid;
   gap: 12px;
+  margin-top: 28px;
 }
 
 .location-permission-actions .btn-primary,
 .location-permission-actions .btn-secondary {
-  flex: 1;
-  min-height: 54px;
+  width: 100%;
+  min-height: 58px;
   border-radius: 18px;
+  font-size: 19px;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+
+.location-permission-actions .btn-primary {
+  border: 1px solid #1fa47b;
+  background: #1fa47b;
+  color: #ffffff;
+  box-shadow: none;
+}
+
+.location-permission-actions .btn-secondary {
+  border: 1px solid #d4d4d4;
+  background: #ffffff;
+  color: #676767;
+  box-shadow: none;
+}
+
+.location-permission-actions .btn-primary:hover:not(:disabled) {
+  background: #1a956f;
+  border-color: #1a956f;
+  transform: none;
+}
+
+.location-permission-actions .btn-secondary:hover:not(:disabled) {
+  background: #f8f8f8;
+  color: #5c5c5c;
+  transform: none;
 }
 
 @media (max-width: 768px) {
@@ -97,8 +112,7 @@
     padding: 22px;
   }
 
-  .auth-actions,
-  .location-permission-actions {
+  .auth-actions {
     flex-direction: column;
     align-items: stretch;
   }
@@ -136,7 +150,32 @@
   }
 
   .location-permission-card {
-    padding: 22px;
-    border-radius: 24px;
+    width: min(100%, calc(100vw - 24px));
+    max-height: calc(100vh - 24px);
+    padding: 34px 24px 32px;
+    border-radius: 28px;
+    overflow: auto;
+  }
+
+  .location-permission-icon {
+    width: 76px;
+    height: 76px;
+    margin-bottom: 20px;
+    font-size: 28px;
+  }
+
+  .location-permission-card h3 {
+    font-size: 23px;
+  }
+
+  .location-permission-copy {
+    font-size: 17px;
+    line-height: 1.5;
+  }
+
+  .location-permission-actions .btn-primary,
+  .location-permission-actions .btn-secondary {
+    min-height: 56px;
+    font-size: 18px;
   }
 }

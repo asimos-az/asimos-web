@@ -2111,7 +2111,7 @@ export default function HomePageClient() {
                   <p>Ən son əlavə edilən elanları buradan izləyə bilərsən.</p>
                 </div>
                 <div className={styles.latestJobsActions}>
-                  {homeJobs.length > 9 ? (
+                  {homeJobs.length > 8 ? (
                     <button
                       type="button"
                       className={styles.latestJobsMoreButton}
@@ -2129,7 +2129,7 @@ export default function HomePageClient() {
                 </div>
               </header>
               <div className={styles.latestJobsGridList}>
-                {homeJobs.slice(0, 9).map((job) => (
+                {homeJobs.slice(0, 8).map((job) => (
                   <div className={styles.latestJobsGridItem} key={job.id}>
                     <JobCard
                       job={job}

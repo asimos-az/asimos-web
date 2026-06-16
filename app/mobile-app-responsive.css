@@ -458,18 +458,27 @@
     border-radius: 22px !important;
   }
 
-  .support-modal-backdrop,
-  .location-permission-overlay {
+  .support-modal-backdrop {
     align-items: flex-end !important;
     padding: 12px !important;
   }
 
-  .support-modal,
-  .location-permission-card {
+  .support-modal {
     width: 100% !important;
     max-height: min(86vh, 760px);
     overflow: auto;
     border-radius: 30px !important;
+  }
+
+  .location-permission-overlay {
+    align-items: center !important;
+    padding: 12px !important;
+  }
+
+  .location-permission-card {
+    width: min(100%, calc(100vw - 24px)) !important;
+    max-height: calc(100vh - 24px);
+    overflow: auto;
   }
 }
 

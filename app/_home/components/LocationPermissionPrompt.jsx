@@ -4,28 +4,18 @@ export default function LocationPermissionPrompt({ isOpen, user, locationLoading
   return (
     <div className="location-permission-overlay" role="dialog" aria-modal="true" aria-labelledby="location-permission-title">
       <div className="location-permission-card">
-        <span className="location-permission-badge">Yeni addım</span>
-        <h3 id="location-permission-title">Lokasiyanızı aktivləşdirin</h3>
-        <p>
-          Yaxınlıqdakı elanları, sizə uyğun məsafədə bildirişləri və xəritədə düzgün nəticələri görmək üçün
-          cihaz lokasiyasına icazə verin. Daxil olmasanız belə bu məlumat yalnız brauzerinizdə saxlanacaq.
+        <div className="location-permission-icon" aria-hidden="true">📍</div>
+        <h3 id="location-permission-title">Lokasiyaya icazə verin</h3>
+        <p className="location-permission-copy">
+          <strong>Sizə ən yaxın vakansiyaları</strong> göstərmək üçün yerinizi bilmək istəyirik.
+          Məlumatınız yalnız axtarış nəticələrini fərdiləşdirmək üçün istifadə olunur.
         </p>
-        <div className="location-permission-list">
-          <div>
-            <strong>Daha uyğun elanlar</strong>
-            <span>Ətrafınızdakı vakansiyalar önə çıxarılacaq.</span>
-          </div>
-          <div>
-            <strong>Dəqiq xəritə görünüşü</strong>
-            <span>Elanların ünvanını və məsafəsini daha rahat görəcəksiniz.</span>
-          </div>
-        </div>
         <div className="location-permission-actions">
           <button type="button" className="btn-primary" onClick={onActivate} disabled={locationLoading}>
-            {locationLoading ? "Aktivləşdirilir..." : "Lokasiyanı aktivləşdir"}
+            {locationLoading ? "Paylaşılır..." : "Lokasiyamı paylaş"}
           </button>
           <button type="button" className="btn-secondary" onClick={onDismiss} disabled={locationLoading}>
-            İndi yox
+            İndi yox, davam et
           </button>
         </div>
       </div>
