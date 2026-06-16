@@ -292,6 +292,107 @@ function getTicketSubject(ticket) {
   return ticket?.subject || ticket?.category || "Müraciət";
 }
 
+
+function SponsoredJobCard({ card }) {
+  if (!card) return null;
+
+  const title = card.title || "Sponsorlu xidmət";
+  const company = card.companyName || card.company_name || "";
+  const subtitle = card.subtitle || "";
+  const description = card.description || "";
+  const ctaLabel = card.ctaLabel || card.cta_label || "Ətraflı bax";
+  const ctaUrl = card.ctaUrl || card.cta_url || "";
+  const logoText = (card.logoText || card.logo_text || "AS").slice(0, 4).toUpperCase();
+  const badgeLabel = card.badgeLabel || card.badge_label || "Sponsorlu";
+
+  const content = (
+    <article
+      className="asimos-sponsored-job-card"
+      style={{
+        width: "100%",
+        minHeight: 176,
+        border: "1px solid #bfdbfe",
+        background: "linear-gradient(180deg, #eff6ff 0%, #f8fbff 100%)",
+        borderRadius: 24,
+        padding: "20px 18px",
+        display: "grid",
+        gridTemplateColumns: "58px minmax(0, 1fr) auto",
+        gap: 14,
+        boxShadow: "0 16px 36px rgba(37, 99, 235, 0.08)",
+        cursor: ctaUrl ? "pointer" : "default",
+      }}
+    >
+      <div
+        aria-hidden="true"
+        style={{
+          width: 58,
+          height: 58,
+          borderRadius: 16,
+          background: "#dff7f1",
+          border: "1px solid #bae6d8",
+          color: "#18a477",
+          display: "grid",
+          placeItems: "center",
+          fontWeight: 900,
+          letterSpacing: 0.3,
+          flexShrink: 0,
+        }}
+      >
+        {logoText}
+      </div>
+
+      <div style={{ minWidth: 0 }}>
+        <h3 style={{ margin: "0 0 8px", color: "#111827", fontSize: 18, lineHeight: 1.3, fontWeight: 800 }}>
+          {title}
+        </h3>
+        {company || subtitle ? (
+          <div style={{ color: "#8a8f98", fontSize: 15, lineHeight: 1.35, marginBottom: 12 }}>
+            {[company, subtitle].filter(Boolean).join(" • ")}
+          </div>
+        ) : null}
+        {description ? (
+          <p style={{ margin: "0 0 18px", color: "#555b66", fontSize: 16, lineHeight: 1.55 }}>
+            {description}
+          </p>
+        ) : null}
+        {ctaUrl ? (
+          <span style={{ color: "#1d5fae", fontWeight: 800, fontSize: 16 }}>
+            {ctaLabel} <span aria-hidden="true">→</span>
+          </span>
+        ) : null}
+      </div>
+
+      <div style={{ alignSelf: "start" }}>
+        <span
+          style={{
+            display: "inline-flex",
+            alignItems: "center",
+            justifyContent: "center",
+            minHeight: 28,
+            padding: "5px 12px",
+            borderRadius: 999,
+            background: "#1d5fae",
+            color: "#fff",
+            fontSize: 13,
+            fontWeight: 700,
+            whiteSpace: "nowrap",
+          }}
+        >
+          {badgeLabel}
+        </span>
+      </div>
+    </article>
+  );
+
+  if (!ctaUrl) return content;
+
+  return (
+    <a href={ctaUrl} target="_blank" rel="noreferrer" style={{ display: "block", textDecoration: "none", color: "inherit" }}>
+      {content}
+    </a>
+  );
+}
+
 function getTicketMessages(ticket) {
   const source = Array.isArray(ticket?.support_messages)
     ? ticket.support_messages
@@ -352,6 +453,8 @@ export default function HomePageClient() {
   const [resetPassword, setResetPassword] = useState("");
 
   const [jobs, setJobs] = useState([]);
+  const [sponsoredCard, setSponsoredCard] = useState(null);
+  const [recommendedCard, setRecommendedCard] = useState(null);
   const [myJobs, setMyJobs] = useState([]);
   const [favoriteJobs, setFavoriteJobs] = useState([]);
   const [favoriteJobIds, setFavoriteJobIds] = useState(() => new Set());
@@ -637,6 +740,30 @@ export default function HomePageClient() {
       setContactEmail(user.email);
     }
   }, [roleName, user?.id]);
+
+
+  useEffect(() => {
+    let ignore = false;
+
+    fetch(`${SOCKET_URL}/sponsored-cards`)
+      .then((res) => (res.ok ? res.json() : { sponsored: null, recommended: null }))
+      .then((data) => {
+        if (!ignore) {
+          setSponsoredCard(data?.sponsored || data?.item || null);
+          setRecommendedCard(data?.recommended || null);
+        }
+      })
+      .catch(() => {
+        if (!ignore) {
+          setSponsoredCard(null);
+          setRecommendedCard(null);
+        }
+      });
+
+    return () => {
+      ignore = true;
+    };
+  }, []);
 
   async function loadBaseData() {
     const [categoryRes, jobsRes, termsRes, filterOptionsRes] = await Promise.all([
@@ -2232,7 +2359,7 @@ export default function HomePageClient() {
         <>
 
 
-          {hasHomeJobs ? (
+          {hasHomeJobs || sponsoredCard || recommendedCard ? (
             <section className="container page-section">
               <header className={`section-head ${styles.latestJobsHead}`}>
                 <div>
@@ -2259,7 +2386,28 @@ export default function HomePageClient() {
                 </div>
               </header>
               <div className={styles.latestJobsGridList}>
-                {homeJobs.slice(0, 8).map((job) => (
+                {sponsoredCard ? (
+                  <div className={styles.latestJobsGridItem} key="sponsored-card">
+                    <SponsoredJobCard card={sponsoredCard} />
+                  </div>
+                ) : null}
+                {homeJobs.slice(0, 4).map((job) => (
+                  <div className={styles.latestJobsGridItem} key={job.id}>
+                    <JobCard
+                      job={job}
+                      onClick={() => openJobDetail(job.id)}
+                      onPrefetch={() => prefetchJobDetail(job.id)}
+                      isFavorite={favoriteJobIds.has(String(job.id))}
+                      onToggleFavorite={(event) => handleToggleFavorite(job, event)}
+                    />
+                  </div>
+                ))}
+                {recommendedCard ? (
+                  <div className={styles.latestJobsGridItem} key="recommended-card">
+                    <SponsoredJobCard card={recommendedCard} />
+                  </div>
+                ) : null}
+                {homeJobs.slice(4, 8).map((job) => (
                   <div className={styles.latestJobsGridItem} key={job.id}>
                     <JobCard
                       job={job}
@@ -2504,7 +2652,21 @@ export default function HomePageClient() {
           </form>
 
           <div className="mobile-job-list">
-            {visibleShownJobs.map((job) => (
+            {sponsoredCard ? <SponsoredJobCard card={sponsoredCard} /> : null}
+            {visibleShownJobs.slice(0, 4).map((job) => (
+              <JobCard
+                key={job.id}
+                job={job}
+                onClick={() => openJobDetail(job.id)}
+                onPrefetch={() => prefetchJobDetail(job.id)}
+                showEdit={(job?.createdBy || job?.created_by) === user?.id}
+                onEdit={() => startEditJob(job)}
+                isFavorite={favoriteJobIds.has(String(job.id))}
+                onToggleFavorite={(event) => handleToggleFavorite(job, event)}
+              />
+            ))}
+            {recommendedCard ? <SponsoredJobCard card={recommendedCard} /> : null}
+            {visibleShownJobs.slice(4).map((job) => (
               <JobCard
                 key={job.id}
                 job={job}
@@ -2533,7 +2695,7 @@ export default function HomePageClient() {
             <div className="jobs-lazy-load completed">Bütün elanlar göstərildi</div>
           ) : null}
 
-          {shownJobs.length === 0 ? (
+          {shownJobs.length === 0 && !sponsoredCard && !recommendedCard ? (
             <div className="empty-state-card">
               <strong>Elan tapılmadı</strong>
               <p>Seçilən filterlərə uyğun elan yoxdur. Filterləri sıfırlayıb bütün elanlara baxa bilərsiniz.</p>

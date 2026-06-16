@@ -1837,7 +1837,7 @@
 
 .HomePage_latestJobsGridList__NwH0_ {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(1, minmax(0, 1fr));
   grid-gap: 16px;
   gap: 16px;
   align-items: stretch;
