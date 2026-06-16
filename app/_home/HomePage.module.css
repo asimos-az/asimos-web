@@ -1811,11 +1811,9 @@
     padding-right: 2px;
   }
 }
-
-/* Latest jobs: static 3-column grid, no carousel */
 .latestJobsGridList {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: 1fr;
   gap: 16px;
   align-items: stretch;
 }
