@@ -12,58 +12,15 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/jobs/[id]/page": [
+    "/jobs/[category]/[title]/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/jobs/[id]/page.js"
+      "static/chunks/app/jobs/[category]/[title]/page.js"
     ],
-    "/policy/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/css/app/policy/page.css",
-      "static/chunks/app/policy/page.js"
-    ],
-    "/bakida-is-elanlari/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/bakida-is-elanlari/page.css",
-      "static/chunks/app/bakida-is-elanlari/page.js"
-    ],
-    "/isci-axtaranlar/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/isci-axtaranlar/page.css",
-      "static/chunks/app/isci-axtaranlar/page.js"
-    ],
-    "/is-elanlari/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/is-elanlari/page.css",
-      "static/chunks/app/is-elanlari/page.js"
-    ],
-    "/is-axtaranlar/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/is-axtaranlar/page.css",
-      "static/chunks/app/is-axtaranlar/page.js"
-    ],
-    "/gundelik-isler/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/gundelik-isler/page.css",
-      "static/chunks/app/gundelik-isler/page.js"
-    ],
-    "/xeritede-is-elanlari/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/xeritede-is-elanlari/page.css",
-      "static/chunks/app/xeritede-is-elanlari/page.js"
-    ],
-    "/vakansiyalar/page": [
-      "static/chunks/webpack.js",
-      "static/chunks/main-app.js",
-      "static/css/app/vakansiyalar/page.css",
-      "static/chunks/app/vakansiyalar/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }

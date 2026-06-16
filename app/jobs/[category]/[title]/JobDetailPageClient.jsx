@@ -1,0 +1,136 @@
+"use client";
+
+import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import Header from "../../../components/Header";
+import { api, clearAuthToken } from "../../../../lib/api";
+import { clearAuth, loadAuth } from "../../../../lib/auth-store";
+import JobDetail from "../../../components/JobDetail";
+
+const guestNav = [
+  { key: "home", label: "Ana səhifə" },
+  { key: "jobs", label: "Elanlar" },
+];
+
+const seekerNav = [
+  { key: "home", label: "Ana səhifə" },
+  { key: "jobs", label: "Elanlar" },
+];
+
+const employerNav = [
+  { key: "home", label: "Ana səhifə" },
+  { key: "jobs", label: "Elanlar" },
+];
+
+function normalizeRole(role) {
+  const raw = String(role || "").trim().toLowerCase();
+
+  if (["seeker", "is axtaran", "alici", "jobseeker"].includes(raw)) {
+    return "seeker";
+  }
+
+  if (["employer", "isci axtaran", "satici", "hirer", "company"].includes(raw)) {
+    return "employer";
+  }
+
+  return null;
+}
+
+export default function JobDetailPageClient({ job, error }) {
+  const router = useRouter();
+  const [user, setUser] = useState(null);
+  const [deviceLocation, setDeviceLocation] = useState(null);
+
+  const roleName = normalizeRole(user?.role);
+  const canCreateJob = roleName === "employer";
+
+  useEffect(() => {
+    const saved = loadAuth();
+
+    if (saved?.user) {
+      setUser(saved.user);
+    }
+
+    try {
+      const savedLocation = JSON.parse(
+        window.localStorage.getItem("asimos_device_location") || "null"
+      );
+
+      if (savedLocation?.lat && savedLocation?.lng) {
+        setDeviceLocation(savedLocation);
+      }
+    } catch {}
+  }, []);
+
+  useEffect(() => {
+    const jobId = job?.id;
+
+    if (!jobId || error || typeof window === "undefined") return;
+
+    const storageKey = `job-view:${jobId}`;
+    const lastTrackedAt = Number(window.sessionStorage.getItem(storageKey) || 0);
+    const now = Date.now();
+
+    if (lastTrackedAt && now - lastTrackedAt < 15 * 60 * 1000) return;
+
+    window.sessionStorage.setItem(storageKey, String(now));
+
+    api.registerJobView(jobId).catch(() => {
+      window.sessionStorage.removeItem(storageKey);
+    });
+  }, [job?.id, error]);
+
+  const navItems = useMemo(() => {
+    if (roleName === "employer") return employerNav;
+    if (roleName === "seeker") return seekerNav;
+
+    return guestNav;
+  }, [roleName]);
+
+  function handleNavigate(section) {
+    if (section === "home") {
+      router.push("/");
+      return;
+    }
+
+    if (section === "terms") {
+      router.push("/policy");
+      return;
+    }
+
+    router.push(`/?section=${section}`);
+  }
+
+  function handleSignOut() {
+    setUser(null);
+    clearAuthToken();
+    clearAuth();
+    router.push("/");
+  }
+
+  return (
+    <>
+      <Header
+        activeSection="jobs"
+        setActiveSection={handleNavigate}
+        navItems={navItems}
+        user={user}
+        handleSignOut={handleSignOut}
+        canCreateJob={canCreateJob}
+      />
+
+      {error ? (
+        <section className="container page-section">
+          <p className="notice error">{error}</p>
+        </section>
+      ) : (
+        <JobDetail
+          job={job}
+          mode="page"
+          user={user}
+          userLocation={user?.location || deviceLocation}
+        />
+      )}
+    </>
+  );
+}

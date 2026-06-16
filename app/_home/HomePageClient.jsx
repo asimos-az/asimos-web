@@ -123,6 +123,30 @@ function fileToDataUrl(file) {
   });
 }
 
+function isBase64DataUrl(value) {
+  return typeof value === "string" && value.trim().startsWith("data:");
+}
+
+function safeImageUrl(value) {
+  const text = String(value || "").trim();
+
+  if (!text) return undefined;
+
+  if (isBase64DataUrl(text)) return undefined;
+
+  return text;
+}
+
+function getSafeUserLogo(user) {
+  return (
+    safeImageUrl(user?.logoUrl) ||
+    safeImageUrl(user?.logo_url) ||
+    safeImageUrl(user?.profileLogoUrl) ||
+    safeImageUrl(user?.profile_logo_url) ||
+    ""
+  );
+}
+
 function normalizeRole(role) {
   const raw = String(role || "").trim().toLowerCase();
   if (["seeker", "is axtaran", "alici", "jobseeker"].includes(raw)) return "seeker";
@@ -472,7 +496,7 @@ export default function HomePageClient() {
         }
         const notifRes = await api.listMyNotifications({ limit: 50 }).catch(() => null);
         if (notifRes?.items) setNotifications(notifRes.items);
-      } catch {}
+      } catch { }
     };
 
     socket.on("support:updated", refreshSupport);
@@ -554,8 +578,10 @@ export default function HomePageClient() {
       setEditingName(saved.user?.fullName || "");
       setEditingPhone(saved.user?.phone || "");
       setCompanyName(saved.user?.companyName || saved.user?.company_name || "");
-      setProfileLogoPreview(saved.user?.logoUrl || saved.user?.logo_url || saved.user?.profileLogoUrl || "");
-      setJobImagePreview(saved.user?.logoUrl || saved.user?.logo_url || saved.user?.profileLogoUrl || "");
+      const savedLogo = getSafeUserLogo(saved.user);
+
+      setProfileLogoPreview(savedLogo);
+      setJobImagePreview(savedLogo);
       if (saved.user?.companyName || saved.user?.company_name) setCompanyObject(saved.user.companyName || saved.user.company_name || "");
     }
 
@@ -577,17 +603,39 @@ export default function HomePageClient() {
 
   useEffect(() => {
     if (roleName !== "employer" || !user) return;
+
     const userCompany = user.companyName || user.company_name || "";
-    const userLogo = user.logoUrl || user.logo_url || user.profileLogoUrl || "";
-    if (userCompany && !companyName) setCompanyName(userCompany);
-    if (userCompany && !companyObject) setCompanyObject(userCompany);
-    if (userLogo && !profileLogoPreview) setProfileLogoPreview(userLogo);
-    if (userLogo && !jobImagePreview) setJobImagePreview(userLogo);
-    if (user.phone) {
-      if (!contactPhone || contactPhone === "+994") setContactPhone(user.phone);
-      if (!whatsapp || whatsapp === "+994") setWhatsapp(user.phone);
+    const userLogo = getSafeUserLogo(user);
+
+    if (userCompany && !companyName) {
+      setCompanyName(userCompany);
     }
-    if (user.email && !contactEmail) setContactEmail(user.email);
+
+    if (userCompany && !companyObject) {
+      setCompanyObject(userCompany);
+    }
+
+    if (userLogo && !profileLogoPreview) {
+      setProfileLogoPreview(userLogo);
+    }
+
+    if (userLogo && !jobImagePreview) {
+      setJobImagePreview(userLogo);
+    }
+
+    if (user.phone) {
+      if (!contactPhone || contactPhone === "+994") {
+        setContactPhone(user.phone);
+      }
+
+      if (!whatsapp || whatsapp === "+994") {
+        setWhatsapp(user.phone);
+      }
+    }
+
+    if (user.email && !contactEmail) {
+      setContactEmail(user.email);
+    }
   }, [roleName, user?.id]);
 
   async function loadBaseData() {
@@ -907,31 +955,41 @@ export default function HomePageClient() {
 
   async function handleRegisterLogoFileChange(event) {
     const file = event.target.files?.[0];
+
     if (!file) {
       setRegisterLogoPreview("");
       return;
     }
+
     if (file.size > 900 * 1024) {
       setError("Loqo maksimum 900KB olmalıdır. Kiçik ölçülü şəkil seçin.");
       event.target.value = "";
+      setRegisterLogoPreview("");
       return;
     }
+
     const dataUrl = await fileToDataUrl(file);
+
     setRegisterLogoPreview(dataUrl);
   }
 
   async function handleProfileLogoFileChange(event) {
     const file = event.target.files?.[0];
+
     if (!file) {
       setProfileLogoPreview("");
       return;
     }
+
     if (file.size > 900 * 1024) {
       setError("Profil loqosu maksimum 900KB olmalıdır.");
       event.target.value = "";
+      setProfileLogoPreview("");
       return;
     }
+
     const dataUrl = await fileToDataUrl(file);
+
     setProfileLogoPreview(dataUrl);
   }
 
@@ -944,12 +1002,16 @@ export default function HomePageClient() {
     try {
       if (password !== confirmPassword) throw new Error("Şifrələr eyni deyil");
 
+      const safeRegisterLogo = safeImageUrl(registerLogoPreview);
+
       const payload = {
         role,
         fullName,
         companyName: role === "employer" ? companyName : undefined,
-        logoUrl: role === "employer" ? registerLogoPreview || undefined : undefined,
-        profileLogoUrl: role === "employer" ? registerLogoPreview || undefined : undefined,
+
+        logoUrl: role === "employer" ? safeRegisterLogo : undefined,
+        profileLogoUrl: role === "employer" ? safeRegisterLogo : undefined,
+
         category: role === "employer" ? registerCategory || undefined : undefined,
         email,
         password,
@@ -962,7 +1024,7 @@ export default function HomePageClient() {
         setMode("verifyOtp");
         setOk("OTP kodu e-poçt ünvanınıza göndərildi");
       } else if (res?.token) {
-        await handleLogin({ preventDefault: () => {} });
+        await handleLogin({ preventDefault: () => { } });
       }
     } catch (err) {
       setError(err.message || "Qeydiyyat alınmadı");
@@ -1108,6 +1170,8 @@ export default function HomePageClient() {
   }
 
   function resetJobForm() {
+    const safeUserLogo = getSafeUserLogo(user);
+
     setEditingJobId(null);
     setTitle("");
     setCompanyObject("");
@@ -1130,7 +1194,8 @@ export default function HomePageClient() {
     setActiveCreateFilterTab("type");
     setPublishMode("instant");
     setPublishAt("");
-    setJobImagePreview("");
+
+    setJobImagePreview(safeUserLogo || "");
   }
 
   function startEditJob(job) {
@@ -1202,7 +1267,9 @@ export default function HomePageClient() {
 
   async function handleCreateJob(e, saveAsDraft = false) {
     e.preventDefault();
+
     if (!user?.id) return;
+
     if (roleName !== "employer") {
       setError("Elan yaratmaq yalnız işçi axtaran profili üçün aktivdir");
       setActiveSection("profile");
@@ -1214,9 +1281,17 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      if (!title.trim()) throw new Error("Elanın adını yazın");
-      if (!category) throw new Error("Kateqoriya seçin");
-      if (!jobType) throw new Error("Vakansiyanın növünü seçin");
+      if (!title.trim()) {
+        throw new Error("Elanın adını yazın");
+      }
+
+      if (!category) {
+        throw new Error("Kateqoriya seçin");
+      }
+
+      if (!jobType) {
+        throw new Error("Vakansiyanın növünü seçin");
+      }
 
       const resolvedDuration =
         jobType === "temporary"
@@ -1224,27 +1299,44 @@ export default function HomePageClient() {
             ? customDurationDays
             : durationPreset
           : "";
+
       const durationLabel = jobType === "temporary" ? `${resolvedDuration} gün` : "";
-      if (publishMode === "scheduled" && (!publishAt || new Date(publishAt).getTime() <= Date.now())) {
+
+      if (
+        publishMode === "scheduled" &&
+        (!publishAt || new Date(publishAt).getTime() <= Date.now())
+      ) {
         throw new Error("Planlı yayım üçün gələcək tarix və saat seçin");
       }
+
       const resolvedWage = getResolvedWageValue();
+
       if (wageMode === "range" && !resolvedWage) {
         throw new Error("Minimum və ya maksimum maaş rəqəmini yazın");
       }
+
+      const safeLogo =
+        safeImageUrl(jobImagePreview) ||
+        safeImageUrl(profileLogoPreview) ||
+        getSafeUserLogo(user) ||
+        undefined;
 
       const payload = {
         title,
         wage: resolvedWage,
         category,
+
         whatsapp,
         phone: contactPhone,
         contactPhone,
+
         email: contactEmail,
         contactEmail,
         contact_email: contactEmail,
+
         link,
         voen,
+
         description: buildJobDetailsText({
           companyObject,
           scheduleStart,
@@ -1255,24 +1347,51 @@ export default function HomePageClient() {
           contactEmail,
           description,
         }),
-        companyName: roleName === "employer" ? (companyObject || companyName || user?.companyName || user?.company_name) : undefined,
-        company_logo_url: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
-        logoUrl: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
+
+        companyName:
+          roleName === "employer"
+            ? companyObject || companyName || user?.companyName || user?.company_name
+            : undefined,
+
+        // ƏSAS DÜZƏLİŞ:
+        // Buraya artıq data:image/png;base64,... getməyəcək
+        company_logo_url: safeLogo,
+        logoUrl: safeLogo,
+        imageUrl: safeLogo,
+
         createdBy: user.id,
+
         jobType: jobType || (roleName === "seeker" ? "seeker" : "permanent"),
+
         jobLevel: jobLevel || undefined,
         job_level: jobLevel || undefined,
+
         isDaily: jobType === "temporary",
-        durationDays: jobType === "temporary" ? Number(resolvedDuration || 0) : undefined,
+
+        durationDays:
+          jobType === "temporary"
+            ? Number(resolvedDuration || 0)
+            : undefined,
+
         work_type: workType || undefined,
+
         start_time: scheduleStart || null,
         end_time: scheduleEnd || null,
+
         notifyRadiusM: Number(radiusM) > 0 ? Number(radiusM) : 500,
+
         publishMode,
-        publishedAt: saveAsDraft ? null : (publishMode === "scheduled" ? new Date(publishAt).toISOString() : null),
+
+        publishedAt: saveAsDraft
+          ? null
+          : publishMode === "scheduled"
+            ? new Date(publishAt).toISOString()
+            : null,
+
         status: saveAsDraft ? "draft" : undefined,
+
         saveAsDraft,
-        imageUrl: jobImagePreview || profileLogoPreview || user?.logoUrl || user?.logo_url || undefined,
+
         location: {
           address: locationText || "Bakı",
           lat: Number(lat),
@@ -1292,7 +1411,10 @@ export default function HomePageClient() {
 
       await loadAuthedData();
       await refreshJobs();
-      if (roleName === "employer") setActiveSection("profile");
+
+      if (roleName === "employer") {
+        setActiveSection("profile");
+      }
     } catch (err) {
       setError(err.message || "Elan yaradılmadı");
     } finally {
@@ -1488,12 +1610,20 @@ export default function HomePageClient() {
         lat: Number(lat),
         lng: Number(lng),
       };
+      const safeProfileLogo =
+        safeImageUrl(profileLogoPreview) ||
+        getSafeUserLogo(user) ||
+        null;
+
       const payload = {
         fullName: editingName,
         phone: editingPhone,
         location: nextLocation,
-        companyName: roleName === "employer" ? (companyName || user?.companyName || user?.company_name || "") : undefined,
-        logoUrl: roleName === "employer" ? (profileLogoPreview || null) : undefined,
+        companyName: roleName === "employer"
+          ? companyName || user?.companyName || user?.company_name || ""
+          : undefined,
+
+        logoUrl: roleName === "employer" ? safeProfileLogo : undefined,
       };
       const response = await api.updateProfile(payload);
       const nextUser = response?.user || {
@@ -1758,8 +1888,8 @@ export default function HomePageClient() {
         sessionId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
         window.localStorage.setItem(sessionKey, sessionId);
       }
-      api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => {});
-    } catch {}
+      api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => { });
+    } catch { }
 
     api.getSiteStats()
       .then((data) => { if (!ignore) setSiteStats(data || null); })
@@ -2208,11 +2338,11 @@ export default function HomePageClient() {
           </div>
 
           <form className={`${styles.homeFilterCard} ${styles.compactSearchFilter}`} onSubmit={(e) => {
-              e.preventDefault();
-              const nextFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
-              setAppliedFilters(nextFilters);
-              refreshJobs(nextFilters);
-            }}>
+            e.preventDefault();
+            const nextFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
+            setAppliedFilters(nextFilters);
+            refreshJobs(nextFilters);
+          }}>
             <div className={styles.homeFilterTitle}>
               <span className={styles.homeFilterTitleIcon} aria-hidden="true">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

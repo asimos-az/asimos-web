@@ -1,8 +1,6 @@
 {
-  "/gundelik-isler/page": "app/gundelik-isler/page.js",
-  "/xeritede-is-elanlari/page": "app/xeritede-is-elanlari/page.js",
-  "/vakansiyalar/page": "app/vakansiyalar/page.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/page": "app/page.js",
-  "/jobs/[id]/page": "app/jobs/[id]/page.js",
-  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js"
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/jobs/[category]/[title]/page": "app/jobs/[category]/[title]/page.js"
 }
