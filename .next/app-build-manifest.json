@@ -12,10 +12,10 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
-    "/jobs/[category]/[title]/page": [
+    "/_not-found/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/jobs/[category]/[title]/page.js"
+      "static/chunks/app/_not-found/page.js"
     ]
   }
 }
