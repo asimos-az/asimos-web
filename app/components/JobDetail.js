@@ -284,8 +284,47 @@ function getStatusLabel(job) {
   return labels[value] || value || 'Qeyd edilməyib';
 }
 
+function slugify(value) {
+  return String(value || '')
+    .toLowerCase()
+    .trim()
+    .replace(/ə/g, 'e')
+    .replace(/ö/g, 'o')
+    .replace(/ü/g, 'u')
+    .replace(/ı/g, 'i')
+    .replace(/ğ/g, 'g')
+    .replace(/ş/g, 's')
+    .replace(/ç/g, 'c')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '');
+}
+
 function getSimilarJobHref(job) {
-  return job?.id ? `/jobs/${job.id}` : '#';
+  if (!job) return '#';
+
+  const categorySlug = slugify(
+    job.categorySlug ||
+    job.category_slug ||
+    job.category ||
+    job.categoryName ||
+    job.category_name ||
+    'elan'
+  );
+
+  const titleSlug = slugify(
+    job.slug ||
+    job.titleSlug ||
+    job.title_slug ||
+    job.title ||
+    job.name ||
+    job.id ||
+    'elan'
+  );
+
+  if (!categorySlug || !titleSlug) return job?.id ? `/jobs/${job.id}` : '#';
+
+  const idQuery = job?.id ? `?id=${encodeURIComponent(String(job.id))}` : '';
+  return `/jobs/${categorySlug}/${titleSlug}${idQuery}`;
 }
 
 function getJobLogoUrl(job) {
@@ -587,77 +626,42 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
             <div className="job-detail-description">{cleanJobDescription || 'Təsvir qeyd edilməyib.'}</div>
           </section>
 
-          <section className={`job-detail-card job-detail-accordion-card${infoOpen ? ' is-open' : ''}`}>
-            <button
-              type="button"
-              className="job-detail-accordion-head"
-              onClick={() => setInfoOpen((value) => !value)}
-              aria-expanded={infoOpen}
-            >
-              <span>
-                <span className="section-kicker">İş şərtləri</span>
-                <strong>Əsas məlumatlar</strong>
-              </span>
-              <i aria-hidden="true">⌄</i>
-            </button>
-            <div className="job-detail-info-grid" hidden={!infoOpen}>
-              <div className="info-item">
-                <span className="info-label">Kateqoriya</span>
-                <span className={`info-value${job.category ? '' : ' is-empty-value'}`}>{job.category || 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Filial / iş yeri</span>
-                <span className={`info-value${workplace ? '' : ' is-empty-value'}`}>{workplace || 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Vəzifə dərəcəsi</span>
-                <span className={`info-value${getJobLevel(job) ? '' : ' is-empty-value'}`}>{getJobLevel(job) || 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Maaş</span>
-                <span className={`info-value${getWage(job) && getWage(job) !== 'Qeyd edilməyib' ? '' : ' is-empty-value'}`}>{getWage(job) || 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">İş növü</span>
-                <span className={`info-value${getJobTypeLabel(job) !== 'Qeyd edilməyib' ? '' : ' is-empty-value'}`}>{getJobTypeLabel(job)}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Vakansiya başlanğıcı</span>
-                <span className={`info-value${vacancyStartDate ? '' : ' is-empty-value'}`}>{vacancyStartDate ? formatJobDate(vacancyStartDate) : 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Vakansiya bitişi</span>
-                <span className={`info-value${vacancyEndDate ? '' : ' is-empty-value'}`}>{vacancyEndDate ? formatJobDate(vacancyEndDate) : 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">İlk göstərilən əlaqə</span>
-                <span className={`info-value${primaryContactLabel !== 'Qeyd edilməyib' ? '' : ' is-empty-value'}`}>{primaryContactLabel}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Görünən əlaqələr</span>
-                <span className="info-value">{contactVisibilityLabel}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Telefon</span>
-                <span className={`info-value${getContactVisibility(job).phone && getFirstValue(job.phone, job.contact_phone, job.contactPhone) ? '' : ' is-empty-value'}`}>{getContactVisibility(job).phone ? getFirstValue(job.phone, job.contact_phone, job.contactPhone) || 'Qeyd edilməyib' : 'Gizlədilib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">WhatsApp</span>
-                <span className={`info-value${getContactVisibility(job).whatsapp && getFirstValue(job.whatsapp, job.contact_whatsapp, job.contactWhatsapp) ? '' : ' is-empty-value'}`}>{getContactVisibility(job).whatsapp ? getFirstValue(job.whatsapp, job.contact_whatsapp, job.contactWhatsapp) || 'Qeyd edilməyib' : 'Gizlədilib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Email</span>
-                <span className={`info-value${getContactVisibility(job).email && getJobEmail(job) ? '' : ' is-empty-value'}`}>{getContactVisibility(job).email ? getJobEmail(job) || 'Qeyd edilməyib' : 'Gizlədilib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">ATS linki</span>
-                <span className={`info-value${atsLink ? '' : ' is-empty-value'}`}>{atsLink ? <a href={atsLink} target="_blank" rel="noopener noreferrer">Müraciət et</a> : 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="info-item">
-                <span className="info-label">Lokasiya</span>
-                <span className={`info-value${getAddress(job) !== 'Qeyd edilməyib' ? '' : ' is-empty-value'}`}>{getAddress(job)}</span>
+          <section className="job-detail-card similar-jobs-card">
+            <div className="section-heading-row">
+              <div>
+                <span className="section-kicker">Oxşar vakansiyalar</span>
+                <h2 className="job-detail-section-title">Bu elana oxşar elanlar</h2>
               </div>
             </div>
+            {similarLoading ? (
+              <div className="similar-jobs-state">Oxşar elanlar yüklənir...</div>
+            ) : similarJobs.length ? (
+              <div className="similar-jobs-grid">
+                {similarJobs.map((item) => {
+                  const itemCompany = getCompanyName(item);
+                  const itemLogo = getJobLogoUrl(item);
+                  const itemInitial = String(itemCompany || item.title || 'A').charAt(0).toUpperCase();
+                  return (
+                    <a key={item.id} href={getSimilarJobHref(item)} className="similar-job-card">
+                      <span className="similar-job-logo">
+                        {itemLogo ? <img src={itemLogo} alt="" /> : itemInitial}
+                      </span>
+                      <span className="similar-job-content">
+                        <strong>{item.title || 'Elan'}</strong>
+                        <small>{itemCompany}</small>
+                        <span className="similar-job-tags">
+                          {item.category ? <i>{item.category}</i> : null}
+                          <i>{getWage(item)}</i>
+                        </span>
+                      </span>
+                      <span className="similar-job-save" aria-hidden="true">♡</span>
+                    </a>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="similar-jobs-state">Oxşar elan tapılmadı.</div>
+            )}
           </section>
 
         </main>
@@ -698,43 +702,6 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
       </div>
 
 
-      <section className="job-detail-card similar-jobs-card">
-        <div className="section-heading-row">
-          <div>
-            <span className="section-kicker">Oxşar vakansiyalar</span>
-            <h2 className="job-detail-section-title">Bu elana oxşar elanlar</h2>
-          </div>
-        </div>
-        {similarLoading ? (
-          <div className="similar-jobs-state">Oxşar elanlar yüklənir...</div>
-        ) : similarJobs.length ? (
-          <div className="similar-jobs-grid">
-            {similarJobs.map((item) => {
-              const itemCompany = getCompanyName(item);
-              const itemLogo = getJobLogoUrl(item);
-              const itemInitial = String(itemCompany || item.title || 'A').charAt(0).toUpperCase();
-              return (
-                <a key={item.id} href={getSimilarJobHref(item)} className="similar-job-card">
-                  <span className="similar-job-logo">
-                    {itemLogo ? <img src={itemLogo} alt="" /> : itemInitial}
-                  </span>
-                  <span className="similar-job-content">
-                    <strong>{item.title || 'Elan'}</strong>
-                    <small>{itemCompany}</small>
-                    <span className="similar-job-tags">
-                      {item.category ? <i>{item.category}</i> : null}
-                      <i>{getWage(item)}</i>
-                    </span>
-                  </span>
-                  <span className="similar-job-save" aria-hidden="true">♡</span>
-                </a>
-              );
-            })}
-          </div>
-        ) : (
-          <div className="similar-jobs-state">Oxşar elan tapılmadı.</div>
-        )}
-      </section>
 
       <section className="job-detail-security-note" aria-label="Asimos təhlükəsizlik qaydası">
         <span aria-hidden="true">🛡️</span>
