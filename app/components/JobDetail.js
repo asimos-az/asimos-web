@@ -215,14 +215,18 @@ function formatContactVisibility(job) {
   return labels.length ? labels.join(', ') : 'Heç biri göstərilmir';
 }
 
-function getVisibleContactItems(job) {
+function getVisibleContactItems(job, viewerUser = null) {
   const visibility = getContactVisibility(job);
 
   // Elan yerləşdirərkən aktiv edilən əlaqə kanalları detal səhifəsində mütləq görünməlidir.
   // Dəyər bazaya boş düşübsə, sıra yenə göstərilir, amma blur/muted "Qeyd edilməyib" kimi çıxır.
-  const rawPhone = getFirstValue(job?.phone, job?.contact_phone, job?.contactPhone, job?.mobile_number, job?.mobileNumber);
-  const rawWhatsapp = getFirstValue(job?.whatsapp, job?.contact_whatsapp, job?.contactWhatsapp);
-  const rawEmail = getJobEmail(job);
+  const fallbackPhone = getFirstValue(viewerUser?.phone, viewerUser?.contact_phone, viewerUser?.contactPhone);
+  const fallbackWhatsapp = getFirstValue(viewerUser?.whatsapp, viewerUser?.contact_whatsapp, viewerUser?.contactWhatsapp, fallbackPhone);
+  const fallbackEmail = getFirstValue(viewerUser?.email, viewerUser?.contact_email, viewerUser?.contactEmail);
+
+  const rawPhone = getFirstValue(job?.phone, job?.contact_phone, job?.contactPhone, job?.mobile_number, job?.mobileNumber, fallbackPhone);
+  const rawWhatsapp = getFirstValue(job?.whatsapp, job?.contact_whatsapp, job?.contactWhatsapp, rawPhone, fallbackWhatsapp);
+  const rawEmail = getFirstValue(getJobEmail(job), fallbackEmail);
 
   const items = {
     phone: visibility.phone
@@ -471,7 +475,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   };
 
   const renderContact = () => {
-    const contactItems = getVisibleContactItems(job);
+    const contactItems = getVisibleContactItems(job, user);
 
     if (!contactItems.length) return 'Qeyd edilməyib';
 
