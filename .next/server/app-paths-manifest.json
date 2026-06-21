@@ -1,5 +1,4 @@
 {
   "/page": "app/page.js",
-  "/jobs/[category]/[title]/page": "app/jobs/[category]/[title]/page.js",
   "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js"
 }

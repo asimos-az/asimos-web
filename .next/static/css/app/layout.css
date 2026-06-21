@@ -1336,7 +1336,6 @@ textarea:focus {
 
   .card,
   .job-card,
-  .jobs-map-shell,
   .auth-form,
   .notification-card,
   .seo-card,
@@ -4867,7 +4866,7 @@ button {
 
 .similar-jobs-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-gap: 12px;
   gap: 12px;
 }
@@ -5091,277 +5090,6 @@ button {
   }
 }
 
-
-/*!************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/JobsMap.css ***!
-  \************************************************************************************************************************************************************************************************************************************************************************/
-.jobs-map-section {
-  padding-top: 0;
-}
-
-.jobs-map-head p {
-  max-width: 680px;
-  color: var(--text-secondary);
-  font-size: 1rem;
-}
-
-.jobs-map-shell {
-  padding: 1rem;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  box-shadow: var(--shadow);
-}
-
-.jobs-map-canvas {
-  width: 100%;
-  height: 520px;
-  border-radius: 22px;
-  overflow: hidden;
-}
-
-.jobs-map-empty {
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-}
-
-.jobs-map-popup {
-  line-height: 1.5;
-}
-
-.jobs-map-popup__title {
-  font-size: 1rem;
-  font-weight: 800;
-  color: var(--heading-color);
-  margin-bottom: 0.35rem;
-}
-
-.jobs-map-popup__company {
-  color: #2f4c6d;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
-}
-
-.jobs-map-popup__meta,
-.jobs-map-popup__desc,
-.jobs-map-popup__nearby {
-  margin-top: 0.45rem;
-}
-
-.jobs-map-popup__desc {
-  color: #42576f;
-}
-
-.jobs-map-popup__nearby {
-  padding-top: 0.55rem;
-  border-top: 1px solid #dce5ee;
-}
-
-.jobs-map-marker-wrap {
-  background: transparent;
-  border: 0;
-}
-
-.jobs-map-marker {
-  width: 34px;
-  height: 34px;
-  border-radius: 50% 50% 50% 0;
-  transform: rotate(-45deg);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
-  border: 2px solid #fff;
-}
-
-.jobs-map-marker span {
-  transform: rotate(45deg);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-}
-
-.jobs-map-marker--job {
-  background: #0f172a;
-}
-
-.jobs-map-marker--university {
-  background: #365314;
-}
-
-.jobs-map-marker--metro {
-  background: #475569;
-}
-
-.jobs-map-marker--active {
-  background: #3c7df0;
-  border-color: #dbeafe;
-  box-shadow: 0 0 0 8px rgba(60, 125, 240, 0.18), 0 14px 30px rgba(60, 125, 240, 0.35);
-  animation: jobsMapMarkerPulse 1.4s ease-in-out infinite;
-}
-
-@keyframes jobsMapMarkerPulse {
-  0% {
-    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0.24), 0 14px 30px rgba(60, 125, 240, 0.35);
-  }
-
-  70% {
-    box-shadow: 0 0 0 10px rgba(60, 125, 240, 0), 0 16px 34px rgba(60, 125, 240, 0.4);
-  }
-
-  100% {
-    box-shadow: 0 0 0 0 rgba(60, 125, 240, 0), 0 14px 30px rgba(60, 125, 240, 0.35);
-  }
-}
-
-@media (max-width: 900px) {
-  .jobs-map-canvas {
-    height: 420px;
-  }
-}
-
-.jobs-map-marker--user {
-  background: #0f766e;
-  border-color: #ccfbf1;
-  box-shadow: 0 0 0 8px rgba(15, 118, 110, 0.16), 0 14px 30px rgba(15, 118, 110, 0.28);
-}
-
-.jobs-map-popup--user .jobs-map-popup__title {
-  color: #0f766e;
-}
-
-/* Keep Leaflet below sticky header and add smooth map reveal */
-.jobs-map-section,
-#home-jobs-map {
-  position: relative;
-  z-index: 0;
-  scroll-margin-top: 150px;
-}
-
-.jobs-map-shell {
-  position: relative;
-  z-index: 0;
-  animation: asimosMapReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.jobs-map-canvas,
-.jobs-map-canvas .leaflet-container,
-.leaflet-container {
-  position: relative;
-  z-index: 0 !important;
-}
-
-.leaflet-pane,
-.leaflet-top,
-.leaflet-bottom,
-.leaflet-control-container {
-  z-index: 1 !important;
-}
-
-@keyframes asimosMapReveal {
-  from {
-    opacity: 0;
-    transform: translateY(28px) scale(0.985);
-    filter: blur(6px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
-  }
-}
-
-/* Large data performance UI */
-.jobs-map-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.85rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(60, 125, 240, 0.08), rgba(20, 184, 166, 0.08));
-  color: var(--text-secondary);
-}
-
-.jobs-map-toolbar strong {
-  color: var(--heading-color);
-}
-
-.jobs-map-poi-button {
-  border: 1px solid rgba(60, 125, 240, 0.22);
-  border-radius: 14px;
-  background: #ffffff;
-  color: #2563eb;
-  font-weight: 900;
-  padding: 0.7rem 0.95rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.jobs-map-poi-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: #eef4ff;
-  box-shadow: 0 12px 24px rgba(60, 125, 240, 0.14);
-}
-
-.jobs-map-poi-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
-.jobs-map-skeleton {
-  min-height: 220px;
-  display: grid;
-  place-items: center;
-  border-radius: 22px;
-  background:
-    linear-gradient(90deg, rgba(248, 251, 255, 0.88), rgba(238, 244, 255, 0.95), rgba(248, 251, 255, 0.88));
-  background-size: 220% 100%;
-  color: var(--text-secondary);
-  font-weight: 800;
-  animation: jobsMapSkeleton 1.6s ease-in-out infinite;
-}
-
-.marker-cluster-small,
-.marker-cluster-medium,
-.marker-cluster-large {
-  background: rgba(60, 125, 240, 0.18);
-}
-
-.marker-cluster-small div,
-.marker-cluster-medium div,
-.marker-cluster-large div {
-  background: #3c7df0;
-  color: #ffffff;
-  font-weight: 900;
-  box-shadow: 0 12px 28px rgba(60, 125, 240, 0.28);
-}
-
-@keyframes jobsMapSkeleton {
-  0% { background-position: 0 0; }
-  100% { background-position: -220% 0; }
-}
-
-@media (max-width: 720px) {
-  .jobs-map-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .jobs-map-poi-button {
-    width: 100%;
-  }
-}
-
-
-.jobs-map-toolbar--auto { justify-content: space-between; align-items: center; gap: 14px; }
-.jobs-map-layer-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.jobs-map-layer-toggles button { border: 1px solid #d3e2f5; background: #fff; color: #1f2a44; border-radius: 999px; min-height: 36px; padding: 0 12px; font-weight: 800; cursor: pointer; }
-.jobs-map-layer-toggles button.active { background: #e9f4ff; color: #1f8ee8; border-color: #9fcfff; }
-@media (max-width: 720px) { .jobs-map-toolbar--auto { align-items: stretch; } .jobs-map-layer-toggles button { flex: 1 1; } }
 
 /*!*******************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/LocationPicker.css ***!
@@ -5997,8 +5725,7 @@ button {
   }
 
   .section-head,
-  .mobile-web-head,
-  .jobs-map-head {
+  .mobile-web-head {
     gap: 10px;
     margin-bottom: 12px;
   }
@@ -6012,7 +5739,6 @@ button {
   }
 
   .card,
-  .jobs-map-shell,
   .launchShell,
   .notifications-hero,
   .profile-panel,
@@ -6054,16 +5780,6 @@ button {
     transform: scale(0.985);
   }
 
-  .jobs-map-section {
-    overflow: hidden;
-  }
-
-  .jobs-map-shell {
-    padding: 10px !important;
-    overflow: hidden;
-  }
-
-  .jobs-map,
   .leaflet-container {
     min-height: 360px;
     height: 58vh !important;
@@ -6322,7 +6038,6 @@ button {
     border-radius: 20px;
   }
 
-  .jobs-map,
   .leaflet-container {
     min-height: 320px;
     height: 52vh !important;
@@ -6353,7 +6068,6 @@ button {
   .page-section,
   .heroSearchSection,
   .launchShell,
-  .jobs-map-shell,
   .job-card,
   .profile-panel,
   .notifications-hero,
@@ -6377,7 +6091,6 @@ button {
   .page-section,
   .heroSearchSection,
   .launchShell,
-  .jobs-map-shell,
   .job-card,
   .profile-panel,
   .notifications-hero,
@@ -10252,7 +9965,7 @@ button {
 
 .similar-jobs-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   grid-gap: 12px;
   gap: 12px;
 }
@@ -10565,69 +10278,139 @@ button {
 /*!************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/JobsMap.css ***!
   \************************************************************************************************************************************************************************************************************************************************************************/
-.jobs-map-section {
+.jobs-map-section,
+#home-jobs-map {
+  position: relative;
+  z-index: 0;
+  scroll-margin-top: 150px;
   padding-top: 0;
 }
 
-.jobs-map-head p {
-  max-width: 680px;
-  color: var(--text-secondary);
-  font-size: 1rem;
+.jobs-map-shell {
+  width: 100%;
+  padding: 14px;
+  border-radius: 28px;
+  background: #ffffff;
+  border: 1px solid rgba(135, 151, 175, 0.18);
+  box-shadow: 0 18px 48px rgba(31, 41, 55, 0.07);
+  overflow: hidden;
+  animation: asimosMapReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.jobs-map-shell {
-  padding: 1rem;
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.9);
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  box-shadow: var(--shadow);
+.jobs-map-card-head {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr);
+  align-items: center;
+  grid-gap: 14px;
+  gap: 14px;
+  margin: 0 0 14px;
+}
+
+.jobs-map-card-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  background: #dff7f1;
+  border: 1px solid #bde7db;
+  color: #16936b;
+  font-size: 1.15rem;
+}
+
+.jobs-map-card-head h2 {
+  margin: 0;
+  color: #111827;
+  font-size: 1.05rem;
+  line-height: 1.2;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+
+.jobs-map-card-head p {
+  margin: 5px 0 0;
+  max-width: 680px;
+  color: #8a8f98;
+  font-size: 0.92rem;
+  line-height: 1.35;
+  font-weight: 650;
 }
 
 .jobs-map-canvas {
   width: 100%;
-  height: 520px;
-  border-radius: 22px;
+  height: 310px;
+  border-radius: 18px;
   overflow: hidden;
+  background: #dff5ec;
+  border: 1px solid rgba(135, 151, 175, 0.12);
+}
+
+.jobs-map-canvas .leaflet-container,
+.leaflet-container {
+  position: relative;
+  z-index: 0 !important;
+}
+
+.leaflet-pane,
+.leaflet-top,
+.leaflet-bottom,
+.leaflet-control-container {
+  z-index: 1 !important;
 }
 
 .jobs-map-empty {
-  margin-bottom: 1rem;
-  color: var(--text-secondary);
-}
-
-.jobs-map-popup {
-  line-height: 1.5;
-}
-
-.jobs-map-popup__title {
-  font-size: 1rem;
+  margin: 0 0 12px;
+  padding: 12px 14px;
+  color: #64748b;
+  border: 1px dashed #dbeafe;
+  border-radius: 16px;
+  background: #f8fbff;
   font-weight: 800;
-  color: var(--heading-color);
-  margin-bottom: 0.35rem;
 }
 
-.jobs-map-popup__company {
-  color: #2f4c6d;
-  font-weight: 700;
-  margin-bottom: 0.5rem;
+.jobs-map-skeleton {
+  min-height: 220px;
+  display: grid;
+  place-items: center;
+  border-radius: 18px;
+  background:
+    linear-gradient(90deg, rgba(248, 251, 255, 0.88), rgba(238, 244, 255, 0.95), rgba(248, 251, 255, 0.88));
+  background-size: 220% 100%;
+  color: #64748b;
+  font-weight: 900;
+  animation: jobsMapSkeleton 1.6s ease-in-out infinite;
 }
 
-.jobs-map-popup__meta,
-.jobs-map-popup__desc,
-.jobs-map-popup__nearby {
-  margin-top: 0.45rem;
+.jobs-map-legend {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+  color: #5f6673;
+  font-size: 0.9rem;
+  font-weight: 650;
 }
 
-.jobs-map-popup__desc {
-  color: #42576f;
+.jobs-map-legend span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.jobs-map-popup__nearby {
-  padding-top: 0.55rem;
-  border-top: 1px solid #dce5ee;
+.jobs-map-legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
 }
 
-.jobs-map-marker-wrap {
+.jobs-map-legend-dot.jobs {
+  background: #1fa276;
+}
+
+.jobs-map-marker-wrap,
+.jobs-map-user-marker-wrap {
   background: transparent;
   border: 0;
 }
@@ -10640,35 +10423,96 @@ button {
   display: flex;
   align-items: center;
   justify-content: center;
+  background: var(--marker-color, #2563eb);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
   border: 2px solid #fff;
 }
 
 .jobs-map-marker span {
   transform: rotate(45deg);
-  color: #fff;
-  font-size: 0.75rem;
-  font-weight: 800;
-  letter-spacing: 0.03em;
-}
-
-.jobs-map-marker--job {
-  background: #0f172a;
-}
-
-.jobs-map-marker--university {
-  background: #365314;
-}
-
-.jobs-map-marker--metro {
-  background: #475569;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  min-height: 18px;
+  padding: 1px 4px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.88);
+  color: var(--marker-color, #2563eb);
+  font-size: 0.72rem;
+  font-weight: 950;
+  letter-spacing: -0.03em;
 }
 
 .jobs-map-marker--active {
-  background: #3c7df0;
+  background: #3c7df0 !important;
   border-color: #dbeafe;
   box-shadow: 0 0 0 8px rgba(60, 125, 240, 0.18), 0 14px 30px rgba(60, 125, 240, 0.35);
   animation: jobsMapMarkerPulse 1.4s ease-in-out infinite;
+}
+
+.jobs-map-user-marker {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: #0f766e;
+  border: 2px solid #ccfbf1;
+  box-shadow: 0 0 0 8px rgba(15, 118, 110, 0.16), 0 14px 30px rgba(15, 118, 110, 0.28);
+}
+
+.jobs-map-popup {
+  line-height: 1.5;
+  min-width: 220px;
+}
+
+.jobs-map-popup__title {
+  font-size: 1rem;
+  font-weight: 900;
+  color: #111827;
+  margin-bottom: 0.35rem;
+}
+
+.jobs-map-popup__company {
+  color: #2f4c6d;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.jobs-map-popup__meta {
+  margin-top: 0.45rem;
+  color: #42576f;
+}
+
+.jobs-map-popup__meta strong {
+  color: #172033;
+}
+
+.jobs-map-popup__link {
+  display: inline-flex;
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: #eff6ff;
+  color: #2563eb;
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.marker-cluster-small,
+.marker-cluster-medium,
+.marker-cluster-large {
+  background: rgba(60, 125, 240, 0.18);
+}
+
+.marker-cluster-small div,
+.marker-cluster-medium div,
+.marker-cluster-large div {
+  background: #3c7df0;
+  color: #ffffff;
+  font-weight: 950;
+  box-shadow: 0 12px 28px rgba(60, 125, 240, 0.28);
 }
 
 @keyframes jobsMapMarkerPulse {
@@ -10685,48 +10529,9 @@ button {
   }
 }
 
-@media (max-width: 900px) {
-  .jobs-map-canvas {
-    height: 420px;
-  }
-}
-
-.jobs-map-marker--user {
-  background: #0f766e;
-  border-color: #ccfbf1;
-  box-shadow: 0 0 0 8px rgba(15, 118, 110, 0.16), 0 14px 30px rgba(15, 118, 110, 0.28);
-}
-
-.jobs-map-popup--user .jobs-map-popup__title {
-  color: #0f766e;
-}
-
-/* Keep Leaflet below sticky header and add smooth map reveal */
-.jobs-map-section,
-#home-jobs-map {
-  position: relative;
-  z-index: 0;
-  scroll-margin-top: 150px;
-}
-
-.jobs-map-shell {
-  position: relative;
-  z-index: 0;
-  animation: asimosMapReveal 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
-}
-
-.jobs-map-canvas,
-.jobs-map-canvas .leaflet-container,
-.leaflet-container {
-  position: relative;
-  z-index: 0 !important;
-}
-
-.leaflet-pane,
-.leaflet-top,
-.leaflet-bottom,
-.leaflet-control-container {
-  z-index: 1 !important;
+@keyframes jobsMapSkeleton {
+  0% { background-position: 0 0; }
+  100% { background-position: -220% 0; }
 }
 
 @keyframes asimosMapReveal {
@@ -10735,6 +10540,7 @@ button {
     transform: translateY(28px) scale(0.985);
     filter: blur(6px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -10742,96 +10548,32 @@ button {
   }
 }
 
-/* Large data performance UI */
-.jobs-map-toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 1rem;
-  margin-bottom: 0.85rem;
-  padding: 0.85rem 1rem;
-  border: 1px solid rgba(135, 151, 175, 0.16);
-  border-radius: 18px;
-  background: linear-gradient(135deg, rgba(60, 125, 240, 0.08), rgba(20, 184, 166, 0.08));
-  color: var(--text-secondary);
-}
-
-.jobs-map-toolbar strong {
-  color: var(--heading-color);
-}
-
-.jobs-map-poi-button {
-  border: 1px solid rgba(60, 125, 240, 0.22);
-  border-radius: 14px;
-  background: #ffffff;
-  color: #2563eb;
-  font-weight: 900;
-  padding: 0.7rem 0.95rem;
-  cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
-}
-
-.jobs-map-poi-button:hover:not(:disabled) {
-  transform: translateY(-1px);
-  background: #eef4ff;
-  box-shadow: 0 12px 24px rgba(60, 125, 240, 0.14);
-}
-
-.jobs-map-poi-button:disabled {
-  cursor: not-allowed;
-  opacity: 0.72;
-}
-
-.jobs-map-skeleton {
-  min-height: 220px;
-  display: grid;
-  place-items: center;
-  border-radius: 22px;
-  background:
-    linear-gradient(90deg, rgba(248, 251, 255, 0.88), rgba(238, 244, 255, 0.95), rgba(248, 251, 255, 0.88));
-  background-size: 220% 100%;
-  color: var(--text-secondary);
-  font-weight: 800;
-  animation: jobsMapSkeleton 1.6s ease-in-out infinite;
-}
-
-.marker-cluster-small,
-.marker-cluster-medium,
-.marker-cluster-large {
-  background: rgba(60, 125, 240, 0.18);
-}
-
-.marker-cluster-small div,
-.marker-cluster-medium div,
-.marker-cluster-large div {
-  background: #3c7df0;
-  color: #ffffff;
-  font-weight: 900;
-  box-shadow: 0 12px 28px rgba(60, 125, 240, 0.28);
-}
-
-@keyframes jobsMapSkeleton {
-  0% { background-position: 0 0; }
-  100% { background-position: -220% 0; }
-}
-
-@media (max-width: 720px) {
-  .jobs-map-toolbar {
-    align-items: stretch;
-    flex-direction: column;
-  }
-
-  .jobs-map-poi-button {
-    width: 100%;
+@media (max-width: 900px) {
+  .jobs-map-canvas {
+    height: 360px;
   }
 }
 
+@media (max-width: 640px) {
+  .jobs-map-shell {
+    padding: 12px;
+    border-radius: 22px;
+  }
 
-.jobs-map-toolbar--auto { justify-content: space-between; align-items: center; gap: 14px; }
-.jobs-map-layer-toggles { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-.jobs-map-layer-toggles button { border: 1px solid #d3e2f5; background: #fff; color: #1f2a44; border-radius: 999px; min-height: 36px; padding: 0 12px; font-weight: 800; cursor: pointer; }
-.jobs-map-layer-toggles button.active { background: #e9f4ff; color: #1f8ee8; border-color: #9fcfff; }
-@media (max-width: 720px) { .jobs-map-toolbar--auto { align-items: stretch; } .jobs-map-layer-toggles button { flex: 1 1; } }
+  .jobs-map-card-head {
+    grid-template-columns: 46px minmax(0, 1fr);
+  }
+
+  .jobs-map-card-icon {
+    width: 46px;
+    height: 46px;
+  }
+
+  .jobs-map-canvas {
+    height: 320px;
+    border-radius: 16px;
+  }
+}
 
 /*!*******************************************************************************************************************************************************************************************************************************************************************************!*\
   !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/LocationPicker.css ***!

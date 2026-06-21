@@ -308,8 +308,8 @@ function getSimilarJobHref(job) {
     job.category ||
     job.categoryName ||
     job.category_name ||
-    'elan'
-  );
+    'Müxtəlif'
+  ) || 'muxtelif';
 
   const titleSlug = slugify(
     job.slug ||
@@ -321,10 +321,11 @@ function getSimilarJobHref(job) {
     'elan'
   );
 
-  if (!categorySlug || !titleSlug) return job?.id ? `/jobs/${job.id}` : '#';
+  if (!categorySlug || !titleSlug) return '#';
 
-  const idQuery = job?.id ? `?id=${encodeURIComponent(String(job.id))}` : '';
-  return `/jobs/${categorySlug}/${titleSlug}${idQuery}`;
+  // URL təmiz formatda qalır: /jobs/category/title
+  // ID query-də göstərilmir. Slug səhifəsi elanı category/title ilə tapır.
+  return `/jobs/${categorySlug}/${titleSlug}`;
 }
 
 function getJobLogoUrl(job) {

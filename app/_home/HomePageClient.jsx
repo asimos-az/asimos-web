@@ -16,6 +16,7 @@ import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 import styles from "./HomePage.module.css";
 import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
+import LiveStatsPanel from "./components/LiveStatsPanel";
 import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
 
 const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
@@ -831,17 +832,7 @@ export default function HomePageClient() {
   const effectiveLocation = user?.location || deviceLocation || null;
   const homeJobs = useMemo(() => jobs.filter(isPublicHomeJob), [jobs]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
-  const statsChartItems = useMemo(() => {
-    const values = [
-      { label: "İstifadəçi", value: Number(siteStats?.users || 0) },
-      { label: "Aktiv elan", value: Number(siteStats?.activeJobs || 0) },
-      { label: "Online", value: Number(siteStats?.onlineUsers || 0) },
-      { label: "Bugün", value: Number(siteStats?.visitsToday || 0) },
-      { label: "Bu ay", value: Number(siteStats?.visitsThisMonth || 0) },
-    ];
-    const max = Math.max(1, ...values.map((item) => item.value));
-    return values.map((item) => ({ ...item, percent: Math.max(8, Math.round((item.value / max) * 100)) }));
-  }, [siteStats]);
+
   const unreadNotifications = useMemo(
     () => notifications.filter((item) => !Boolean(item.readAt || item.read_at)),
     [notifications]
@@ -2767,40 +2758,7 @@ export default function HomePageClient() {
           ) : null}
           <AppLaunchPanel />
 
-          <section className={`container page-section ${styles.statsSection} ${styles.statsSectionBottom}`}>
-            <div className={styles.statsCard}>
-              <div className={styles.statsIntro}>
-                <span>Asimos statistikası</span>
-                <h2>Platformanın canlı göstəriciləri</h2>
-                <p>Qeydiyyat, aktiv elanlar və sayt ziyarətləri burada avtomatik yenilənən formada göstərilir.</p>
-              </div>
-              <div className={styles.statsGrid}>
-                {statsChartItems.map((item) => (
-                  <div className={`${styles.statItem} ${styles.statItemChart}`} key={item.label}>
-                    <strong>{item.value}</strong>
-                    <span>{item.label}</span>
-                    <div className={styles.statBarTrack} aria-hidden="true">
-                      <i style={{ width: `${item.percent}%` }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-              {Array.isArray(siteStats?.dailyVisits) && siteStats.dailyVisits.length ? (
-                <div className={styles.statsMiniChart} aria-label="Son günlər üzrə giriş qrafiki">
-                  {siteStats.dailyVisits.slice(-7).map((row) => {
-                    const maxValue = Math.max(1, ...siteStats.dailyVisits.map((item) => Number(item.count || 0)));
-                    const height = Math.max(14, Math.round((Number(row.count || 0) / maxValue) * 92));
-                    return (
-                      <span key={row.date}>
-                        <i style={{ height }} />
-                        <small>{Number(row.count || 0)}</small>
-                      </span>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-          </section>
+          <LiveStatsPanel siteStats={siteStats} />
         </>
       ) : null}
 

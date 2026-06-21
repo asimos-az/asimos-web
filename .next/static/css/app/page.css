@@ -2003,3 +2003,275 @@
   }
 }
 
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[3]!./app/_home/components/AppLaunchPanel.module.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+.AppLaunchPanel_launchShell__gzfPs {
+  width: 100%;
+  border: 1px solid #bfdbfe;
+  border-radius: 18px;
+  background: linear-gradient(180deg, #f4f8ff 0%, #eef6ff 100%);
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.08);
+  padding: 16px 18px;
+  overflow: hidden;
+}
+
+.AppLaunchPanel_launchHeader__HMXn4 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.AppLaunchPanel_launchTitleWrap__Fo7Xw {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.AppLaunchPanel_phoneIcon__CNyUg {
+  width: 20px;
+  height: 20px;
+  display: inline-grid;
+  place-items: center;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.AppLaunchPanel_launchTitle__PnE2k {
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.AppLaunchPanel_launchMeta__76Wg6 {
+  flex: 0 0 auto;
+  color: #8b8f98;
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.AppLaunchPanel_launchButtons__5jhKR {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-gap: 10px;
+  gap: 10px;
+}
+
+.AppLaunchPanel_launchButton__d7lZy {
+  min-width: 0;
+  min-height: 50px;
+  border: 1px solid #bfdbfe;
+  border-radius: 13px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #111827;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 750;
+  letter-spacing: -0.01em;
+  transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background 0.18s ease;
+}
+
+.AppLaunchPanel_launchButton__d7lZy:hover {
+  transform: translateY(-1px);
+  background: #ffffff;
+  border-color: #93c5fd;
+  box-shadow: 0 12px 24px rgba(37, 99, 235, 0.12);
+}
+
+.AppLaunchPanel_storeIcon__khObs {
+  width: 22px;
+  height: 22px;
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 22px;
+  border-radius: 6px;
+  font-size: 15px;
+  line-height: 1;
+}
+
+.AppLaunchPanel_appleIcon__VWQi2 {
+  background: transparent;
+}
+
+.AppLaunchPanel_playIcon__tgunj {
+  color: #ffffff;
+  background: linear-gradient(135deg, #75b8ff, #4b78a8);
+}
+
+.AppLaunchPanel_galleryIcon__Jhp_h {
+  color: #f59e0b;
+  background: transparent;
+  font-size: 18px;
+}
+
+@media (max-width: 760px) {
+  .AppLaunchPanel_launchShell__gzfPs {
+    padding: 14px;
+    border-radius: 16px;
+  }
+
+  .AppLaunchPanel_launchHeader__HMXn4 {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .AppLaunchPanel_launchMeta__76Wg6 {
+    font-size: 12px;
+  }
+
+  .AppLaunchPanel_launchButtons__5jhKR {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .AppLaunchPanel_launchButton__d7lZy {
+    min-height: 46px;
+    font-size: 14px;
+  }
+}
+
+/*!******************************************************************************************************************************************************************************************************************************************************************************************!*\
+  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[7].use[3]!./app/_home/components/LiveStatsPanel.module.css ***!
+  \******************************************************************************************************************************************************************************************************************************************************************************************/
+.LiveStatsPanel_section__WOnq0 {
+  padding-top: 8px;
+  padding-bottom: 10px;
+}
+
+.LiveStatsPanel_shell__1POyx {
+  width: 100%;
+  padding: 16px 18px;
+  border: 1px solid #bfdbfe;
+  border-radius: 20px;
+  background: linear-gradient(180deg, #f4f8ff 0%, #eef6ff 100%);
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.08);
+  overflow: hidden;
+}
+
+.LiveStatsPanel_header___DPPo {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-bottom: 12px;
+}
+
+.LiveStatsPanel_title__VrFX2 {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0;
+  color: #111827;
+  font-size: 17px;
+  line-height: 1.25;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.LiveStatsPanel_liveBadge__25zhd {
+  flex: 0 0 auto;
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: #1d5fae;
+  color: #ffffff;
+  font-size: 13px;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.LiveStatsPanel_liveBadge__25zhd i {
+  width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  background: #16c60c;
+  box-shadow: 0 0 0 3px rgba(22, 198, 12, 0.18);
+}
+
+.LiveStatsPanel_metrics__vm831 {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.LiveStatsPanel_metric__gF8NQ {
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.78);
+  color: #6b7280;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: 0 6px 18px rgba(15, 23, 42, 0.035);
+}
+
+.LiveStatsPanel_metricIcon__brMXL {
+  line-height: 1;
+}
+
+.LiveStatsPanel_metric__gF8NQ strong {
+  color: #111827;
+  font-size: 17px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+@media (max-width: 720px) {
+  .LiveStatsPanel_shell__1POyx {
+    padding: 14px;
+    border-radius: 18px;
+  }
+
+  .LiveStatsPanel_header___DPPo {
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .LiveStatsPanel_title__VrFX2 {
+    font-size: 15px;
+  }
+
+  .LiveStatsPanel_liveBadge__25zhd {
+    min-height: 26px;
+    padding: 0 10px;
+    font-size: 12px;
+  }
+
+  .LiveStatsPanel_metrics__vm831 {
+    gap: 8px;
+  }
+
+  .LiveStatsPanel_metric__gF8NQ {
+    width: 100%;
+    min-height: 36px;
+    justify-content: flex-start;
+    padding: 7px 10px;
+    font-size: 13px;
+  }
+
+  .LiveStatsPanel_metric__gF8NQ strong {
+    font-size: 16px;
+  }
+}
+
