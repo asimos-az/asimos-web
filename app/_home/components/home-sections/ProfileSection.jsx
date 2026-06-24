@@ -277,26 +277,26 @@ function EmployerProfilePanel({ ctx }) {
     <section className="employer-dashboard-shell">
       <style jsx global>{`
         .employer-dashboard-shell {
-          width: min(100%, 900px);
+          width: min(100%, 760px);
           margin: 0 auto;
-          padding: 12px 10px 34px;
+          padding: 10px 8px 28px;
           background: #eef3fb;
         }
         .employer-hero {
           min-height: 150px;
-          border-radius: 18px;
+          border-radius: 14px;
           padding: 22px 24px;
           display: flex;
           align-items: flex-start;
           justify-content: space-between;
-          gap: 22px;
+          gap: 12px;
           color: #ffffff;
           background: linear-gradient(135deg, #22a478 0%, #078052 100%);
           box-shadow: 0 18px 44px rgba(6, 128, 82, 0.18);
         }
         .employer-hero-main {
           display: flex;
-          gap: 16px;
+          gap: 12px;
           align-items: center;
           min-width: 0;
         }
@@ -305,7 +305,7 @@ function EmployerProfilePanel({ ctx }) {
           width: 76px;
           height: 76px;
           border: 3px dashed rgba(255,255,255,0.55);
-          border-radius: 18px;
+          border-radius: 14px;
           display: grid;
           place-items: center;
           overflow: hidden;
@@ -323,11 +323,11 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-logo-empty span {
           display: block;
-          font-size: 21px;
+          font-size: 15px;
           margin-bottom: 6px;
         }
         .employer-hero-copy h1 {
-          margin: 0 0 12px;
+          margin: 0 0 8px;
           font-size: clamp(22px, 3vw, 30px);
           line-height: 1.1;
           font-weight: 800;
@@ -340,7 +340,7 @@ function EmployerProfilePanel({ ctx }) {
           border-radius: 999px;
           background: rgba(255,255,255,0.22);
           color: #ffffff;
-          font-size: 17px;
+          font-size: 13px;
           margin-bottom: 14px;
         }
         .employer-hero-copy p {
@@ -362,7 +362,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-card {
           margin-top: 22px;
           border: 1px solid #dce2ee;
-          border-radius: 18px;
+          border-radius: 14px;
           background: #ffffff;
           padding: 24px 26px;
           box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
@@ -377,7 +377,7 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-form-grid {
           display: grid;
-          gap: 16px;
+          gap: 12px;
         }
         .employer-field label,
         .employer-field-top label {
@@ -397,7 +397,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-lock-actions {
           display: flex;
           align-items: center;
-          gap: 12px;
+          gap: 8px;
         }
         .employer-lock-badge {
           display: inline-flex;
@@ -428,7 +428,7 @@ function EmployerProfilePanel({ ctx }) {
           border: 1px solid #d8deea;
           border-radius: 14px;
           padding: 0 16px;
-          font-size: 18px;
+          font-size: 14px;
           color: #111827;
           outline: none;
           box-sizing: border-box;
@@ -454,7 +454,7 @@ function EmployerProfilePanel({ ctx }) {
           width: 100%;
           background: #1ea476;
           color: #ffffff;
-          font-size: 18px;
+          font-size: 14px;
           font-weight: 800;
           cursor: pointer;
         }
@@ -470,7 +470,7 @@ function EmployerProfilePanel({ ctx }) {
           background: transparent;
           min-height: 56px;
           color: #8a8a8a;
-          font-size: 17px;
+          font-size: 13px;
           cursor: pointer;
           border-bottom: 4px solid transparent;
         }
@@ -484,7 +484,7 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-job-card {
           border: 1px solid #dde3ee;
-          border-radius: 18px;
+          border-radius: 14px;
           padding: 18px 20px;
           background: #ffffff;
         }
@@ -509,13 +509,13 @@ function EmployerProfilePanel({ ctx }) {
         .employer-job-head {
           display: flex;
           justify-content: space-between;
-          gap: 16px;
+          gap: 12px;
           align-items: flex-start;
         }
         .employer-job-card h3 {
-          margin: 0 0 10px;
+          margin: 0 0 6px;
           color: #0f172a;
-          font-size: 21px;
+          font-size: 15px;
           line-height: 1.2;
           font-weight: 800;
         }
@@ -551,7 +551,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-job-actions {
           display: flex;
           flex-wrap: wrap;
-          gap: 12px;
+          gap: 8px;
         }
         .employer-job-actions button {
           min-height: 40px;
@@ -580,7 +580,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-logout-card {
           margin-top: 22px;
           border: 1px solid #fed7d7;
-          border-radius: 18px;
+          border-radius: 14px;
           background: #fffdfc;
           padding: 22px 24px;
           display: flex;
@@ -589,8 +589,8 @@ function EmployerProfilePanel({ ctx }) {
           gap: 18px;
         }
         .employer-logout-card h3 {
-          margin: 0 0 10px;
-          font-size: 21px;
+          margin: 0 0 6px;
+          font-size: 15px;
           color: #111827;
         }
         .employer-logout-card p {
@@ -604,8 +604,8 @@ function EmployerProfilePanel({ ctx }) {
           border: 1px solid #ff8080;
           background: #fff1f1;
           color: #c72626;
-          font-size: 18px;
-          padding: 0 34px;
+          font-size: 14px;
+          padding: 0 20px;
           cursor: pointer;
         }
 
@@ -614,7 +614,7 @@ function EmployerProfilePanel({ ctx }) {
           align-items: center;
           justify-content: space-between;
           flex-direction: row;
-          gap: 12px;
+          gap: 8px;
           margin-bottom: 10px;
         }
         .employer-lock-actions {
@@ -664,7 +664,7 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-field input,
         .employer-field-locked input {
-          min-height: 58px;
+          min-height: 44px;
           border-radius: 16px;
           padding: 0 18px;
           font-size: 15px;
@@ -676,8 +676,8 @@ function EmployerProfilePanel({ ctx }) {
           padding: 28px 32px;
         }
         .employer-save-button {
-          min-height: 58px;
-          border-radius: 18px;
+          min-height: 44px;
+          border-radius: 14px;
           font-size: 15px;
         }
         .employer-dashboard-shell {
@@ -685,9 +685,9 @@ function EmployerProfilePanel({ ctx }) {
           padding: 10px 8px 30px;
         }
         .employer-hero {
-          min-height: 128px;
+          min-height: 104px;
           padding: 18px 20px;
-          border-radius: 20px;
+          border-radius: 14px;
         }
         .employer-logo-box {
           width: 66px;
@@ -696,7 +696,7 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 12px;
         }
         .employer-logo-empty span {
-          font-size: 20px;
+          font-size: 15px;
           margin-bottom: 3px;
         }
         .employer-hero-copy h1 {
@@ -713,14 +713,14 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 14px;
         }
         .employer-hero-logout {
-          min-width: 72px;
+          min-width: 54px;
           min-height: 40px;
           border-radius: 14px;
           font-size: 14px;
         }
         .employer-card {
           margin-top: 16px;
-          border-radius: 20px;
+          border-radius: 14px;
           padding: 20px 22px;
         }
         .employer-section-title {
@@ -761,23 +761,150 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 16px;
         }
         @media (max-width: 720px) {
-          .employer-dashboard-shell { padding: 12px 10px 34px; }
-          .employer-hero { padding: 22px; border-radius: 18px; }
-          .employer-hero-main { gap: 16px; align-items: flex-start; }
-          .employer-logo-box { width: 84px; height: 84px; border-radius: 14px; font-size: 15px; }
-          .employer-hero-copy h1 { font-size: 27px; }
-          .employer-role-pill { min-height: 36px; font-size: 15px; padding: 4px 16px; }
-          .employer-hero-copy p { font-size: 14px; }
-          .employer-hero-logout { min-width: 88px; min-height: 58px; font-size: 19px; }
-          .employer-card { padding: 28px 22px; border-radius: 18px; }
-          .employer-field-top { align-items: center; flex-direction: row; }
-          .employer-lock-actions { width: auto; justify-content: flex-end; gap: 8px; }
-          .employer-lock-toggle, .employer-request-button { font-size: 13px; padding: 0 10px; min-height: 30px; }
-          .employer-field input, .employer-field-locked input { min-height: 54px; font-size: 14px; }
-          .employer-tabs { overflow-x: auto; grid-template-columns: repeat(5, minmax(116px, 1fr)); }
-          .employer-tabs button { font-size: 19px; }
-          .employer-job-card h3 { font-size: 25px; }
-          .employer-job-card p { font-size: 15px; }
+          .seeker-dashboard-shell {
+            padding: 10px 8px 28px;
+          }
+          .seeker-hero {
+            min-height: 104px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            gap: 14px;
+          }
+          .seeker-hero-main {
+            gap: 14px;
+          }
+          .seeker-avatar {
+            width: 66px;
+            height: 66px;
+            font-size: 26px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 22px;
+          }
+          .seeker-role-pill {
+            min-height: 30px;
+            font-size: 14px;
+            padding: 4px 13px;
+          }
+          .seeker-hero-logout {
+            min-width: 78px;
+            min-height: 44px;
+            font-size: 15px;
+          }
+          .seeker-card {
+            margin-top: 16px;
+            padding: 22px 20px;
+            border-radius: 18px;
+          }
+          .seeker-section-title {
+            font-size: 13px;
+            margin-bottom: 18px;
+          }
+          .seeker-form-grid {
+            gap: 16px;
+          }
+          .seeker-field {
+            font-size: 14px;
+            gap: 8px;
+          }
+          .seeker-field input {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 16px;
+            padding: 0 16px;
+          }
+          .seeker-save-button {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+          }
+          .seeker-switch-card {
+            align-items: flex-start;
+            gap: 14px;
+          }
+          .seeker-switch-icon {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+          }
+          .seeker-switch-content h3 {
+            font-size: 18px;
+          }
+          .seeker-switch-content p {
+            font-size: 14px;
+          }
+          .seeker-switch-button {
+            min-height: 42px;
+            font-size: 15px;
+            padding: 0 18px;
+          }
+          .seeker-logout-card {
+            padding: 20px;
+          }
+          .seeker-logout-card h3 {
+            font-size: 18px;
+          }
+          .seeker-logout-card p {
+            font-size: 14px;
+          }
+          .seeker-logout-card button {
+            min-height: 42px;
+            font-size: 15px;
+            padding: 0 18px;
+          }
+        }
+        @media (max-width: 520px) {
+          .seeker-hero {
+            padding: 16px;
+            min-height: 96px;
+          }
+          .seeker-avatar {
+            width: 58px;
+            height: 58px;
+            font-size: 23px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 19px;
+          }
+          .seeker-role-pill {
+            font-size: 13px;
+            min-height: 28px;
+          }
+          .seeker-hero-logout {
+            min-width: 68px;
+            min-height: 40px;
+            font-size: 14px;
+          }
+          .seeker-card {
+            padding: 20px 16px;
+          }
+          .seeker-field input {
+            min-height: 48px;
+            font-size: 15px;
+          }
+          .seeker-save-button {
+            min-height: 48px;
+            font-size: 16px;
+          }
+          .seeker-switch-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+          }
+          .seeker-switch-content h3,
+          .seeker-logout-card h3 {
+            font-size: 17px;
+          }
+          .seeker-switch-content p,
+          .seeker-logout-card p {
+            font-size: 13px;
+          }
+          .seeker-switch-button,
+          .seeker-logout-card button {
+            min-height: 40px;
+            font-size: 14px;
+            padding: 0 16px;
+          }
         }
       `}</style>
 
@@ -959,6 +1086,11 @@ function EmployerProfilePanel({ ctx }) {
   );
 }
 
+function getSeekerInitial(name) {
+  const clean = String(name || "").trim();
+  return clean ? clean.charAt(0).toUpperCase() : "İ";
+}
+
 function SeekerProfilePanel({ ctx }) {
   const {
     user,
@@ -974,63 +1106,645 @@ function SeekerProfilePanel({ ctx }) {
     setLng,
     loading,
     handleProfileSave,
-    handleDeleteAccount,
+    handleSignOut,
     favoriteJobs,
     openJobDetail,
     prefetchJobDetail,
     handleToggleFavorite,
+    handleRoleSwitch,
+    confirmRoleSwitchRequest,
+    switchCompany,
+    setSwitchCompany,
+    switchVoen,
+    setSwitchVoen,
+    switchCategory,
+    setSwitchCategory,
+    categories = [],
+    setRoleSwitchConfirmOpen,
   } = ctx;
 
+  const displayName = editingName || user?.fullName || user?.full_name || user?.name || "İş axtaran";
+  const displayPhone = editingPhone || user?.phone || "";
+  const displayEmail = user?.email || user?.contactEmail || user?.contact_email || "";
+  const [roleRequestOpen, setRoleRequestOpen] = useState(false);
+  const [roleRequestCompany, setRoleRequestCompany] = useState(switchCompany || "");
+  const [roleRequestCategory, setRoleRequestCategory] = useState(switchCategory || "");
+  const [roleRequestVoen, setRoleRequestVoen] = useState(switchVoen || "");
+  const [roleRequestError, setRoleRequestError] = useState("");
+
+  const roleCategoryOptions = Array.isArray(categories) ? categories : [];
+
+  function handleSeekerRoleSwitch(event) {
+    event.preventDefault();
+    setRoleRequestCompany(switchCompany || "");
+    setRoleRequestCategory(switchCategory || "");
+    setRoleRequestVoen(switchVoen || "");
+    setRoleRequestError("");
+    setRoleRequestOpen(true);
+  }
+
+  async function submitRoleRequest(event) {
+    event.preventDefault();
+    const company = String(roleRequestCompany || "").trim();
+    const categoryValue = String(roleRequestCategory || "").trim();
+    const voenValue = String(roleRequestVoen || "").replace(/\D/g, "").trim();
+
+    if (!company) {
+      setRoleRequestError("Şirkət adını yazın");
+      return;
+    }
+    if (!categoryValue) {
+      setRoleRequestError("Kateqoriya seçin");
+      return;
+    }
+    if (!voenValue) {
+      setRoleRequestError("Şirkətin VÖEN nömrəsini yazın");
+      return;
+    }
+
+    setSwitchCompany?.(company);
+    setSwitchCategory?.(categoryValue);
+    setSwitchVoen?.(voenValue);
+    setRoleRequestError("");
+    setRoleRequestOpen(false);
+
+    if (typeof confirmRoleSwitchRequest === "function") {
+      await confirmRoleSwitchRequest({ companyName: company, category: categoryValue, voen: voenValue });
+      return;
+    }
+
+    setRoleSwitchConfirmOpen?.(true);
+  }
+
   return (
-    <section className="container page-section profile-page">
-      {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
+    <section className="seeker-dashboard-shell">
+      <style jsx global>{`
+        .seeker-dashboard-shell {
+          width: min(100%, 760px);
+          margin: 0 auto;
+          padding: 10px 8px 28px;
+          background: #eef3fb;
+        }
+        .seeker-hero {
+          min-height: 104px;
+          border-radius: 14px;
+          padding: 18px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: #ffffff;
+          background: linear-gradient(135deg, #22a478 0%, #078052 100%);
+          box-shadow: 0 18px 44px rgba(6, 128, 82, 0.16);
+        }
+        .seeker-hero-main {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          min-width: 0;
+        }
+        .seeker-avatar {
+          width: 66px;
+          height: 66px;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 auto;
+          background: rgba(255, 255, 255, 0.24);
+          color: #ffffff;
+          font-size: 26px;
+          font-weight: 800;
+        }
+        .seeker-hero-copy {
+          min-width: 0;
+        }
+        .seeker-hero-copy h1 {
+          margin: 0 0 8px;
+          color: #ffffff;
+          font-size: clamp(20px, 2.3vw, 25px);
+          line-height: 1.1;
+          font-weight: 800;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .seeker-role-pill {
+          display: inline-flex;
+          align-items: center;
+          min-height: 30px;
+          padding: 4px 14px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.22);
+          color: #ffffff;
+          font-size: 14px;
+          line-height: 1;
+        }
+        .seeker-hero-logout {
+          min-width: 78px;
+          min-height: 44px;
+          border: 1px solid rgba(255,255,255,0.32);
+          border-radius: 14px;
+          background: rgba(255,255,255,0.15);
+          color: #ffffff;
+          font-size: 15px;
+          cursor: pointer;
+        }
+        .seeker-card {
+          margin-top: 16px;
+          border: 1px solid #dce2ee;
+          border-radius: 14px;
+          background: #ffffff;
+          padding: 22px 24px;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+        }
+        .seeker-section-title {
+          margin: 0 0 18px;
+          color: #9a9a9a;
+          font-size: 13px;
+          letter-spacing: 0.12em;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .seeker-form-grid {
+          display: grid;
+          gap: 18px;
+        }
+        .seeker-field {
+          display: grid;
+          gap: 8px;
+          color: #696969;
+          font-size: 14px;
+          line-height: 1.2;
+        }
+        .seeker-field span {
+          color: #ef4444;
+        }
+        .seeker-field input {
+          width: 100%;
+          min-height: 50px;
+          border: 1px solid #d8deea;
+          border-radius: 14px;
+          padding: 0 16px;
+          font-size: 16px;
+          color: #111827;
+          outline: none;
+          box-sizing: border-box;
+          background: #ffffff;
+        }
+        .seeker-field input::placeholder {
+          color: #a3aab7;
+        }
+        .seeker-field input:focus {
+          border-color: #13a873;
+          box-shadow: 0 0 0 4px rgba(19,168,115,0.12);
+        }
+        .seeker-save-button {
+          margin-top: 4px;
+          border: 0;
+          border-radius: 14px;
+          min-height: 50px;
+          width: 100%;
+          background: #1ea476;
+          color: #ffffff;
+          font-size: 17px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-save-button:disabled {
+          opacity: 0.7;
+          cursor: wait;
+        }
+        .seeker-switch-card {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+        .seeker-switch-icon {
+          width: 54px;
+          height: 54px;
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 auto;
+          background: #fff3d9;
+          color: #0f172a;
+          font-size: 22px;
+        }
+        .seeker-switch-content {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .seeker-switch-content h3 {
+          margin: 0 0 6px;
+          color: #111827;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+        .seeker-switch-content p {
+          margin: 0 0 12px;
+          color: #7b7b7b;
+          font-size: 15px;
+          line-height: 1.35;
+        }
+        .seeker-switch-button {
+          min-height: 42px;
+          border: 1px solid #7bb4ff;
+          border-radius: 14px;
+          padding: 0 18px;
+          background: #eff6ff;
+          color: #1558a8;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-logout-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 18px;
+          background: #fffdfc;
+          border-color: #fed7d7;
+        }
+        .seeker-logout-card h3 {
+          margin: 0 0 6px;
+          color: #111827;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+        .seeker-logout-card p {
+          margin: 0;
+          color: #8a8a8a;
+          font-size: 15px;
+        }
+        .seeker-logout-card button {
+          min-height: 44px;
+          border-radius: 14px;
+          border: 1px solid #ff8080;
+          background: #fff1f1;
+          color: #c72626;
+          font-size: 15px;
+          font-weight: 800;
+          padding: 0 20px;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .seeker-favorites-list {
+          display: grid;
+          gap: 12px;
+        }
+        .seeker-muted {
+          margin: 0;
+          color: #8a8a8a;
+          font-size: 14px;
+        }
+        .seeker-hidden-location {
+          display: none;
+        }
+        .seeker-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+          background: rgba(15, 23, 42, 0.42);
+          backdrop-filter: blur(6px);
+        }
+        .seeker-role-modal {
+          width: min(100%, 520px);
+          border: 1px solid #dce2ee;
+          border-radius: 22px;
+          background: #ffffff;
+          box-shadow: 0 28px 80px rgba(15, 23, 42, 0.26);
+          overflow: hidden;
+        }
+        .seeker-role-modal-head {
+          padding: 22px 24px 18px;
+          background: linear-gradient(135deg, #22a478 0%, #078052 100%);
+          color: #ffffff;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+        }
+        .seeker-role-modal-head h3 {
+          margin: 0 0 7px;
+          font-size: 21px;
+          line-height: 1.2;
+          font-weight: 850;
+          color: #ffffff;
+        }
+        .seeker-role-modal-head p {
+          margin: 0;
+          color: rgba(255,255,255,0.82);
+          font-size: 14px;
+          line-height: 1.45;
+        }
+        .seeker-modal-close {
+          width: 36px;
+          height: 36px;
+          border: 1px solid rgba(255,255,255,0.34);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.14);
+          color: #ffffff;
+          font-size: 22px;
+          line-height: 1;
+          cursor: pointer;
+        }
+        .seeker-role-modal-body {
+          padding: 22px 24px 24px;
+          display: grid;
+          gap: 14px;
+        }
+        .seeker-modal-field {
+          display: grid;
+          gap: 8px;
+          color: #5f6876;
+          font-size: 14px;
+          font-weight: 650;
+        }
+        .seeker-modal-field span {
+          color: #ef4444;
+        }
+        .seeker-modal-field input,
+        .seeker-modal-field select {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #d8deea;
+          border-radius: 14px;
+          padding: 0 14px;
+          font-size: 15px;
+          color: #111827;
+          outline: none;
+          background: #ffffff;
+          box-sizing: border-box;
+        }
+        .seeker-modal-field input:focus,
+        .seeker-modal-field select:focus {
+          border-color: #13a873;
+          box-shadow: 0 0 0 4px rgba(19,168,115,0.12);
+        }
+        .seeker-modal-error {
+          margin: 0;
+          border: 1px solid #fecaca;
+          border-radius: 14px;
+          padding: 10px 12px;
+          background: #fff1f2;
+          color: #be123c;
+          font-size: 14px;
+          font-weight: 700;
+        }
+        .seeker-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 4px;
+        }
+        .seeker-modal-cancel,
+        .seeker-modal-submit {
+          min-height: 44px;
+          border-radius: 14px;
+          padding: 0 18px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-modal-cancel {
+          border: 1px solid #d8deea;
+          background: #ffffff;
+          color: #596275;
+        }
+        .seeker-modal-submit {
+          border: 0;
+          background: #1ea476;
+          color: #ffffff;
+        }
+        @media (max-width: 720px) {
+          .seeker-dashboard-shell {
+            padding: 10px 8px 28px;
+          }
+          .seeker-hero {
+            min-height: 104px;
+            padding: 18px 20px;
+            border-radius: 14px;
+          }
+          .seeker-hero-main {
+            gap: 12px;
+          }
+          .seeker-avatar {
+            width: 88px;
+            height: 88px;
+            font-size: 35px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 28px;
+          }
+          .seeker-role-pill {
+            min-height: 30px;
+            font-size: 14px;
+          }
+          .seeker-hero-logout {
+            min-width: 78px;
+            min-height: 44px;
+            font-size: 15px;
+          }
+          .seeker-card {
+            margin-top: 16px;
+            padding: 32px 32px;
+            border-radius: 14px;
+          }
+          .seeker-section-title {
+            font-size: 13px;
+            margin-bottom: 28px;
+          }
+          .seeker-form-grid {
+            gap: 18px;
+          }
+          .seeker-field {
+            font-size: 15px;
+          }
+          .seeker-field input {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+            padding: 0 16px;
+          }
+          .seeker-save-button {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+          }
+          .seeker-switch-card {
+            align-items: flex-start;
+          }
+          .seeker-switch-content h3 {
+            font-size: 18px;
+          }
+          .seeker-switch-content p {
+            font-size: 15px;
+          }
+          .seeker-switch-button {
+            min-height: 42px;
+            font-size: 15px;
+          }
+          .seeker-logout-card h3 {
+            font-size: 18px;
+          }
+          .seeker-logout-card p {
+            font-size: 15px;
+          }
+          .seeker-logout-card button {
+            min-height: 44px;
+            font-size: 15px;
+          }
+        }
+        @media (max-width: 520px) {
+          .seeker-hero { padding: 20px; gap: 14px; }
+          .seeker-hero-main { gap: 14px; }
+          .seeker-avatar { width: 70px; height: 70px; font-size: 30px; }
+          .seeker-hero-copy h1 { font-size: 15px; }
+          .seeker-role-pill { font-size: 15px; min-height: 32px; }
+          .seeker-hero-logout { min-width: 76px; min-height: 48px; font-size: 16px; }
+          .seeker-card { padding: 24px 20px; }
+          .seeker-field input { min-height: 44px; font-size: 15px; }
+          .seeker-save-button { min-height: 44px; font-size: 15px; }
+          .seeker-switch-card { gap: 12px; }
+          .seeker-switch-icon { width: 56px; height: 56px; font-size: 17px; }
+          .seeker-switch-content h3 { font-size: 15px; }
+          .seeker-switch-content p { font-size: 13px; }
+          .seeker-switch-button { min-height: 52px; font-size: 14px; padding: 0 22px; }
+          .seeker-logout-card { padding: 24px 20px; }
+          .seeker-logout-card h3 { font-size: 15px; }
+          .seeker-logout-card p { font-size: 13px; }
+          .seeker-logout-card button { min-height: 52px; font-size: 14px; padding: 0 22px; }
+        }
+      `}</style>
+
+      {!user ? <p className="seeker-muted">Bu bölmə üçün daxil olun.</p> : null}
       {user ? (
-        <div className="profile-layout">
-          <div className="profile-main-column">
-            <form className="profile-panel profile-form" onSubmit={handleProfileSave}>
-              <div className="profile-panel-head">
-                <div>
-                  <span>Hesab məlumatları</span>
-                  <h3>Profil detalları</h3>
+        <>
+          <header className="seeker-hero">
+            <div className="seeker-hero-main">
+              <div className="seeker-avatar" aria-hidden="true">{getSeekerInitial(displayName)}</div>
+              <div className="seeker-hero-copy">
+                <h1>{displayName}</h1>
+                <span className="seeker-role-pill">İş axtaran</span>
+              </div>
+            </div>
+            <button type="button" className="seeker-hero-logout" onClick={handleSignOut}>Çıxış</button>
+          </header>
+
+          <form className="seeker-card" onSubmit={handleProfileSave}>
+            <h2 className="seeker-section-title">Şəxsi məlumatlar</h2>
+            <div className="seeker-form-grid">
+              <label className="seeker-field">
+                Ad, soyad <span>*</span>
+                <input value={editingName} onChange={(event) => setEditingName(event.target.value)} required />
+              </label>
+
+              <label className="seeker-field">
+                Telefon <span>*</span>
+                <input value={editingPhone} onChange={(event) => setEditingPhone(event.target.value)} required />
+              </label>
+
+              {displayEmail ? (
+                <label className="seeker-field">
+                  E-poçt
+                  <input value={displayEmail} readOnly />
+                </label>
+              ) : null}
+
+              <label className="seeker-field">
+                Ünvan
+                <input value={locationText} onChange={(event) => setLocationText(event.target.value)} placeholder="Məsələn: Bakı" />
+              </label>
+
+              <div className="seeker-hidden-location">
+                <input value={lat} onChange={(event) => setLat(event.target.value)} aria-label="Lat" />
+                <input value={lng} onChange={(event) => setLng(event.target.value)} aria-label="Lng" />
+              </div>
+
+              <button type="submit" className="seeker-save-button" disabled={loading}>
+                {loading ? "Yadda saxlanılır..." : "Yadda saxla"}
+              </button>
+            </div>
+          </form>
+
+          <section className="seeker-card seeker-switch-card">
+            <div className="seeker-switch-icon" aria-hidden="true">🏢</div>
+            <div className="seeker-switch-content">
+              <h3>İşəgötürən olmaq istəyirsiniz?</h3>
+              <p>Şirkətiniz adından elan yerləşdirmək üçün sorğu göndərin.</p>
+              <button type="button" className="seeker-switch-button" onClick={handleSeekerRoleSwitch}>Sorğu göndər →</button>
+            </div>
+          </section>
+
+          {roleRequestOpen ? (
+            <div className="seeker-modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="seekerRoleRequestTitle">
+              <form className="seeker-role-modal" onSubmit={submitRoleRequest}>
+                <div className="seeker-role-modal-head">
+                  <div>
+                    <h3 id="seekerRoleRequestTitle">İşəgötürən sorğusu</h3>
+                    <p>Şirkət məlumatlarını göndərin. Admin təsdiqlədikdən sonra profiliniz işəgötürən kimi yenilənəcək.</p>
+                  </div>
+                  <button type="button" className="seeker-modal-close" onClick={() => setRoleRequestOpen(false)} aria-label="Bağla">×</button>
                 </div>
-              </div>
-
-              <div className="profile-fields">
-                <label>Ad Soyad<input value={editingName} onChange={(e) => setEditingName(e.target.value)} required /></label>
-                <label>Telefon<input value={editingPhone} onChange={(e) => setEditingPhone(e.target.value)} required /></label>
-                <label className="full-row">Ünvan<input value={locationText} onChange={(e) => setLocationText(e.target.value)} /></label>
-                <label>Lat<input value={lat} onChange={(e) => setLat(e.target.value)} /></label>
-                <label>Lng<input value={lng} onChange={(e) => setLng(e.target.value)} /></label>
-              </div>
-
-              <div className="profile-actions">
-                <button type="submit" className="btn-primary" disabled={loading}>Profili yenilə</button>
-                <button type="button" className="btn-danger" onClick={handleDeleteAccount}>Hesabı sil</button>
-              </div>
-            </form>
-
-            <section className="profile-panel profile-favorites-section">
-              <div className="profile-panel-head">
-                <div><span>Favoritlər</span><h3>Yadda saxlanılan elanlar</h3></div>
-                <small>{favoriteJobs.length} elan</small>
-              </div>
-              {favoriteJobs.length ? (
-                <div className="profile-favorites-list">
-                  {favoriteJobs.map((job) => (
-                    <JobCard
-                      key={job.id}
-                      job={job}
-                      onClick={() => openJobDetail(job.id)}
-                      onPrefetch={() => prefetchJobDetail(job.id)}
-                      isFavorite={true}
-                      onToggleFavorite={(event) => handleToggleFavorite(job, event)}
-                    />
-                  ))}
+                <div className="seeker-role-modal-body">
+                  <label className="seeker-modal-field">
+                    Şirkət adı <span>*</span>
+                    <input value={roleRequestCompany} onChange={(event) => setRoleRequestCompany(event.target.value)} placeholder="Məsələn: Asimos MMC" autoFocus />
+                  </label>
+                  <label className="seeker-modal-field">
+                    Kateqoriya <span>*</span>
+                    <select value={roleRequestCategory} onChange={(event) => setRoleRequestCategory(event.target.value)}>
+                      <option value="">Kateqoriya seçin</option>
+                      {roleCategoryOptions.map((item) => (
+                        <option key={String(item)} value={String(item)}>{String(item)}</option>
+                      ))}
+                    </select>
+                  </label>
+                  <label className="seeker-modal-field">
+                    Şirkətin VÖEN-i <span>*</span>
+                    <input value={roleRequestVoen} onChange={(event) => setRoleRequestVoen(event.target.value.replace(/\D/g, ""))} placeholder="Məsələn: 1234567890" inputMode="numeric" />
+                  </label>
+                  {roleRequestError ? <p className="seeker-modal-error">{roleRequestError}</p> : null}
+                  <div className="seeker-modal-actions">
+                    <button type="button" className="seeker-modal-cancel" onClick={() => setRoleRequestOpen(false)}>Ləğv et</button>
+                    <button type="submit" className="seeker-modal-submit" disabled={loading}>{loading ? "Göndərilir..." : "Sorğu göndər"}</button>
+                  </div>
                 </div>
-              ) : <p className="muted">Favorit elan yoxdur.</p>}
-            </section>
-          </div>
-        </div>
+              </form>
+            </div>
+          ) : null}
+
+          <section className="seeker-card">
+            <h2 className="seeker-section-title">Favoritlər</h2>
+            {favoriteJobs.length ? (
+              <div className="seeker-favorites-list">
+                {favoriteJobs.map((job) => (
+                  <JobCard
+                    key={job.id}
+                    job={job}
+                    onClick={() => openJobDetail(job.id)}
+                    onPrefetch={() => prefetchJobDetail(job.id)}
+                    isFavorite={true}
+                    onToggleFavorite={(event) => handleToggleFavorite(job, event)}
+                  />
+                ))}
+              </div>
+            ) : <p className="seeker-muted">Favorit elan yoxdur.</p>}
+          </section>
+
+          <section className="seeker-card seeker-logout-card">
+            <div>
+              <h3>Hesabdan çıxış</h3>
+              <p>Cihazdan çıxış edəcəksiniz</p>
+            </div>
+            <button type="button" onClick={handleSignOut}>Çıxış et</button>
+          </section>
+        </>
       ) : null}
     </section>
   );

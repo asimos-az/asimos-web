@@ -285,6 +285,7 @@ export default function HomePageClient() {
   const [editingPhone, setEditingPhone] = useState("");
   const [switchCompany, setSwitchCompany] = useState("");
   const [switchVoen, setSwitchVoen] = useState("");
+  const [switchCategory, setSwitchCategory] = useState("");
   const [roleSwitchStatus, setRoleSwitchStatus] = useState(null);
   const [roleSwitchConfirmOpen, setRoleSwitchConfirmOpen] = useState(false);
 
@@ -1674,7 +1675,7 @@ export default function HomePageClient() {
     setRoleSwitchConfirmOpen(true);
   }
 
-  async function confirmRoleSwitchRequest() {
+  async function confirmRoleSwitchRequest(overrides = {}) {
     const currentRole = normalizeRole(user?.role);
     setRoleSwitchConfirmOpen(false);
     setLoading(true);
@@ -1687,9 +1688,9 @@ export default function HomePageClient() {
       if (currentRole === "seeker") {
         res = await api.requestRoleSwitch({
           toRole: "employer",
-          companyName: switchCompany,
-          voen: switchVoen || undefined,
-          category: category || undefined,
+          companyName: overrides.companyName ?? switchCompany,
+          voen: (overrides.voen ?? switchVoen) || undefined,
+          category: (overrides.category ?? switchCategory ?? category) || undefined,
         });
       } else {
         res = await api.requestRoleSwitch({ toRole: "seeker" });
@@ -1917,7 +1918,7 @@ export default function HomePageClient() {
     siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, effectiveLocation, JobsMap, AppLaunchPanel, LiveStatsPanel,
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
-    roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, setRoleSwitchConfirmOpen, terms,
+    roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,
     mode, setMode, email, setEmail, password, setPassword, showPassword, setShowPassword, confirmPassword, setConfirmPassword, showConfirmPassword, setShowConfirmPassword, fullName, setFullName, companyName, setCompanyName, registerLogoPreview, setRegisterLogoPreview, handleRegisterLogoFileChange, phone, setPhone, role, setRole, registerCategory, setRegisterCategory, categories, otp, setOtp, forgotEmail, setForgotEmail, resetCode, setResetCode, resetPassword, setResetPassword, showResetPassword, setShowResetPassword, handleLogin, handleRegister, handleVerifyOtp, handleForgotPassword, handleResetPassword, setActiveSection, roleSwitchConfirmOpen, confirmRoleSwitchRequest,
   };
 
