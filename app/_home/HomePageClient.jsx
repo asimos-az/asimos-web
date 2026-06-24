@@ -330,6 +330,23 @@ export default function HomePageClient() {
 
     const refreshSupport = async (payload = {}) => {
       try {
+        if (payload?.type === "profile_change_request_approved") {
+          const profileRes = await fetch(`${SOCKET_URL}/me`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((res) => (res.ok ? res.json() : null)).catch(() => null);
+
+          if (profileRes?.user) {
+            setUser(profileRes.user);
+            saveAuth({ token, refreshToken, user: profileRes.user });
+          }
+
+          setOk("Dəyişiklik sorğunuz admin tərəfindən təsdiqləndi və məlumatlarınız yeniləndi");
+        }
+
+        if (payload?.type === "profile_change_request_rejected") {
+          setOk("Dəyişiklik sorğunuz admin tərəfindən cavablandırıldı");
+        }
+
         const res = await api.listTickets();
         const nextTickets = res.items || [];
         setTickets(nextTickets);
@@ -1531,7 +1548,7 @@ export default function HomePageClient() {
     }
   }
 
-  async function handleEmployerFieldChangeRequest({ fieldLabel, oldValue, newValue, hasSavedValue }) {
+  async function handleEmployerFieldChangeRequest({ fieldKey, fieldLabel, oldValue, newValue, hasSavedValue }) {
     const nextValue = String(newValue || "").trim();
     if (!nextValue) {
       setError(`${fieldLabel} üçün yeni dəyər yazın`);
@@ -1543,21 +1560,26 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      const category = (supportCategories || []).find((item) => String(item).toLowerCase().includes("hesab")) || "Hesab ilə bağlı problem";
-      const message = [
-        `İşəgötürən panelindən dəyişiklik sorğusu`,
-        `Sahə: ${fieldLabel}`,
-        `Köhnə dəyər: ${oldValue || "Boş idi"}`,
-        `Yeni dəyər: ${nextValue}`,
-        `Qeyd: ${hasSavedValue ? "Məlumat kilidli idi, istifadəçi kilidi açıb dəyişiklik sorğusu göndərdi." : "Məlumat boş idi, istifadəçi yeni dəyər yazıb sorğu göndərdi."}`,
-      ].join("\n");
+      const response = await fetch(`${SOCKET_URL}/profile-change-requests`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          fieldKey,
+          fieldLabel,
+          oldValue: oldValue || "",
+          newValue: nextValue,
+          hasSavedValue: Boolean(hasSavedValue),
+        }),
+      });
 
-      await api.createTicket({ subject: "Dəyişiklik sorğusu", category, message });
-      setTicketCategory(category);
-      setTicketMessage("");
-      setSupportMode("list");
+      const data = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(data?.error || "Dəyişiklik sorğusu göndərilmədi");
+
       await loadAuthedData();
-      setOk(`${fieldLabel} üçün dəyişiklik sorğusu adminə göndərildi`);
+      setOk("Məlumatlarınız yoxlanış üçün adminə göndərildi. Admin təsdiqlədikdən sonra məlumat hesabınızda görünəcək.");
     } catch (err) {
       setError(err.message || "Dəyişiklik sorğusu göndərilmədi");
     } finally {

@@ -69,6 +69,43 @@ function formatScheduledText(job, formatProfileJobDate) {
   return `📅 Planlı dərç: ${formatProfileJobDate(scheduledValue)}-dan aktiv olub`;
 }
 
+function normalizeEmployerJobStatus(job, fallback) {
+  return String(fallback || job?.status || job?.jobStatus || "open").toLowerCase();
+}
+
+function formatEmployerJobSubtitle(job, status, formatProfileJobDate) {
+  const city = job?.city || job?.location?.city || job?.location_address || job?.location?.address || "";
+  const wage = job?.wage || job?.salary || job?.salary_text || "";
+  const created = job?.created_at || job?.createdAt;
+  const rejectedAt = job?.rejected_at || job?.updated_at || job?.updatedAt;
+  const closedAt = job?.closed_at || job?.closedAt || job?.updated_at || job?.updatedAt;
+
+  if (status === "draft") {
+    const dateText = created ? ` · ${formatProfileJobDate(created)}` : "";
+    return `Dərc edilməyib${dateText}`;
+  }
+  if (status === "rejected") return [city, wage].filter(Boolean).join(" · ") || (rejectedAt ? `Rədd edildi · ${formatProfileJobDate(rejectedAt)}` : "Rədd edildi");
+  if (status === "deleted") return [city, wage].filter(Boolean).join(" · ") || (closedAt ? `Silindi · ${formatProfileJobDate(closedAt)}` : "Silinmiş elan");
+  if (["closed", "inactive"].includes(status)) return [city, wage].filter(Boolean).join(" · ") || (closedAt ? `Deaktiv edildi · ${formatProfileJobDate(closedAt)}` : "Deaktiv elan");
+  return [city, wage].filter(Boolean).join(" · ") || "Aktiv elan";
+}
+
+function getEmployerCardClass(status) {
+  if (status === "draft") return "is-draft";
+  if (status === "rejected") return "is-rejected";
+  if (status === "deleted") return "is-deleted";
+  if (["closed", "inactive"].includes(status)) return "is-closed";
+  return "is-open";
+}
+
+function getEmployerStatusClass(status) {
+  if (status === "rejected") return "is-rejected";
+  if (status === "deleted") return "is-deleted";
+  if (["closed", "inactive"].includes(status)) return "is-closed";
+  if (status === "draft") return "is-draft";
+  return "is-open";
+}
+
 function EmployerLockedField({
   fieldKey,
   label,
@@ -207,11 +244,11 @@ function EmployerProfilePanel({ ctx }) {
   const displayEmail = getEmployerEmail(ctx);
   const displayAts = getEmployerAts(ctx);
 
-  function requestChange({ fieldLabel, oldValue, newValue, hasSavedValue }) {
+  function requestChange({ fieldKey, fieldLabel, oldValue, newValue, hasSavedValue }) {
     const category = (supportCategories || []).find((item) => String(item).toLowerCase().includes("hesab")) || "Hesab ilə bağlı problem";
 
     if (handleEmployerFieldChangeRequest) {
-      handleEmployerFieldChangeRequest({ fieldLabel, oldValue, newValue, hasSavedValue });
+      handleEmployerFieldChangeRequest({ fieldKey, fieldLabel, oldValue, newValue, hasSavedValue });
       return;
     }
 
@@ -233,6 +270,7 @@ function EmployerProfilePanel({ ctx }) {
     ["draft", "Qaralama"],
     ["closed", "Deaktiv"],
     ["rejected", "Rədd"],
+    ["deleted", "Silinmiş"],
   ];
 
   return (
@@ -422,7 +460,7 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-tabs {
           display: grid;
-          grid-template-columns: repeat(4, 1fr);
+          grid-template-columns: repeat(5, minmax(0, 1fr));
           gap: 0;
           border-bottom: 1px solid #e5e7eb;
           margin-bottom: 28px;
@@ -430,7 +468,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-tabs button {
           border: 0;
           background: transparent;
-          min-height: 50px;
+          min-height: 56px;
           color: #8a8a8a;
           font-size: 17px;
           cursor: pointer;
@@ -450,6 +488,24 @@ function EmployerProfilePanel({ ctx }) {
           padding: 18px 20px;
           background: #ffffff;
         }
+        .employer-job-card.is-draft {
+          border-color: #acd1ff;
+          border-style: dashed;
+          background: #f7fbff;
+        }
+        .employer-job-card.is-rejected {
+          border-color: #e0e4ee;
+          background: #ffffff;
+        }
+        .employer-job-card.is-closed {
+          border-color: #f0d5a8;
+          background: #fffaf2;
+        }
+        .employer-job-card.is-deleted {
+          border-color: #f1b9b9;
+          background: #fff7f7;
+          opacity: 0.92;
+        }
         .employer-job-head {
           display: flex;
           justify-content: space-between;
@@ -457,13 +513,14 @@ function EmployerProfilePanel({ ctx }) {
           align-items: flex-start;
         }
         .employer-job-card h3 {
-          margin: 0 0 12px;
-          color: #111827;
+          margin: 0 0 10px;
+          color: #0f172a;
           font-size: 21px;
           line-height: 1.2;
+          font-weight: 800;
         }
         .employer-job-card p {
-          margin: 0 0 14px;
+          margin: 0 0 18px;
           color: #8a8a8a;
           font-size: 16px;
           line-height: 1.35;
@@ -471,7 +528,7 @@ function EmployerProfilePanel({ ctx }) {
         .employer-job-status {
           display: inline-flex;
           align-items: center;
-          min-height: 32px;
+          min-height: 34px;
           padding: 4px 18px;
           border-radius: 999px;
           background: #dff8ee;
@@ -479,6 +536,10 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 15px;
           white-space: nowrap;
         }
+        .employer-job-status.is-draft { background: #eaf3ff; color: #1558a8; }
+        .employer-job-status.is-rejected { background: #fde8e8; color: #c33131; }
+        .employer-job-status.is-closed { background: #fff0d6; color: #96520a; }
+        .employer-job-status.is-deleted { background: #fee2e2; color: #991b1b; }
         .employer-job-note {
           margin: 12px 0 16px;
           border-radius: 16px;
@@ -502,6 +563,10 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 15px;
           cursor: pointer;
         }
+        .employer-job-actions .edit { border-color: #7bb4ff; background: #eff6ff; color: #1558a8; }
+        .employer-job-actions .publish { border-color: #13a873; color: #0f8a62; background: #f0fff8; }
+        .employer-job-actions .pause { border-color: #e5b567; color: #96520a; background: #fff9ed; }
+        .employer-job-actions .reason { border-color: #d1d5db; color: #606060; background: #ffffff; }
         .employer-job-actions .danger {
           border-color: #ff8a8a;
           background: #fff1f1;
@@ -709,7 +774,8 @@ function EmployerProfilePanel({ ctx }) {
           .employer-lock-actions { width: auto; justify-content: flex-end; gap: 8px; }
           .employer-lock-toggle, .employer-request-button { font-size: 13px; padding: 0 10px; min-height: 30px; }
           .employer-field input, .employer-field-locked input { min-height: 54px; font-size: 14px; }
-          .employer-tabs button { font-size: 21px; }
+          .employer-tabs { overflow-x: auto; grid-template-columns: repeat(5, minmax(116px, 1fr)); }
+          .employer-tabs button { font-size: 19px; }
           .employer-job-card h3 { font-size: 25px; }
           .employer-job-card p { font-size: 15px; }
         }
@@ -820,31 +886,59 @@ function EmployerProfilePanel({ ctx }) {
 
         <div className="employer-jobs-list">
           {(profileJobs || []).map((job) => {
-            const status = getJobStatus ? getJobStatus(job) : String(job?.status || "open").toLowerCase();
+            const status = normalizeEmployerJobStatus(job, getJobStatus ? getJobStatus(job) : null);
             const note = formatScheduledText(job, formatProfileJobDate);
-            const meta = [formatAddress(job), formatMoney(job), formatDuration(job)].filter(Boolean).join(" · ");
+            const meta = formatEmployerJobSubtitle(job, status, formatProfileJobDate);
+            const reason = job?.rejection_reason || job?.reject_reason || job?.admin_note || "Rədd səbəbi qeyd edilməyib";
             return (
-              <article className="employer-job-card" key={job.id}>
+              <article className={`employer-job-card ${getEmployerCardClass(status)}`} key={job.id}>
                 <div className="employer-job-head">
                   <div>
                     <h3>{job.title || "Adsız elan"}</h3>
                     <p>{meta}</p>
                   </div>
-                  <span className="employer-job-status">{getStatusLabel(status)}</span>
+                  <span className={`employer-job-status ${getEmployerStatusClass(status)}`}>{getStatusLabel(status)}</span>
                 </div>
 
                 {note ? <div className="employer-job-note">{note}</div> : null}
 
                 <div className="employer-job-actions">
-                  <button type="button" onClick={() => startEditJob(job)}>✏️ Düzəliş</button>
+                  {status === "draft" ? (
+                    <>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Davam et</button>
+                      <button type="button" className="publish" onClick={() => handlePublishJob(job.id)}>📤 Göndər</button>
+                      <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
+                    </>
+                  ) : null}
+
+                  {status === "rejected" ? (
+                    <>
+                      <button type="button" className="reason" onClick={() => alert(reason)}>💬 Səbəbə bax</button>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>↻ Yenidən göndər</button>
+                    </>
+                  ) : null}
+
+                  {["closed", "inactive"].includes(status) ? (
+                    <>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Düzəliş</button>
+                      <button type="button" className="publish" onClick={() => handlePublishJob(job.id)}>📤 Yenidən aktiv et</button>
+                      <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
+                    </>
+                  ) : null}
+
                   {["open", "pending", "scheduled"].includes(status) ? (
-                    <button type="button" onClick={() => handleCloseJob(job.id)}>Ⅱ Dayandır</button>
+                    <>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Düzəliş</button>
+                      <button type="button" className="pause" onClick={() => handleCloseJob(job.id)}>Ⅱ Deaktiv et</button>
+                      <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
+                    </>
                   ) : null}
-                  {["draft", "closed", "inactive", "rejected"].includes(status) ? (
-                    <button type="button" onClick={() => handlePublishJob(job.id)}>Aktiv et</button>
-                  ) : null}
-                  {status !== "deleted" ? (
-                    <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
+
+                  {status === "deleted" ? (
+                    <>
+                      <button type="button" className="reason" disabled>🗑️ Silinmiş elan</button>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Kopya kimi aç</button>
+                    </>
                   ) : null}
                 </div>
               </article>
