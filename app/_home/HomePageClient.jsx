@@ -1210,18 +1210,20 @@ export default function HomePageClient() {
         throw new Error("Kateqoriya seçin");
       }
 
-      if (!jobType) {
-        throw new Error("Vakansiyanın növünü seçin");
-      }
+      const selectedJobType = jobType === "temporary" ? "temporary" : "permanent";
 
       const resolvedDuration =
-        jobType === "temporary"
+        selectedJobType === "temporary"
           ? durationPreset === "other"
             ? customDurationDays
             : durationPreset
           : "";
 
-      const durationLabel = jobType === "temporary" ? `${resolvedDuration} gün` : "";
+      if (selectedJobType === "temporary" && (!resolvedDuration || Number(resolvedDuration) < 1)) {
+        throw new Error("Günəmuzd elan üçün müddət seçin");
+      }
+
+      const durationLabel = selectedJobType === "temporary" ? `${resolvedDuration} gün` : "";
 
       if (
         publishMode === "scheduled" &&
@@ -1278,10 +1280,10 @@ export default function HomePageClient() {
         ats_link: link,
         workplace: companyObject,
         workplace_name: companyObject,
-        vacancyStartDate,
-        vacancy_start_date: vacancyStartDate || null,
-        vacancyEndDate,
-        vacancy_end_date: vacancyEndDate || null,
+        vacancyStartDate: selectedJobType === "temporary" ? vacancyStartDate : null,
+        vacancy_start_date: selectedJobType === "temporary" ? (vacancyStartDate || null) : null,
+        vacancyEndDate: selectedJobType === "temporary" ? vacancyEndDate : null,
+        vacancy_end_date: selectedJobType === "temporary" ? (vacancyEndDate || null) : null,
         contactVisibility: resolvedContactVisibility,
         contact_visibility: resolvedContactVisibility,
         primaryContact,
@@ -1312,15 +1314,15 @@ export default function HomePageClient() {
 
         createdBy: user.id,
 
-        jobType: jobType || (roleName === "seeker" ? "seeker" : "permanent"),
+        jobType: selectedJobType,
 
         jobLevel: jobLevel || undefined,
         job_level: jobLevel || undefined,
 
-        isDaily: jobType === "temporary",
+        isDaily: selectedJobType === "temporary",
 
         durationDays:
-          jobType === "temporary"
+          selectedJobType === "temporary"
             ? Number(resolvedDuration || 0)
             : undefined,
 
@@ -1916,7 +1918,7 @@ export default function HomePageClient() {
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
     siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, effectiveLocation, JobsMap, AppLaunchPanel, LiveStatsPanel,
-    shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
+    shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,
     mode, setMode, email, setEmail, password, setPassword, showPassword, setShowPassword, confirmPassword, setConfirmPassword, showConfirmPassword, setShowConfirmPassword, fullName, setFullName, companyName, setCompanyName, registerLogoPreview, setRegisterLogoPreview, handleRegisterLogoFileChange, phone, setPhone, role, setRole, registerCategory, setRegisterCategory, categories, otp, setOtp, forgotEmail, setForgotEmail, resetCode, setResetCode, resetPassword, setResetPassword, showResetPassword, setShowResetPassword, handleLogin, handleRegister, handleVerifyOtp, handleForgotPassword, handleResetPassword, setActiveSection, roleSwitchConfirmOpen, confirmRoleSwitchRequest,

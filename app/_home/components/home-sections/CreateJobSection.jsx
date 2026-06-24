@@ -103,6 +103,8 @@ export default function CreateJobSection({ ctx }) {
     setContactVisibility,
     primaryContact,
     setPrimaryContact,
+    wage,
+    setWage,
     wageMode,
     setWageMode,
     wageMin,
@@ -126,6 +128,8 @@ export default function CreateJobSection({ ctx }) {
     setDurationPreset,
     customDurationDays,
     setCustomDurationDays,
+    durationDays,
+    setDurationDays,
     workType,
     setWorkType,
     scheduleStart,
@@ -312,17 +316,21 @@ export default function CreateJobSection({ ctx }) {
               <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
                 <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>İş növü <span style={{ color: "#ef4444" }}>*</span></div>
                 <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-                  <button type="button" onClick={() => { setJobType("permanent"); setDurationPreset("1"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: jobType !== "temporary" ? "#1fa276" : "#fff", color: jobType !== "temporary" ? "#fff" : "#666", cursor: "pointer" }}>Daimi iş</button>
+                  <button type="button" onClick={() => { setJobType("permanent"); setDurationPreset("1"); setDurationDays("1"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: jobType !== "temporary" ? "#1fa276" : "#fff", color: jobType !== "temporary" ? "#fff" : "#666", cursor: "pointer" }}>Daimi iş</button>
                   <button type="button" onClick={() => { setJobType("temporary"); setDurationPreset("1"); setDurationDays("1"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: jobType === "temporary" ? "#1fa276" : "#fff", color: jobType === "temporary" ? "#fff" : "#666", cursor: "pointer" }}>Günəmuzd</button>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Başlama tarixi
-                    <input type="date" value={vacancyStartDate} onChange={(e) => setVacancyStartDate(e.target.value)} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                  </label>
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Bitmə tarixi <span style={{ color: "#ef4444" }}>*</span>
-                    <input type="date" value={vacancyEndDate} onChange={(e) => setVacancyEndDate(e.target.value)} required style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                  </label>
-                </div>
+                {jobType === "temporary" ? (
+                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
+                    <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Başlama tarixi
+                      <input type="date" value={vacancyStartDate} onChange={(e) => setVacancyStartDate(e.target.value)} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
+                    </label>
+                    <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Bitmə tarixi <span style={{ color: "#ef4444" }}>*</span>
+                      <input type="date" value={vacancyEndDate} onChange={(e) => setVacancyEndDate(e.target.value)} required={jobType === "temporary"} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
+                    </label>
+                  </div>
+                ) : (
+                  <p style={{ margin: "0", color: "#8b949e", fontSize: 13, lineHeight: 1.45 }}>Daimi iş üçün başlama və bitmə tarixi tələb olunmur. Elan təsdiqdən sonra standart müddət ərzində aktiv qalacaq.</p>
+                )}
               </div>
 
               <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
