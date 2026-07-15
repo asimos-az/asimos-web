@@ -14,8 +14,14 @@ function getCompanyName(ctx) {
   );
 }
 
-function getCompanyLogo(ctx) {
-  return ctx.profileLogoPreview || ctx.user?.logoUrl || ctx.user?.logo_url || ctx.user?.profileLogoUrl || ctx.user?.profile_logo_url || "";
+function getCompanyInitials(value) {
+  const words = String(value || "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!words.length) return "Ş";
+  return words.slice(0, 2).map((word) => word.charAt(0)).join("").toUpperCase();
 }
 
 function getEmployerPhone(ctx) {
@@ -54,7 +60,9 @@ function formatDuration(job) {
 
 function getStatusLabel(status) {
   const normalized = String(status || "open").toLowerCase();
-  if (["open", "pending", "scheduled"].includes(normalized)) return "Aktiv";
+  if (normalized === "open") return "Aktiv";
+  if (normalized === "pending") return "Gözləmədə";
+  if (normalized === "scheduled") return "Planlaşdırılıb";
   if (normalized === "draft") return "Qaralama";
   if (["closed", "inactive"].includes(normalized)) return "Deaktiv";
   if (normalized === "rejected") return "Rədd";
@@ -84,6 +92,7 @@ function formatEmployerJobSubtitle(job, status, formatProfileJobDate) {
     const dateText = created ? ` · ${formatProfileJobDate(created)}` : "";
     return `Dərc edilməyib${dateText}`;
   }
+  if (status === "pending") return "Admin yoxlamasındadır · Təsdiqdən sonra paylaşılacaq";
   if (status === "rejected") return [city, wage].filter(Boolean).join(" · ") || (rejectedAt ? `Rədd edildi · ${formatProfileJobDate(rejectedAt)}` : "Rədd edildi");
   if (status === "deleted") return [city, wage].filter(Boolean).join(" · ") || (closedAt ? `Silindi · ${formatProfileJobDate(closedAt)}` : "Silinmiş elan");
   if (["closed", "inactive"].includes(status)) return [city, wage].filter(Boolean).join(" · ") || (closedAt ? `Deaktiv edildi · ${formatProfileJobDate(closedAt)}` : "Deaktiv elan");
@@ -91,6 +100,7 @@ function formatEmployerJobSubtitle(job, status, formatProfileJobDate) {
 }
 
 function getEmployerCardClass(status) {
+  if (status === "pending") return "is-pending";
   if (status === "draft") return "is-draft";
   if (status === "rejected") return "is-rejected";
   if (status === "deleted") return "is-deleted";
@@ -99,6 +109,7 @@ function getEmployerCardClass(status) {
 }
 
 function getEmployerStatusClass(status) {
+  if (status === "pending") return "is-pending";
   if (status === "rejected") return "is-rejected";
   if (status === "deleted") return "is-deleted";
   if (["closed", "inactive"].includes(status)) return "is-closed";
@@ -204,9 +215,6 @@ function EmployerProfilePanel({ ctx }) {
     setContactEmail,
     link,
     setLink,
-    profileLogoPreview,
-    setProfileLogoPreview,
-    handleProfileLogoFileChange,
     handleProfileSave,
     myJobsStatus,
     setMyJobsStatus,
@@ -227,8 +235,8 @@ function EmployerProfilePanel({ ctx }) {
     handleEmployerFieldChangeRequest,
   } = ctx;
 
-  const logo = getCompanyLogo(ctx);
   const displayCompany = getCompanyName(ctx);
+  const companyInitials = getCompanyInitials(displayCompany);
   const companyFieldValue = companyName || user?.companyName || user?.company_name || "";
   const displayVoen = getEmployerVoen(ctx);
   const displayPhone = getEmployerPhone(ctx);
@@ -266,11 +274,12 @@ function EmployerProfilePanel({ ctx }) {
   }
 
   const tabs = [
-    ["open", "Aktiv"],
-    ["draft", "Qaralama"],
-    ["closed", "Deaktiv"],
-    ["rejected", "Rədd"],
-    ["deleted", "Silinmiş"],
+    ["open", "Aktiv elanlar", "✓"],
+    ["pending", "Gözləmədə olan", "⏳"],
+    ["draft", "Qaralama", "✎"],
+    ["closed", "Deaktiv", "Ⅱ"],
+    ["rejected", "Rədd", "✕"],
+    ["deleted", "Silinmiş", "🗑"],
   ];
 
   return (
@@ -300,31 +309,26 @@ function EmployerProfilePanel({ ctx }) {
           align-items: center;
           min-width: 0;
         }
-        .employer-logo-upload input { display: none; }
         .employer-logo-box {
           width: 76px;
           height: 76px;
-          border: 3px dashed rgba(255,255,255,0.55);
+          border: 2px solid rgba(255,255,255,0.42);
           border-radius: 14px;
           display: grid;
           place-items: center;
           overflow: hidden;
-          cursor: pointer;
+          cursor: default;
           text-align: center;
           color: #ffffff;
           font-size: 14px;
           line-height: 1.25;
           background: rgba(255,255,255,0.08);
         }
-        .employer-logo-box img {
-          width: 100%;
-          height: 100%;
-          object-fit: cover;
-        }
-        .employer-logo-empty span {
-          display: block;
-          font-size: 15px;
-          margin-bottom: 6px;
+        .employer-company-initials {
+          font-size: 24px;
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: 0.04em;
         }
         .employer-hero-copy h1 {
           margin: 0 0 8px;
@@ -460,10 +464,13 @@ function EmployerProfilePanel({ ctx }) {
         }
         .employer-tabs {
           display: grid;
-          grid-template-columns: repeat(5, minmax(0, 1fr));
+          grid-template-columns: repeat(6, minmax(125px, 1fr));
           gap: 0;
           border-bottom: 1px solid #e5e7eb;
           margin-bottom: 28px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          scrollbar-width: thin;
         }
         .employer-tabs button {
           border: 0;
@@ -478,6 +485,7 @@ function EmployerProfilePanel({ ctx }) {
           color: #13a873;
           border-bottom-color: #13a873;
         }
+        .employer-tab-icon { display: none; }
         .employer-jobs-list {
           display: grid;
           gap: 18px;
@@ -492,6 +500,10 @@ function EmployerProfilePanel({ ctx }) {
           border-color: #acd1ff;
           border-style: dashed;
           background: #f7fbff;
+        }
+        .employer-job-card.is-pending {
+          border-color: #f2c66d;
+          background: #fffbeb;
         }
         .employer-job-card.is-rejected {
           border-color: #e0e4ee;
@@ -537,6 +549,7 @@ function EmployerProfilePanel({ ctx }) {
           white-space: nowrap;
         }
         .employer-job-status.is-draft { background: #eaf3ff; color: #1558a8; }
+        .employer-job-status.is-pending { background: #fff0c2; color: #8a5600; }
         .employer-job-status.is-rejected { background: #fde8e8; color: #c33131; }
         .employer-job-status.is-closed { background: #fff0d6; color: #96520a; }
         .employer-job-status.is-deleted { background: #fee2e2; color: #991b1b; }
@@ -761,6 +774,23 @@ function EmployerProfilePanel({ ctx }) {
           font-size: 16px;
         }
         @media (max-width: 720px) {
+          .employer-tabs {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            overflow: hidden;
+          }
+          .employer-tabs button {
+            min-width: 0;
+            min-height: 52px;
+            padding: 0;
+          }
+          .employer-tab-label { display: none; }
+          .employer-tab-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            line-height: 1;
+          }
           .seeker-dashboard-shell {
             padding: 10px 8px 28px;
           }
@@ -910,20 +940,15 @@ function EmployerProfilePanel({ ctx }) {
 
       <header className="employer-hero">
         <div className="employer-hero-main">
-          <div className="employer-logo-upload">
-            <input id="employer-logo-upload" type="file" accept="image/*" onChange={handleProfileLogoFileChange} />
-            <label className="employer-logo-box" htmlFor="employer-logo-upload">
-              {logo ? (
-                <img src={logo} alt="Şirkət loqosu" />
-              ) : (
-                <span className="employer-logo-empty"><span>🖼️</span>Loqo yüklə</span>
-              )}
-            </label>
+          <div className="employer-logo-upload" aria-label={`${displayCompany} baş hərfləri`}>
+            <div className="employer-logo-box">
+              <span className="employer-company-initials" aria-hidden="true">{companyInitials}</span>
+            </div>
           </div>
           <div className="employer-hero-copy">
             <h1>{displayCompany}</h1>
             <span className="employer-role-pill">İşəgötürən</span>
-            <p>Şirkət loqonuzu yerləşdirin — hər elanda görünəcək</p>
+            <p>Şirkətinizin baş hərfləri profil və elanlarda görünür</p>
           </div>
         </div>
         <button type="button" className="employer-hero-logout" onClick={handleSignOut}>Çıxış</button>
@@ -999,14 +1024,17 @@ function EmployerProfilePanel({ ctx }) {
       <section className="employer-card">
         <h2 className="employer-section-title">Elanlarım</h2>
         <div className="employer-tabs">
-          {tabs.map(([value, label]) => (
+          {tabs.map(([value, label, icon]) => (
             <button
               type="button"
               key={value}
               className={myJobsStatus === value ? "active" : ""}
               onClick={() => setMyJobsStatus(value)}
+              aria-label={label}
+              title={label}
             >
-              {label}
+              <span className="employer-tab-label">{label}</span>
+              <span className="employer-tab-icon" aria-hidden="true">{icon}</span>
             </button>
           ))}
         </div>
@@ -1053,10 +1081,17 @@ function EmployerProfilePanel({ ctx }) {
                     </>
                   ) : null}
 
-                  {["open", "pending", "scheduled"].includes(status) ? (
+                  {["open", "scheduled"].includes(status) ? (
                     <>
                       <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Düzəliş</button>
                       <button type="button" className="pause" onClick={() => handleCloseJob(job.id)}>Ⅱ Deaktiv et</button>
+                      <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
+                    </>
+                  ) : null}
+
+                  {status === "pending" ? (
+                    <>
+                      <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Düzəliş</button>
                       <button type="button" className="danger" onClick={() => handleDeleteJob(job.id)}>🗑️ Sil</button>
                     </>
                   ) : null}

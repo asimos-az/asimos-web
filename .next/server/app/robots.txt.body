@@ -1,0 +1,8 @@
+User-Agent: *
+Allow: /
+Disallow: /api/
+Disallow: /_next/
+Disallow: /admin/
+
+Host: https://asimos.az
+Sitemap: https://asimos.az/sitemap.xml

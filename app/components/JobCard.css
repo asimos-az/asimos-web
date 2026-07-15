@@ -95,6 +95,22 @@
   white-space: nowrap;
 }
 
+.job-card-new-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex: 0 0 auto;
+  padding: 5px 9px;
+  border-radius: 999px;
+  background: #ecfdf5;
+  color: #08775b;
+  border: 1px solid #a7f3d0;
+  font-size: 0.72rem;
+  font-weight: 900;
+  line-height: 1;
+  white-space: nowrap;
+}
+
 .job-card-company {
   margin: 0;
   color: #85858b;

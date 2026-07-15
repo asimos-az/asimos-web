@@ -94,7 +94,7 @@ function getNavIcon(key) {
   return <ArrowUpRightIcon />;
 }
 
-const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, showSupport = false, unreadNotificationsCount = 0 }) => {
+const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut, canCreateJob = false, onOpenSupport, showSupport = false, unreadNotificationsCount = 0, currentLocation = null, locationLoading = false, onRefreshLocation }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [accountMenuOpen, setAccountMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -143,6 +143,7 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
 
   const displayName = user?.fullName || user?.full_name || user?.name || user?.companyName || user?.company_name || "İstifadəçi";
   const displayEmail = user?.email || "";
+  const locationLabel = currentLocation?.address || "Lokasiyanı yenilə";
 
 
   function handleBrandClick(event) {
@@ -178,6 +179,19 @@ const Header = ({ activeSection, setActiveSection, navItems, user, handleSignOut
             <Link href="/" onClick={handleBrandClick} aria-label="Ana səhifəyə keç">
               <img src="/logo.svg" alt="Asimos loqosu" />
             </Link>
+            {currentLocation || typeof onRefreshLocation === "function" ? (
+              <button
+                type="button"
+                className="header-location"
+                onClick={onRefreshLocation}
+                disabled={locationLoading || typeof onRefreshLocation !== "function"}
+                title={locationLabel}
+                aria-label={locationLoading ? "Lokasiya yenilənir" : `Cari lokasiya: ${locationLabel}. Yeniləmək üçün klikləyin`}
+              >
+                <span aria-hidden="true">📍</span>
+                <span>{locationLoading ? "Lokasiya yenilənir..." : locationLabel}</span>
+              </button>
+            ) : null}
           </div>
         <div className="header-actions">
           {user && canCreateJob ? (

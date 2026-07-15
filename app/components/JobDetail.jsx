@@ -192,7 +192,7 @@ function getVacancyEndDate(job) {
 
 function getPrimaryContactLabel(job) {
   const value = String(job?.primaryContact || job?.primary_contact || '').toLowerCase();
-  const labels = { phone: 'Telefon', whatsapp: 'WhatsApp', email: 'Email', link: 'ATS linki' };
+  const labels = { phone: 'Telefon', whatsapp: 'WhatsApp', email: 'Email', link: 'Daxili CV bazası' };
   return labels[value] || value || 'Qeyd edilməyib';
 }
 
@@ -323,9 +323,9 @@ function getSimilarJobHref(job) {
 
   if (!categorySlug || !titleSlug) return '#';
 
-  // URL təmiz formatda qalır: /jobs/category/title
-  // ID query-də göstərilmir. Slug səhifəsi elanı category/title ilə tapır.
-  return `/jobs/${categorySlug}/${titleSlug}`;
+  const path = `/jobs/${categorySlug}/${titleSlug}`;
+  const jobId = job?.id || job?._id || job?.jobId || job?.job_id;
+  return jobId ? `${path}?id=${encodeURIComponent(String(jobId))}` : path;
 }
 
 function getJobLogoUrl(job) {
@@ -679,7 +679,7 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
                 <span className="meta-value">{renderContact()}</span>
               </div>
               <div className="meta-item">
-                <span className="meta-label">ATS linki</span>
+                <span className="meta-label">Daxili CV bazası</span>
                 <span className="meta-value">{atsLink ? <a href={atsLink} target="_blank" rel="noopener noreferrer">Müraciət et</a> : 'Qeyd edilməyib'}</span>
               </div>
               <div className="meta-item">

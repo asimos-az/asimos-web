@@ -52,10 +52,35 @@
 
 .brand {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
+  flex-direction: column;
   gap: 10px;
   min-width: 0;
 }
+
+.header-location {
+  max-width: min(310px, 32vw);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: -7px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #64748b;
+  font-size: 0.72rem;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.header-location span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-location:hover:not(:disabled) { color: #15956d; }
+.header-location:disabled { cursor: wait; opacity: 0.72; }
 
 .brand a {
   display: inline-flex;
@@ -535,4 +560,8 @@
   .main-nav button.active::after {
     bottom: 8px;
   }
+}
+
+@media (max-width: 600px) {
+  .header-location { max-width: 145px; font-size: 0.66rem; }
 }

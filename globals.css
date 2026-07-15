@@ -5296,9 +5296,6 @@ button {
 .jobs-map-layer-toggles button.active { background: #e9f4ff; color: #1f8ee8; border-color: #9fcfff; }
 @media (max-width: 720px) { .jobs-map-toolbar--auto { align-items: stretch; } .jobs-map-layer-toggles button { flex: 1 1; } }
 
-/*!*******************************************************************************************************************************************************************************************************************************************************************************!*\
-  !*** css ./node_modules/next/dist/build/webpack/loaders/css-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[2]!./node_modules/next/dist/build/webpack/loaders/postcss-loader/src/index.js??ruleSet[1].rules[14].oneOf[12].use[3]!./app/components/LocationPicker.css ***!
-  \*******************************************************************************************************************************************************************************************************************************************************************************/
 .location-picker {
   display: grid;
   grid-gap: 12px;

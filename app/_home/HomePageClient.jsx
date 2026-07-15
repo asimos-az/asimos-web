@@ -298,7 +298,8 @@ export default function HomePageClient() {
   const nextRoleLabel = nextRoleName === "employer" ? "İşçi axtaran" : nextRoleName === "seeker" ? "İş axtaran" : "Yeni rol";
   const supportCategories = roleName === "employer" ? employerSupportCategories : seekerSupportCategories;
   const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) || null;
-  const effectiveLocation = user?.location || deviceLocation || null;
+  // Cihazdan son alınmış lokasiya profildə saxlanmış köhnə lokasiyadan daha aktualdır.
+  const effectiveLocation = deviceLocation || user?.location || null;
   const homeJobs = useMemo(() => jobs.filter(isPublicHomeJob), [jobs]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
 
@@ -398,6 +399,18 @@ export default function HomePageClient() {
       setActiveSection(user ? "profile" : "auth");
     }
   }, [activeSection, roleName, user]);
+
+  useEffect(() => {
+    if (activeSection !== "create" || editingJobId || !effectiveLocation) return;
+
+    const nextLat = Number(effectiveLocation.lat);
+    const nextLng = Number(effectiveLocation.lng);
+    if (!Number.isFinite(nextLat) || !Number.isFinite(nextLng)) return;
+
+    setLat(String(nextLat));
+    setLng(String(nextLng));
+    setLocationText(effectiveLocation.address || "Cari məkan");
+  }, [activeSection, editingJobId, effectiveLocation?.lat, effectiveLocation?.lng, effectiveLocation?.address]);
 
   useEffect(() => {
     const savedDeviceLocation = (() => {
@@ -1341,7 +1354,9 @@ export default function HomePageClient() {
             ? new Date(publishAt).toISOString()
             : null,
 
-        status: saveAsDraft ? "draft" : undefined,
+        // Yeni elan heç bir halda birbaşa aktivləşməməlidir.
+        // Köhnə backend versiyalarında default `open` ola bildiyi üçün statusu explicit göndəririk.
+        status: saveAsDraft ? "draft" : "pending",
 
         saveAsDraft,
 
@@ -1352,17 +1367,45 @@ export default function HomePageClient() {
         },
       };
 
+      let submittedPendingJob = null;
+
       if (editingJobId) {
-        await api.updateJob(editingJobId, payload);
-        setOk("Elan yeniləndi");
+        const response = await api.updateJob(editingJobId, payload);
+        if (!saveAsDraft) {
+          const responseJob = response?.job || response?.item || response;
+          const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
+          submittedPendingJob = pendingJob;
+          if (pendingJob) {
+            setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
+          }
+          setMyJobsStatus("pending");
+          setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
+        } else {
+          setOk("Elan yeniləndi");
+        }
       } else {
-        await api.createJob(payload);
-        setOk(saveAsDraft ? "Elan yadda saxlanıldı" : "Elan yayımlandı");
+        const response = await api.createJob(payload);
+        if (!saveAsDraft) {
+          const responseJob = response?.job || response?.item || response;
+          const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
+          submittedPendingJob = pendingJob;
+          if (pendingJob) {
+            setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
+          }
+          setMyJobsStatus("pending");
+          setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
+        } else {
+          setOk("Elan qaralama olaraq yadda saxlanıldı");
+        }
       }
 
       resetJobForm();
 
       await loadAuthedData();
+      if (submittedPendingJob) {
+        setMyJobs((items) => [submittedPendingJob, ...items.filter((item) => String(item.id) !== String(submittedPendingJob.id))]);
+        setMyJobsStatus("pending");
+      }
       await refreshJobs();
 
       if (roleName === "employer") {
@@ -1602,11 +1645,6 @@ export default function HomePageClient() {
         lat: Number(lat),
         lng: Number(lng),
       };
-      const safeProfileLogo =
-        safeImageUrl(profileLogoPreview) ||
-        getSafeUserLogo(user) ||
-        null;
-
       const payload = {
         fullName: editingName,
         phone: editingPhone,
@@ -1615,7 +1653,6 @@ export default function HomePageClient() {
           ? companyName || user?.companyName || user?.company_name || ""
           : undefined,
 
-        logoUrl: roleName === "employer" ? safeProfileLogo : undefined,
         voen: roleName === "employer" ? voen || user?.voen || "" : undefined,
         whatsapp: roleName === "employer" ? whatsapp || user?.whatsapp || "" : undefined,
         contactEmail: roleName === "employer" ? contactEmail || user?.email || "" : undefined,
@@ -1628,7 +1665,6 @@ export default function HomePageClient() {
         phone: editingPhone,
         location: nextLocation,
         companyName: payload.companyName ?? user?.companyName,
-        logoUrl: payload.logoUrl ?? user?.logoUrl,
         voen: payload.voen ?? user?.voen,
         whatsapp: payload.whatsapp ?? user?.whatsapp,
         contactEmail: payload.contactEmail ?? user?.contactEmail,
@@ -1638,7 +1674,6 @@ export default function HomePageClient() {
 
       setUser(nextUser);
       setCompanyName(nextUser?.companyName || nextUser?.company_name || "");
-      setProfileLogoPreview(nextUser?.logoUrl || nextUser?.logo_url || "");
       saveAuth({ token, refreshToken, user: nextUser });
       setOk("Profil yeniləndi");
     } catch (err) {
@@ -1813,7 +1848,8 @@ export default function HomePageClient() {
   const profileJobs = useMemo(() => {
     return myJobs.filter((job) => {
       const status = getJobStatus(job);
-      if (myJobsStatus === "open") return status === "open" || status === "scheduled" || status === "pending";
+      if (myJobsStatus === "open") return status === "open" || status === "scheduled";
+      if (myJobsStatus === "pending") return status === "pending";
       if (myJobsStatus === "draft") return status === "draft";
       if (myJobsStatus === "closed") return status === "closed" || status === "inactive";
       if (myJobsStatus === "rejected") return status === "rejected";
@@ -1936,6 +1972,9 @@ export default function HomePageClient() {
         onOpenSupport={openSupportModal}
         showSupport={roleName === "employer"}
         unreadNotificationsCount={activeUnreadCount}
+        currentLocation={effectiveLocation}
+        locationLoading={locationLoading}
+        onRefreshLocation={handleLocationActivation}
       />
 
       <HomeSearchSection ctx={sectionCtx} />

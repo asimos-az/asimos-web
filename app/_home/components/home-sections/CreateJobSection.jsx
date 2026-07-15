@@ -351,7 +351,7 @@ export default function CreateJobSection({ ctx }) {
                   ))}
                   <p style={{ margin: 0, color: "#9a9a9a", fontSize: 13 }}>Aktiv etdiyiniz əlaqə yolları elanda göstərilir. “İlk göstərilməlidir” seçimi həmin əlaqə vasitəsini siyahının başına çıxarır.</p>
                 </div>
-                <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700, marginTop: 18 }}>ATS linki
+                <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700, marginTop: 18 }}>Daxili CV bazası
                   <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://ats.sirketiniz.az/apply" style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
                 </label>
               </div>
@@ -362,7 +362,12 @@ export default function CreateJobSection({ ctx }) {
               </label>
 
               <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Lokasiya <span style={{ color: "#ef4444" }}>*</span></div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
+                  <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase" }}>Lokasiya <span style={{ color: "#ef4444" }}>*</span></div>
+                  <button type="button" onClick={handleLocationActivation} disabled={locationLoading} style={{ border: "1px solid #a7f3d0", borderRadius: 12, background: "#ecfdf5", color: "#08775b", padding: "8px 12px", fontWeight: 800, cursor: locationLoading ? "wait" : "pointer" }}>
+                    {locationLoading ? "Yenilənir..." : "📍 Mövcud lokasiyamı seç"}
+                  </button>
+                </div>
                 <div style={{ border: "1px solid #a7f3d0", borderRadius: 14, overflow: "hidden", minHeight: 150 }}>
                   <LocationPicker lat={lat} lng={lng} address={locationText} onChange={({ lat: nextLat, lng: nextLng, address: nextAddress }) => { setLat(nextLat); setLng(nextLng); setLocationText(nextAddress); }} />
                 </div>

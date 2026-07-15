@@ -1,4 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+
+const NEW_JOB_WINDOW_MS = 4 * 60 * 60 * 1000;
+
+function getJobPublishedAt(job) {
+  return job?.publishedAt || job?.published_at || job?.createdAt || job?.created_at || null;
+}
+
+function getBakuWallClockTime(value) {
+  const date = new Date(value);
+  if (!Number.isFinite(date.getTime())) return 0;
+
+  try {
+    const parts = new Intl.DateTimeFormat("en-US", {
+      timeZone: "Asia/Baku",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit",
+      hourCycle: "h23",
+    }).formatToParts(date);
+    const values = Object.fromEntries(parts.map((part) => [part.type, part.value]));
+
+    return new Date(
+      Number(values.year),
+      Number(values.month) - 1,
+      Number(values.day),
+      Number(values.hour),
+      Number(values.minute),
+      Number(values.second)
+    ).getTime();
+  } catch {
+    return date.getTime();
+  }
+}
+
+function getNewJobUntil(job) {
+  const publishedAt = getJobPublishedAt(job);
+  if (!publishedAt) return 0;
+
+  // Asimos elan vaxtlarını Bakı vaxtına görə göstərir. Development cihazının
+  // timezone-u fərqli olsa da 4 saatlıq nişan düzgün hesablansın.
+  const publishedTime = getBakuWallClockTime(publishedAt);
+  if (!Number.isFinite(publishedTime)) return 0;
+
+  return publishedTime + NEW_JOB_WINDOW_MS;
+}
 
 function slugify(value) {
   return String(value || "")
@@ -48,8 +96,10 @@ function getJobTitleSlug(job) {
 function getJobPath(job) {
   const categorySlug = getJobCategorySlug(job);
   const titleSlug = getJobTitleSlug(job);
+  const jobId = job?.id || job?._id || job?.jobId || job?.job_id;
 
-  return `/jobs/${categorySlug}/${titleSlug}`;
+  const path = `/jobs/${categorySlug}/${titleSlug}`;
+  return jobId ? `${path}?id=${encodeURIComponent(String(jobId))}` : path;
 }
 
 function getJobUrl(job) {
@@ -275,6 +325,18 @@ export default function JobCard({
 
   const [logoFailed, setLogoFailed] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [isNewJob, setIsNewJob] = useState(() => getNewJobUntil(job) > Date.now());
+
+  useEffect(() => {
+    const newUntil = getNewJobUntil(job);
+    const remainingMs = newUntil - Date.now();
+    setIsNewJob(remainingMs > 0);
+
+    if (remainingMs <= 0) return undefined;
+
+    const timer = window.setTimeout(() => setIsNewJob(false), remainingMs);
+    return () => window.clearTimeout(timer);
+  }, [job?.id, job?.publishedAt, job?.published_at, job?.createdAt, job?.created_at]);
 
   const hasValidLogo = Boolean(logoUrl && !logoFailed);
 
@@ -343,6 +405,8 @@ export default function JobCard({
           <h3 className="job-card-title">
             {job?.title || "Adsız elan"}
           </h3>
+
+          {isNewJob ? <span className="job-card-new-badge"><span aria-hidden="true">🆕</span> Yeni</span> : null}
 
           {premium ? (
             <span className="job-card-premium-badge">

@@ -180,9 +180,9 @@ function getJobDetailHref(job) {
   ) || "muxtelif";
   const titleSlug = slugify(job?.title || job?.name || job?.id || "vakansiya") || "vakansiya";
 
-  // URL təmiz qalır: /jobs/category/title
-  // ID linkdə görünmür; detal səhifəsi slug ilə tapır, lazım olsa backend-də title fallback işləyir.
-  return `/jobs/${categorySlug}/${titleSlug}`;
+  const path = `/jobs/${categorySlug}/${titleSlug}`;
+  const jobId = job?.id || job?._id || job?.jobId || job?.job_id;
+  return jobId ? `${path}?id=${encodeURIComponent(String(jobId))}` : path;
 }
 
 function createMarkerIcon(L, job, focused = false) {

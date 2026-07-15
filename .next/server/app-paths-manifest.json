@@ -1,3 +1,16 @@
 {
-  "/page": "app/page.js"
+  "/_not-found/page": "app/_not-found/page.js",
+  "/robots.txt/route": "app/robots.txt/route.js",
+  "/bakida-is-elanlari/page": "app/bakida-is-elanlari/page.js",
+  "/is-axtaranlar/page": "app/is-axtaranlar/page.js",
+  "/manifest.webmanifest/route": "app/manifest.webmanifest/route.js",
+  "/sitemap.xml/route": "app/sitemap.xml/route.js",
+  "/gundelik-isler/page": "app/gundelik-isler/page.js",
+  "/is-elanlari/page": "app/is-elanlari/page.js",
+  "/policy/page": "app/policy/page.js",
+  "/page": "app/page.js",
+  "/isci-axtaranlar/page": "app/isci-axtaranlar/page.js",
+  "/vakansiyalar/page": "app/vakansiyalar/page.js",
+  "/xeritede-is-elanlari/page": "app/xeritede-is-elanlari/page.js",
+  "/jobs/[category]/[title]/page": "app/jobs/[category]/[title]/page.js"
 }

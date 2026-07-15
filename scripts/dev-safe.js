@@ -5,7 +5,23 @@ const path = require("node:path");
 const projectRoot = path.resolve(__dirname, "..");
 const nextBin = path.join(projectRoot, "node_modules", ".bin", "next");
 const nextPattern = `${nextBin} dev`;
-const nextDir = path.join(projectRoot, ".next");
+const devDistDirName = ".next-dev";
+const nextDir = path.join(projectRoot, devDistDirName);
+const pidFile = path.join(projectRoot, ".dev-server.pid");
+
+function killRecordedProcess() {
+  try {
+    const pid = Number(fs.readFileSync(pidFile, "utf8").trim());
+    if (!Number.isInteger(pid) || pid <= 0 || pid === process.pid) return;
+
+    process.kill(pid, 0);
+    process.kill(pid, "SIGTERM");
+  } catch {
+    // PID faylı yoxdursa və ya proses artıq bağlanıbsa davam et.
+  } finally {
+    try { fs.unlinkSync(pidFile); } catch {}
+  }
+}
 
 function listStalePids() {
   try {
@@ -68,10 +84,19 @@ function startDevServer() {
   const child = spawn(nextBin, ["dev"], {
     cwd: projectRoot,
     stdio: "inherit",
-    env: process.env,
+    env: { ...process.env, NEXT_DIST_DIR: devDistDirName },
   });
 
+  fs.writeFileSync(pidFile, String(child.pid));
+
+  const cleanup = () => {
+    try {
+      if (fs.readFileSync(pidFile, "utf8").trim() === String(child.pid)) fs.unlinkSync(pidFile);
+    } catch {}
+  };
+
   child.on("exit", (code, signal) => {
+    cleanup();
     if (signal) {
       process.kill(process.pid, signal);
       return;
@@ -80,6 +105,7 @@ function startDevServer() {
   });
 }
 
+killRecordedProcess();
 killStaleProcesses();
 removeNextDir();
 startDevServer();
