@@ -1811,6 +1811,95 @@
     padding-right: 2px;
   }
 }
+
+/* Keep the search experience in the same mint/green visual language as the header. */
+.homeFilterSection {
+  background:
+    radial-gradient(circle at 84% 0%, rgba(21, 151, 121, .08), transparent 30%),
+    #f7faf9;
+}
+
+.compactSearchFilter {
+  border-color: #d7e7e1 !important;
+  background: linear-gradient(145deg, #ffffff 0%, #fbfefd 100%) !important;
+  box-shadow: 0 18px 44px rgba(16, 107, 88, .09) !important;
+}
+
+.compactSearchFilter .homeFilterTitleIcon {
+  color: #159779 !important;
+}
+
+.compactSearchFilter .homeFilterInputWrap,
+.compactSearchFilter .homeFilterSelectWrap {
+  border-color: #d5e5df !important;
+  background: #ffffff !important;
+  transition: border-color .18s ease, box-shadow .18s ease, background-color .18s ease;
+}
+
+.compactSearchFilter .homeFilterInputWrap:hover,
+.compactSearchFilter .homeFilterSelectWrap:hover,
+.compactSearchFilter .homeFilterInputWrap:focus-within,
+.compactSearchFilter .homeFilterSelectWrap:focus-within {
+  border-color: rgba(21, 151, 121, .58) !important;
+  background: #fcfffe !important;
+  box-shadow: 0 0 0 4px rgba(21, 151, 121, .09) !important;
+}
+
+.compactSearchFilter .homeFilterInputWrap span,
+.compactSearchFilter .homeFilterSelectWrap span {
+  color: #137d67 !important;
+}
+
+.compactSearchFilter .homeFilterSubmit {
+  border: 1px solid #128569 !important;
+  background: linear-gradient(135deg, #20aa87 0%, #108269 100%) !important;
+  box-shadow: 0 10px 22px rgba(16, 130, 105, .22) !important;
+  transition: transform .18s ease, box-shadow .18s ease, filter .18s ease !important;
+}
+
+.compactSearchFilter .homeFilterSubmit:hover {
+  background: linear-gradient(135deg, #1ca17f 0%, #0b725c 100%) !important;
+  box-shadow: 0 13px 27px rgba(16, 130, 105, .28) !important;
+  filter: saturate(1.04);
+}
+
+.compactSearchFilter .mobileFilterButton {
+  border-color: #bfe0d6 !important;
+  background: #f2fbf8 !important;
+  color: #137d67 !important;
+}
+
+.compactSearchFilter .mobileFilterButton:hover {
+  border-color: rgba(21, 151, 121, .52) !important;
+  background: #e8f7f2 !important;
+}
+
+.compactSearchFilter .mobileFilterCheckbox:checked ~ .homeFilterTabs {
+  border-top-color: #e1eee9 !important;
+  border-bottom-color: #d5e5df !important;
+}
+
+.compactSearchFilter .homeFilterTab,
+.compactSearchFilter .homeFilterTabActive {
+  border-color: #d8e8e2 !important;
+}
+
+.compactSearchFilter .homeFilterTabActive {
+  border-color: rgba(21, 151, 121, .42) !important;
+  background: rgba(21, 151, 121, .10) !important;
+  color: #11765f !important;
+}
+
+.compactSearchFilter .homeFilterOptionActive {
+  border-color: rgba(21, 151, 121, .38) !important;
+  background: rgba(21, 151, 121, .09) !important;
+  color: #11765f !important;
+}
+
+.compactSearchFilter .homeFilterReset {
+  border-color: #c8e1d9 !important;
+  color: #11765f !important;
+}
 .latestJobsGridList {
   display: grid;
   grid-template-columns: 1fr;

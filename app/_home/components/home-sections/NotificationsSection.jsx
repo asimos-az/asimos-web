@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { useState } from "react";
 import JobCard from "../../../components/JobCard";
 import LocationPermissionPrompt from "../LocationPermissionPrompt";
 import AuthSection from "../AuthSection";
@@ -10,6 +10,7 @@ import SponsoredJobCard from "../SponsoredJobCard";
 import FloatingHomeWidgets from "../FloatingHomeWidgets";
 
 export default function NotificationsSection({ ctx }) {
+  const [selectedNotification, setSelectedNotification] = useState(null);
   const {
     styles,
     activeSection,
@@ -159,6 +160,7 @@ export default function NotificationsSection({ ctx }) {
     handleCreateAlert,
     handleDeleteAlert,
     notifications,
+    activeUnreadCount,
     unread,
     handleMarkAllRead,
     handleOpenNotification,
@@ -244,6 +246,10 @@ export default function NotificationsSection({ ctx }) {
     confirmRoleSwitchRequest
   } = ctx;
 
+  const unreadNotifications = notifications.filter(
+    (item) => !Boolean(item.readAt || item.read_at)
+  );
+
   return (
     <>
       {activeSection === "notifications" ? (
@@ -255,11 +261,7 @@ export default function NotificationsSection({ ctx }) {
               <p>Yaxınlığındakı yeni elanları, müraciət yeniliklərini və vacib hesab məlumatlarını bir yerdə izlə.</p>
             </div>
 
-            <div className="notifications-hero-actions">
-              <div className="notifications-stat-card primary">
-                <span>{activeUnreadCount}</span>
-                <small>Aktiv</small>
-              </div>
+            <div className="notifications-hero-actions single">
               <div className="notifications-stat-card">
                 <span>{notifications.length}</span>
                 <small>Ümumi bildiriş</small>
@@ -289,7 +291,10 @@ export default function NotificationsSection({ ctx }) {
                     key={item.id}
                     type="button"
                     className={`notification-card ${isRead ? "read" : "unread"} tone-${tone}`}
-                    onClick={() => handleOpenNotification(item)}
+                    onClick={() => {
+                      setSelectedNotification(item);
+                      handleOpenNotification(item);
+                    }}
                   >
                     <span className="notification-icon" aria-hidden="true">
                       {tone === "near" ? "📍" : tone === "apply" ? "💼" : tone === "job" ? "✨" : "🔔"}
@@ -321,6 +326,67 @@ export default function NotificationsSection({ ctx }) {
           )}
         </section>
       ) : null}
+
+      {selectedNotification ? (() => {
+        const jobId = getNotificationJobId(selectedNotification);
+        const tone = getNotificationTone(selectedNotification);
+        return (
+          <div
+            className="notification-detail-backdrop"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="notification-detail-title"
+            onMouseDown={() => setSelectedNotification(null)}
+          >
+            <article className="notification-detail-modal" onMouseDown={(event) => event.stopPropagation()}>
+              <header className="notification-detail-header">
+                <span className={`notification-detail-icon tone-${tone}`} aria-hidden="true">
+                  {tone === "near" ? "📍" : tone === "apply" ? "💼" : tone === "job" ? "✨" : "🔔"}
+                </span>
+                <div>
+                  <span className="notification-detail-eyebrow">Bildiriş haqqında</span>
+                  <h2 id="notification-detail-title">{selectedNotification.title || "Bildiriş"}</h2>
+                </div>
+                <button type="button" className="notification-detail-close" aria-label="Bağla" onClick={() => setSelectedNotification(null)}>×</button>
+              </header>
+
+              <div className="notification-detail-body">
+                <p>{selectedNotification.body || selectedNotification.message || "Bu bildiriş üçün əlavə məlumat yoxdur."}</p>
+                <dl className="notification-detail-meta">
+                  <div>
+                    <dt>Göndərilmə vaxtı</dt>
+                    <dd>{formatNotificationTime(getNotificationCreatedAt(selectedNotification))}</dd>
+                  </div>
+                  <div>
+                    <dt>Status</dt>
+                    <dd>Oxundu</dd>
+                  </div>
+                  <div>
+                    <dt>Bildiriş növü</dt>
+                    <dd>{tone === "near" ? "Yaxınlıqdakı elan" : tone === "apply" ? "Müraciət" : tone === "job" ? "Elan yeniliyi" : "Ümumi məlumat"}</dd>
+                  </div>
+                </dl>
+              </div>
+
+              <footer className="notification-detail-footer">
+                <button type="button" className="notification-detail-secondary" onClick={() => setSelectedNotification(null)}>Bağla</button>
+                {jobId ? (
+                  <button
+                    type="button"
+                    className="notification-detail-primary"
+                    onClick={() => {
+                      setSelectedNotification(null);
+                      openJobDetail(jobId);
+                    }}
+                  >
+                    Əlaqəli elana bax <span aria-hidden="true">→</span>
+                  </button>
+                ) : null}
+              </footer>
+            </article>
+          </div>
+        );
+      })() : null}
 
     </>
   );

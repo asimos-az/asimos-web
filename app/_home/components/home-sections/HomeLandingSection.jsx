@@ -13,6 +13,8 @@ export default function HomeLandingSection({ ctx }) {
   const {
     styles,
     activeSection,
+    jobsMode,
+    setJobsMode,
     search,
     setSearch,
     city,

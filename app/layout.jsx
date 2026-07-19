@@ -11,6 +11,7 @@ import './components/LocationPicker.css';
 import './components/Footer.css';
 import './components/SplashScreen.css';
 import './mobile-app-responsive.css';
+import './professional-refresh.css';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
 

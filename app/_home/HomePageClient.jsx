@@ -62,6 +62,23 @@ import {
 
 const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
 
+function toJobSlug(value, fallback = "elan") {
+  const slug = String(value || "")
+    .toLowerCase()
+    .trim()
+    .replace(/ə/g, "e")
+    .replace(/ö/g, "o")
+    .replace(/ü/g, "u")
+    .replace(/ı/g, "i")
+    .replace(/ğ/g, "g")
+    .replace(/ş/g, "s")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return slug || fallback;
+}
+
 const JobsMap = dynamic(() => import("../components/JobsMap"), {
   ssr: false,
   loading: () => (
@@ -1535,12 +1552,6 @@ export default function HomePageClient() {
         setUnread((count) => Math.max(0, Number(count || 0) - 1));
       }
 
-      const jobId = getNotificationJobId(notification);
-      if (jobId) {
-        router.push(`/jobs/${jobId}`);
-        return;
-      }
-
       setOk("Bildiriş oxundu");
     } catch (err) {
       setError(err.message || "Bildiriş açılmadı");
@@ -1897,14 +1908,30 @@ export default function HomePageClient() {
   }
 
   function openJobDetail(jobId) {
-    router.push(`/jobs/${jobId}`);
+    const id = String(jobId || "");
+    const job = [...jobs, ...myJobs, ...favoriteJobs].find(
+      (item) => String(item?.id || item?._id || "") === id
+    );
+    const categorySlug = toJobSlug(
+      job?.category || job?.categoryName || job?.category_name || job?.jobCategory || job?.job_category
+    );
+    const titleSlug = toJobSlug(job?.title || job?.name, "vakansiya");
+    router.push(`/jobs/${categorySlug}/${titleSlug}?id=${encodeURIComponent(id)}`);
   }
 
   function prefetchJobDetail(jobId) {
     if (!jobId || prefetchedJobIds.current.has(jobId)) return;
 
     prefetchedJobIds.current.add(jobId);
-    router.prefetch(`/jobs/${jobId}`);
+    const id = String(jobId);
+    const job = [...jobs, ...myJobs, ...favoriteJobs].find(
+      (item) => String(item?.id || item?._id || "") === id
+    );
+    const categorySlug = toJobSlug(
+      job?.category || job?.categoryName || job?.category_name || job?.jobCategory || job?.job_category
+    );
+    const titleSlug = toJobSlug(job?.title || job?.name, "vakansiya");
+    router.prefetch(`/jobs/${categorySlug}/${titleSlug}?id=${encodeURIComponent(id)}`);
   }
 
   function scrollLatestJobs(direction) {
@@ -1950,7 +1977,7 @@ export default function HomePageClient() {
 
   const sectionCtx = {
     styles,
-    activeSection, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
+    activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
     siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, effectiveLocation, JobsMap, AppLaunchPanel, LiveStatsPanel,

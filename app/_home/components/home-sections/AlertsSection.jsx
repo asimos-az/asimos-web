@@ -159,6 +159,7 @@ export default function AlertsSection({ ctx }) {
     handleCreateAlert,
     handleDeleteAlert,
     notifications,
+    activeUnreadCount,
     unread,
     handleMarkAllRead,
     handleOpenNotification,

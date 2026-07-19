@@ -1,62 +1,44 @@
 {
   "pages": {
     "/_not-found/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/chunks/app/_not-found/page-995d74368adb0c6b.js"
     ],
     "/layout": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/css/16cb0c566050a158.css",
       "static/css/a0e3e9cf7a07827a.css",
       "static/css/21477d3ee1664d26.css",
-      "static/css/e45a6cac71bf4378.css",
+      "static/css/87442de556c935e4.css",
       "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/layout-a14ffb03e40c93c0.js"
-    ],
-    "/bakida-is-elanlari/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
-      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
-      "static/chunks/117-a6e51045de534902.js",
-      "static/chunks/main-app-7c899470018e5927.js",
-      "static/css/647bcb9a3eeb1e01.css",
-      "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/bakida-is-elanlari/page-0779f33f069fe556.js"
-    ],
-    "/is-axtaranlar/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
-      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
-      "static/chunks/117-a6e51045de534902.js",
-      "static/chunks/main-app-7c899470018e5927.js",
-      "static/css/647bcb9a3eeb1e01.css",
-      "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/is-axtaranlar/page-e61bd3ee509aa24a.js"
+      "static/chunks/app/layout-09523473f451c70c.js"
     ],
     "/gundelik-isler/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/css/647bcb9a3eeb1e01.css",
       "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/gundelik-isler/page-8b46f5a07f5df1d6.js"
+      "static/chunks/app/gundelik-isler/page-a4bdb0d53f0ef41f.js"
     ],
-    "/is-elanlari/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+    "/is-axtaranlar/page": [
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/css/647bcb9a3eeb1e01.css",
       "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/is-elanlari/page-5cb740d0d5e80aa0.js"
+      "static/chunks/app/is-axtaranlar/page-a33e72156817d0aa.js"
     ],
     "/policy/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
@@ -66,51 +48,69 @@
       "static/chunks/app/policy/page-bd60124fc99663c0.js"
     ],
     "/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
-      "static/css/8198d2f82959c441.css",
+      "static/css/59a04b03c7c27748.css",
       "static/chunks/972-75bfae05a608eea5.js",
       "static/chunks/960-d83b7568f44eb9c2.js",
       "static/chunks/115-30a345f88c369fa2.js",
-      "static/chunks/app/page-6d1ab18ea6872a52.js"
+      "static/chunks/app/page-9e658e8b09a1b31c.js"
     ],
     "/isci-axtaranlar/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/css/647bcb9a3eeb1e01.css",
       "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/isci-axtaranlar/page-d2019c9b3b9de73f.js"
+      "static/chunks/app/isci-axtaranlar/page-f0eed7ec89381ba4.js"
+    ],
+    "/is-elanlari/page": [
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
+      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
+      "static/chunks/117-a6e51045de534902.js",
+      "static/chunks/main-app-7c899470018e5927.js",
+      "static/css/647bcb9a3eeb1e01.css",
+      "static/chunks/972-75bfae05a608eea5.js",
+      "static/chunks/app/is-elanlari/page-6595d3b04168170f.js"
+    ],
+    "/bakida-is-elanlari/page": [
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
+      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
+      "static/chunks/117-a6e51045de534902.js",
+      "static/chunks/main-app-7c899470018e5927.js",
+      "static/css/647bcb9a3eeb1e01.css",
+      "static/chunks/972-75bfae05a608eea5.js",
+      "static/chunks/app/bakida-is-elanlari/page-c90e89a12b9eb4b3.js"
     ],
     "/vakansiyalar/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/css/647bcb9a3eeb1e01.css",
       "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/vakansiyalar/page-c774398c4892d5d2.js"
-    ],
-    "/xeritede-is-elanlari/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
-      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
-      "static/chunks/117-a6e51045de534902.js",
-      "static/chunks/main-app-7c899470018e5927.js",
-      "static/css/647bcb9a3eeb1e01.css",
-      "static/chunks/972-75bfae05a608eea5.js",
-      "static/chunks/app/xeritede-is-elanlari/page-5c0b284debc27ee1.js"
+      "static/chunks/app/vakansiyalar/page-26ef936940e6c6f5.js"
     ],
     "/jobs/[category]/[title]/page": [
-      "static/chunks/webpack-2121d3043aa1700a.js",
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
       "static/chunks/fd9d1056-2101cfcffec2d45c.js",
       "static/chunks/117-a6e51045de534902.js",
       "static/chunks/main-app-7c899470018e5927.js",
       "static/chunks/972-75bfae05a608eea5.js",
       "static/chunks/115-30a345f88c369fa2.js",
       "static/chunks/app/jobs/[category]/[title]/page-6ea7af77e20b306f.js"
+    ],
+    "/xeritede-is-elanlari/page": [
+      "static/chunks/webpack-2af3b55cc18f6d55.js",
+      "static/chunks/fd9d1056-2101cfcffec2d45c.js",
+      "static/chunks/117-a6e51045de534902.js",
+      "static/chunks/main-app-7c899470018e5927.js",
+      "static/css/647bcb9a3eeb1e01.css",
+      "static/chunks/972-75bfae05a608eea5.js",
+      "static/chunks/app/xeritede-is-elanlari/page-cfe67007a5e21ab5.js"
     ]
   }
 }
