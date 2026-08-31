@@ -219,7 +219,7 @@ function buildJobPopup(job) {
   `;
 }
 
-export default function JobsMap({ jobs, focusedJobId = null, userLocation = null }) {
+export default function JobsMap({ jobs, focusedJobId = null, userLocation = null, radiusM = 0 }) {
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layersRef = useRef(null);
@@ -273,7 +273,8 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
         jobsLayer.addTo(map);
 
-        layersRef.current = { jobs: jobsLayer };
+        const contextLayer = L.layerGroup().addTo(map);
+        layersRef.current = { jobs: jobsLayer, context: contextLayer };
         mapRef.current = map;
         setMapReady(true);
 
@@ -301,8 +302,10 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     const L = window.L;
     const jobsLayer = layersRef.current.jobs;
+    const contextLayer = layersRef.current.context;
 
     jobsLayer.clearLayers();
+    contextLayer.clearLayers();
     setJobsRendered(false);
 
     const bounds = [];
@@ -329,15 +332,30 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
     if (Number.isFinite(userLat) && Number.isFinite(userLng)) {
       const userIcon = L.divIcon({
         className: "jobs-map-user-marker-wrap",
-        html: `<div class="jobs-map-user-marker"><span>📍</span></div>`,
+        html: `<div class="jobs-map-user-marker"><span></span></div>`,
         iconSize: [34, 34],
         iconAnchor: [17, 17],
         popupAnchor: [0, -18],
       });
 
       L.marker([userLat, userLng], { icon: userIcon })
-        .bindPopup(`<div class="jobs-map-popup jobs-map-popup--user"><div class="jobs-map-popup__title">Sizin lokasiya</div></div>`)
-        .addTo(jobsLayer);
+        .bindPopup(`<div class="jobs-map-popup jobs-map-popup--user"><div class="jobs-map-popup__title">Sizin canlı lokasiyanız</div></div>`)
+        .addTo(contextLayer);
+
+      const normalizedRadius = Number(radiusM);
+      if (Number.isFinite(normalizedRadius) && normalizedRadius > 0) {
+        const radiusCircle = L.circle([userLat, userLng], {
+          radius: normalizedRadius,
+          color: "#079875",
+          weight: 2,
+          opacity: 0.72,
+          fillColor: "#079875",
+          fillOpacity: 0.1,
+          interactive: false,
+        }).addTo(contextLayer);
+        const circleBounds = radiusCircle.getBounds();
+        bounds.push(circleBounds.getNorthEast(), circleBounds.getSouthWest());
+      }
 
       bounds.push([userLat, userLng]);
     }
@@ -360,7 +378,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     setJobsRendered(true);
     setTimeout(() => mapRef.current?.invalidateSize(), 120);
-  }, [jobsWithCoordinates, focusedJobId, mapReady, userLocation?.lat, userLocation?.lng]);
+  }, [jobsWithCoordinates, focusedJobId, mapReady, radiusM, userLocation?.lat, userLocation?.lng]);
 
   return (
     <section className="container page-section jobs-map-section" id="home-jobs-map-section">

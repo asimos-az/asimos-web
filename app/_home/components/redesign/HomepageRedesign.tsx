@@ -114,7 +114,7 @@ type HomeContext = {
   effectiveLocation?: JobLocation | null;
   homeMapJobs: Job[];
   focusedMapJobId: string | number | null;
-  JobsMap: ComponentType<{ jobs: Job[]; focusedJobId: string | number | null; userLocation?: JobLocation | null }>;
+  JobsMap: ComponentType<{ jobs: Job[]; focusedJobId: string | number | null; userLocation?: JobLocation | null; radiusM?: number }>;
   homeRadiusM: string;
   handleHomeRadiusChange: (radius: string) => void | Promise<void>;
   locationLoading: boolean;
@@ -273,7 +273,6 @@ function SearchPanel({ ctx }: { ctx: HomeContext }) {
 }
 
 function ProximityMap({ ctx }: { ctx: HomeContext }) {
-  const [showRealMap, setShowRealMap] = useState(false);
   const radius = Number(ctx.homeRadiusM) || 1000;
   const radiusOptions = [1000, 3000, 5000, 10000];
   const nearby = useMemo(
@@ -296,19 +295,12 @@ function ProximityMap({ ctx }: { ctx: HomeContext }) {
     <Container maxWidth="xl" sx={{ mt: 2.5 }}>
       <Card className={styles.proximityCard}>
         <Stack className={styles.proximityCopy}>
-          <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography variant="h5" component="h2">{ctx.effectiveLocation?.address || "Nərimanovda"} 1 km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</Typography></Stack>
-          <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={openNearbyJobs}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => setShowRealMap((current) => !current)}>{showRealMap ? "Xəritəni bağla" : "Xəritədə göstər"}</Button></Stack>
+          <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography variant="h5" component="h2">{ctx.effectiveLocation?.address || "Cari lokasiyanız"} {radius / 1000} km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</Typography></Stack>
+          <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={openNearbyJobs}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => document.getElementById("proximity-live-map")?.scrollIntoView({ behavior: "smooth", block: "center" })}>Xəritədə göstər</Button></Stack>
           <Typography variant="caption" fontWeight={800}>Radius</Typography>
           <Stack direction="row" gap={1}>{radiusOptions.map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={radius === item ? "primary" : "default"} variant={radius === item ? "filled" : "outlined"} aria-label={`${item / 1000} kilometr radius seç`} />)}</Stack>
         </Stack>
-        {showRealMap ? <Box className={styles.realMap}><ctx.JobsMap jobs={nearbyMapJobs} focusedJobId={ctx.focusedMapJobId} userLocation={ctx.effectiveLocation} /></Box> : <Box className={styles.mapCanvas} aria-label="Yaxın vakansiyaların xəritə görünüşü">
-          <Box className={styles.radiusCircle}><Typography fontWeight={800} color="primary.main">Nərimanov</Typography><Box className={styles.mapCenter} /></Box>
-          {["18% 28%", "30% 67%", "58% 32%", "70% 70%", "45% 15%"].map((position, index) => {
-            const [top, left] = position.split(" ");
-            return <Box key={position} className={styles.mapMarker} sx={{ top, left }}><BusinessCenterRounded /></Box>;
-          })}
-          <Typography className={styles.metroLabel}>Metro · Nəriman Nərimanov</Typography>
-        </Box>}
+        <Box id="proximity-live-map" className={styles.realMap}><ctx.JobsMap jobs={nearbyMapJobs} focusedJobId={ctx.focusedMapJobId} userLocation={ctx.effectiveLocation} radiusM={radius} /></Box>
       </Card>
     </Container>
   );
