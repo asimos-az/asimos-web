@@ -469,6 +469,8 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const contactVisibilityLabel = formatContactVisibility(job);
   const primaryContactLabel = getPrimaryContactLabel(job);
   const statusLabel = getStatusLabel(job);
+  const applyContact = getVisibleContactItems(job, user).find((item) => item.href);
+  const applyHref = atsLink || applyContact?.href || '';
 
 
   const lat = Number(job.location?.lat ?? job.lat);
@@ -668,6 +670,15 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         </main>
 
         <aside className="job-detail-sidebar">
+          <section className="job-detail-card company-summary-card">
+            <div className="company-summary-head"><div className="company-summary-logo">{logoUrl ? <img src={logoUrl} alt={`${companyName} loqosu`} /> : companyInitial}</div><div><h2>{companyName}</h2><p>{job?.companyDescription || job?.company_description || job?.category || 'Şirkət məlumatları'}</p></div></div>
+            <div className="company-summary-row"><span>Elanın statusu</span><strong>{statusLabel}</strong></div>
+            <div className="company-summary-row"><span>İş formatı</span><strong>{getJobTypeLabel(job)}</strong></div>
+          </section>
+          <section className="job-detail-card apply-card">
+            <h2>Müraciət et</h2><p>Vakansiya məlumatlarını yoxlayın və uyğun əlaqə kanalı ilə müraciət edin.</p>
+            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel={atsLink || applyContact?.external ? 'noopener noreferrer' : undefined}>Müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət kanalı qeyd edilməyib</button>}
+          </section>
           <section className="job-detail-meta job-detail-card sticky-card">
             <div className="meta-card-head">
               <span className="section-kicker">Müraciət</span>

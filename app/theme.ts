@@ -28,7 +28,7 @@ const theme = createTheme({
       },
     },
     MuiCard: { styleOverrides: { root: { border: "1px solid #e3eaf0", boxShadow: "0 8px 26px rgba(23,50,77,.055)" } } },
-    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 9, backgroundColor: "#fff", "&.Mui-focused": { boxShadow: "0 0 0 3px rgba(7,152,117,.12)" } } } },
+    MuiOutlinedInput: { styleOverrides: { root: { borderRadius: 9, backgroundColor: "#fff", "&.Mui-focused": { boxShadow: "0 0 0 2px rgba(7,152,117,.08)" } } } },
   },
 });
 

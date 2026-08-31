@@ -300,7 +300,7 @@ export default function HomePageClient() {
   }, [activeTicketId]);
 
   useEffect(() => {
-    if (!user && activeSection !== "home" && activeSection !== "about" && activeSection !== "auth") {
+    if (!user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
       setActiveSection("auth");
     }
   }, [user, activeSection]);
