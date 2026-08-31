@@ -226,13 +226,6 @@ function Hero({ ctx }: { ctx: HomeContext }) {
         <Box className={styles.skyline} aria-hidden="true">
           <Box className={styles.skylineLines} />
           <LocationOnRounded className={styles.heroPin} />
-          <Card className={styles.locationTip}>
-            <IconButton size="small" className={styles.tipClose} aria-label="Məlumatı bağla"><CloseRounded fontSize="small" /></IconButton>
-            <Typography variant="subtitle1" fontWeight={800}>Yaxınlığınızdakı işləri göstərə bilərik</Typography>
-            <Typography variant="body2" color="text.secondary">Lokasiyanızı paylaşın və 1 km məsafədə yerləşən vakansiyaları dərhal görün.</Typography>
-            <Button variant="contained" fullWidth startIcon={<MyLocationRounded />} onClick={ctx.handleLocationActivation}>Yaxınlıqdakı işləri göstər</Button>
-            <Button variant="outlined" fullWidth onClick={() => ctx.setCity("Bakı")}>Şəhəri özüm seçim</Button>
-          </Card>
         </Box>
       </Container>
     </Box>
