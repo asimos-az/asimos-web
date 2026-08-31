@@ -75,6 +75,9 @@ type Job = {
   distance_m?: number;
   isSponsored?: boolean;
   sponsored?: boolean;
+  experience?: string | number;
+  experienceRequired?: boolean;
+  experience_required?: boolean;
 };
 
 type SiteStats = {
@@ -328,6 +331,18 @@ function JobCard({ job, ctx }: { job: Job; ctx: HomeContext }) {
 
 function JobsArea({ ctx }: { ctx: HomeContext }) {
   const jobs = ctx.homeJobs.slice(0, 4);
+  const todayJobs = ctx.homeJobs.filter((job) => {
+    const value = job.createdAt || job.created_at;
+    if (!value) return false;
+    const created = new Date(value);
+    const today = new Date();
+    return created.getFullYear() === today.getFullYear() && created.getMonth() === today.getMonth() && created.getDate() === today.getDate();
+  });
+  const entryLevelJobs = ctx.homeJobs.filter((job) => {
+    if (job.experienceRequired === false || job.experience_required === false) return true;
+    const experience = String(job.experience ?? "").toLocaleLowerCase("az-AZ");
+    return experience === "0" || experience.includes("tələb olunmur") || experience.includes("təcrübəsiz");
+  });
   const openAll = () => { ctx.setJobsMode("all"); ctx.setFocusedMapJobId(null); ctx.setActiveSection("jobs"); };
   return (
     <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 5 } }}>
@@ -338,9 +353,9 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
         {jobs.length ? jobs.map((job) => <JobCard key={job.id} job={job} ctx={ctx} />) : Array.from({ length: 4 }, (_, index) => <Card key={index} className={styles.emptyCard}><BusinessCenterRounded color="disabled" /><Typography fontWeight={700}>Vakansiyalar yüklənir</Typography><Typography variant="body2" color="text.secondary">Yeni elanlar bir azdan burada görünəcək.</Typography></Card>)}
       </Box>
       <Box className={styles.collectionsGrid}>
-        <MiniList title="Bu gün əlavə olunanlar" jobs={ctx.homeJobs.slice(4, 8)} ctx={ctx} />
+        <MiniList title="Bu gün əlavə olunanlar" jobs={todayJobs} ctx={ctx} icon={QueryBuilderRounded} emptyText="Bu gün yeni vakansiya yerləşdirilməyib." />
         <MetroList jobs={ctx.homeJobs} ctx={ctx} />
-        <MiniList title="Təcrübə tələb etməyən işlər" jobs={ctx.homeJobs.slice(8, 12)} ctx={ctx} />
+        <MiniList title="Təcrübə tələb etməyən işlər" jobs={entryLevelJobs} ctx={ctx} icon={VerifiedUserRounded} emptyText="Hazırda təcrübəsiz namizədlər üçün elan yoxdur." />
       </Box>
       <Box className={styles.workModeGrid}>
         <Card className={styles.modeBanner}><QueryBuilderRounded /><Box><Typography fontWeight={800}>Part-time və növbəli işlər</Typography><Typography variant="body2">{Math.max(0, Math.round(ctx.homeJobs.length * .23))} vakansiya</Typography></Box><ArrowForwardRounded /></Card>
@@ -350,13 +365,14 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function MiniList({ title, jobs, ctx }: { title: string; jobs: Job[]; ctx: HomeContext }) {
-  return <Card className={styles.listCard}><SectionTitle action="Hamısına bax">{title}</SectionTitle><Stack divider={<Divider flexItem />} spacing={1.25}>{jobs.length ? jobs.slice(0, 4).map((job) => <Stack key={job.id} direction="row" gap={1.2} alignItems="center" className={styles.miniJob} onClick={() => ctx.openJobDetail(job.id)}><Avatar src={logo(job)} variant="rounded">{company(job).charAt(0)}</Avatar><Box flex={1} minWidth={0}><Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography><Typography variant="caption" color="text.secondary" noWrap>{company(job)} • {address(job)}</Typography></Box><BookmarkBorderRounded fontSize="small" /></Stack>) : <Typography variant="body2" color="text.secondary">Hazırda uyğun elan yoxdur.</Typography>}</Stack></Card>;
+function MiniList({ title, jobs, ctx, icon: Icon, emptyText }: { title: string; jobs: Job[]; ctx: HomeContext; icon: ComponentType; emptyText: string }) {
+  const openAll = () => { ctx.setJobsMode("all"); ctx.setActiveSection("jobs"); };
+  return <Card className={styles.listCard}><Box className={styles.collectionHeader}><Box className={styles.collectionIcon}><Icon /></Box><Box flex={1}><Typography component="h2" fontWeight={800}>{title}</Typography><Typography variant="caption" color="text.secondary">{jobs.length ? `${jobs.length} uyğun vakansiya` : "Yeni imkanları izləyin"}</Typography></Box><IconButton aria-label={`${title} bölməsində bütün elanlara bax`} onClick={openAll}><ArrowForwardRounded /></IconButton></Box>{jobs.length ? <Stack divider={<Divider flexItem />} className={styles.miniList}>{jobs.slice(0, 4).map((job) => <Stack key={job.id} direction="row" gap={1.2} alignItems="center" className={styles.miniJob} onClick={() => ctx.openJobDetail(job.id)} tabIndex={0} role="button" onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}><Avatar src={logo(job)} variant="rounded">{company(job).charAt(0)}</Avatar><Box flex={1} minWidth={0}><Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography><Typography variant="caption" color="text.secondary" noWrap>{company(job)} • {address(job)}</Typography></Box><ChevronRightRounded fontSize="small" /></Stack>)}</Stack> : <Box className={styles.collectionEmpty}><Box className={styles.emptyIllustration}><BusinessCenterRounded /></Box><Typography fontWeight={800}>Hələ uyğun elan yoxdur</Typography><Typography variant="body2" color="text.secondary">{emptyText}</Typography><Button size="small" variant="outlined" onClick={openAll}>Bütün vakansiyalara bax</Button></Box>}</Card>;
 }
 
 function MetroList({ jobs, ctx }: { jobs: Job[]; ctx: HomeContext }) {
   const metros = ["28 May", "Gənclik", "Nəriman Nərimanov", "Elmlər Akademiyası"];
-  return <Card className={styles.listCard}><SectionTitle>Metroya yaxın işlər</SectionTitle><Stack spacing={1}>{metros.map((metro, index) => <Button key={metro} className={styles.metroButton} onClick={() => { ctx.setSearch(metro); ctx.setActiveSection("jobs"); }}><PlaceOutlined /><Box textAlign="left" flex={1}><Typography fontWeight={800}>{metro}</Typography><Typography variant="caption">{Math.max(0, Math.round((jobs.length || 1) * (.11 + index * .04)))} vakansiya</Typography></Box><ChevronRightRounded /></Button>)}</Stack></Card>;
+  return <Card className={`${styles.listCard} ${styles.metroCard}`}><Box className={styles.collectionHeader}><Box className={styles.collectionIcon}><PlaceOutlined /></Box><Box><Typography component="h2" fontWeight={800}>Metroya yaxın işlər</Typography><Typography variant="caption" color="text.secondary">Stansiyaya görə sürətli seçim</Typography></Box></Box><Stack className={styles.metroList}>{metros.map((metro) => { const count = jobs.filter((job) => address(job).toLocaleLowerCase("az-AZ").includes(metro.toLocaleLowerCase("az-AZ"))).length; return <Button key={metro} className={styles.metroButton} onClick={() => { ctx.setSearch(metro); ctx.setActiveSection("jobs"); }}><Box className={styles.metroMark}>M</Box><Box textAlign="left" flex={1}><Typography fontWeight={800}>{metro}</Typography><Typography variant="caption" color="text.secondary">{count} vakansiya</Typography></Box><ChevronRightRounded /></Button>; })}</Stack></Card>;
 }
 
 function HowItWorks() {
