@@ -2,3 +2,34 @@
 @media(max-width:1050px){.page{border-radius:0;border-left:0;border-right:0}.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr}.formGrid{grid-template-columns:1fr 1fr}}
 @media(max-width:700px){.workspaceHeader{height:54px;padding:0 12px}.brand strong{display:none}.topActions button{font-size:0;padding:0 9px}.topActions button svg{font-size:21px}.stepper{height:82px;padding:7px 5px;align-items:flex-start}.stepper button{width:20%}.stepper button:not(:last-child)::after{left:66%;width:68%}.stepper button>span{width:29px;height:29px}.stepper small{font-size:9px;line-height:1.2}.layout{padding:0}.formCard{border-radius:0;border-left:0;border-right:0}.formCard>h1{font-size:20px;padding:18px 14px 10px}.formGrid{grid-template-columns:1fr;padding:10px 14px 22px;gap:14px}.wideField{grid-column:auto}.editor textarea{min-height:180px}.locationStep,.contactStep,.previewStep{padding:10px 14px 22px}.map{height:300px}.contactRow{grid-template-columns:42px 24px 1fr}.contactRow>button:last-child{grid-column:3}.previewStep{grid-template-columns:1fr}.formFooter{position:sticky;bottom:0;z-index:5;background:#fff;padding:10px 12px}.formFooter>div{flex:1}.formFooter .draft{display:none}.formFooter button{padding:0 12px}.formFooter .next{flex:1;min-width:0}.sidebar{display:block;padding:0 12px}.sidebar>section{margin-bottom:12px}.sidebar>section:last-child{display:none}}
 .quality>div::before,.quality>div::after{display:none}.quality>div{background:radial-gradient(circle,#fff 0 25px,transparent 26px),conic-gradient(#079875 var(--progress),#e6ecef 0);color:#17324d}
+
+/* The vacancy creator is a route-level workspace, not a nested modal card. */
+.page{width:100%;max-width:none;min-height:calc(100vh - 74px);margin:0;background:#f6f9fb;border:0;border-radius:0;box-shadow:none;overflow:visible}
+.workspaceHeader,.stepper{background:#fff}
+.layout{width:min(calc(100% - 48px),1440px);margin:0 auto;padding:0 0 32px}
+.formCard,.sidebar>section{background:#fff}
+.previewCompany>svg:last-child{font-size:17px;color:#079875}
+.previewSalary{display:inline-block;margin-top:18px;color:#078568;font-size:18px;font-weight:900}
+.publishBox h2{margin:0 0 4px;font-size:17px}
+.confirmation{align-items:flex-start!important;justify-content:flex-start!important;gap:10px;border-color:#8fd4c1!important;background:#effbf7;font-size:13px;line-height:1.45;color:#175f50}
+.confirmation input{width:18px;height:18px;margin:1px 0 0;accent-color:#079875;flex:0 0 auto}
+.next:disabled{background:#a8bbb6;cursor:not-allowed;box-shadow:none}
+.miniPreview{padding:16px;background:linear-gradient(145deg,#fff 0%,#f5fbf8 100%);box-shadow:0 8px 22px rgba(28,64,80,.08)}
+.miniCompany{display:flex;align-items:center;gap:10px;padding-bottom:13px;border-bottom:1px solid #e1eae7}
+.miniCompany>svg{width:38px;height:38px;padding:8px;border-radius:9px;background:#079875;color:#fff}
+.miniCompany>div{display:grid;gap:3px;min-width:0}
+.miniCompany strong{font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.miniCompany small{display:flex;align-items:center;gap:4px;padding:0;border:0;color:#078568;font-size:10px}
+.miniCompany small svg{font-size:13px}
+.miniPreview h3{margin:16px 0 5px;font-size:18px;color:#142d48}
+.miniSalary{display:block;color:#078568;font-size:14px;margin-bottom:10px}
+.miniTags{display:flex;gap:6px;flex-wrap:wrap}
+.miniTags span{background:#e1f7ef;color:#08765f;border-radius:5px;padding:5px 7px;font-size:10px}
+.miniPreview p{display:-webkit-box;overflow:hidden;-webkit-line-clamp:3;-webkit-box-orient:vertical;margin:12px 0;font-size:12px}
+.miniMeta{display:grid;gap:7px;padding:11px 0;border-top:1px solid #e1eae7}
+.miniMeta span{display:flex;align-items:center;gap:6px;color:#5d7283;font-size:11px;line-height:1.35}
+.miniMeta svg{font-size:16px;color:#079875;flex:0 0 auto}
+.miniPreview>button{width:100%;height:38px;margin-top:3px;border:0;border-radius:7px;background:#079875;color:#fff;font-weight:800;pointer-events:none}
+
+@media(max-width:1050px){.layout{width:min(calc(100% - 32px),1440px)}}
+@media(max-width:700px){.page{min-height:calc(100vh - 58px)}.layout{width:100%;padding-bottom:16px}.workspaceHeader,.stepper{border-radius:0}.sidebar{padding-top:12px}.miniPreview>button{min-height:44px}}
