@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, type MouseEvent, type ReactNode } from "react";
+import { useMemo, useState, type ComponentType, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import {
@@ -112,6 +112,11 @@ type HomeContext = {
   setFocusedMapJobId: (id: string | number | null) => void;
   siteStats: SiteStats | null;
   effectiveLocation?: JobLocation | null;
+  homeMapJobs: Job[];
+  focusedMapJobId: string | number | null;
+  JobsMap: ComponentType<{ jobs: Job[]; focusedJobId: string | number | null; userLocation?: JobLocation | null }>;
+  homeRadiusM: string;
+  handleHomeRadiusChange: (radius: string) => void | Promise<void>;
   locationLoading: boolean;
   handleLocationActivation: () => void;
   user?: { fullName?: string; full_name?: string; role?: string } | null;
@@ -268,25 +273,42 @@ function SearchPanel({ ctx }: { ctx: HomeContext }) {
 }
 
 function ProximityMap({ ctx }: { ctx: HomeContext }) {
-  const nearby = ctx.homeJobs.filter((job) => (job.distanceM ?? job.distance_m ?? 99999) <= 1000);
-  const count = nearby.length || Math.min(ctx.homeJobs.length, 6);
+  const [showRealMap, setShowRealMap] = useState(false);
+  const radius = Number(ctx.homeRadiusM) || 1000;
+  const radiusOptions = [1000, 3000, 5000, 10000];
+  const nearby = useMemo(
+    () => ctx.homeJobs.filter((job) => {
+      const distance = job.distanceM ?? job.distance_m;
+      return typeof distance !== "number" || distance <= radius;
+    }),
+    [ctx.homeJobs, radius],
+  );
+  const nearbyMapJobs = useMemo(
+    () => ctx.homeMapJobs.filter((job) => nearby.some((nearbyJob) => String(nearbyJob.id) === String(job.id))),
+    [ctx.homeMapJobs, nearby],
+  );
+  const count = nearby.length;
+  const openNearbyJobs = () => {
+    ctx.setJobsMode("all");
+    ctx.setActiveSection("jobs");
+  };
   return (
     <Container maxWidth="xl" sx={{ mt: 2.5 }}>
       <Card className={styles.proximityCard}>
         <Stack className={styles.proximityCopy}>
           <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography variant="h5" component="h2">{ctx.effectiveLocation?.address || "Nərimanovda"} 1 km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</Typography></Stack>
-          <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={() => ctx.setActiveSection("jobs")}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />}>Xəritədə göstər</Button></Stack>
+          <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={openNearbyJobs}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => setShowRealMap((current) => !current)}>{showRealMap ? "Xəritəni bağla" : "Xəritədə göstər"}</Button></Stack>
           <Typography variant="caption" fontWeight={800}>Radius</Typography>
-          <Stack direction="row" gap={1}>{["1 km", "3 km", "5 km", "10 km"].map((item, index) => <Chip key={item} label={item} color={index === 0 ? "primary" : "default"} variant={index === 0 ? "filled" : "outlined"} />)}</Stack>
+          <Stack direction="row" gap={1}>{radiusOptions.map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={radius === item ? "primary" : "default"} variant={radius === item ? "filled" : "outlined"} aria-label={`${item / 1000} kilometr radius seç`} />)}</Stack>
         </Stack>
-        <Box className={styles.mapCanvas} aria-label="Yaxın vakansiyaların xəritə görünüşü">
+        {showRealMap ? <Box className={styles.realMap}><ctx.JobsMap jobs={nearbyMapJobs} focusedJobId={ctx.focusedMapJobId} userLocation={ctx.effectiveLocation} /></Box> : <Box className={styles.mapCanvas} aria-label="Yaxın vakansiyaların xəritə görünüşü">
           <Box className={styles.radiusCircle}><Typography fontWeight={800} color="primary.main">Nərimanov</Typography><Box className={styles.mapCenter} /></Box>
           {["18% 28%", "30% 67%", "58% 32%", "70% 70%", "45% 15%"].map((position, index) => {
             const [top, left] = position.split(" ");
             return <Box key={position} className={styles.mapMarker} sx={{ top, left }}><BusinessCenterRounded /></Box>;
           })}
           <Typography className={styles.metroLabel}>Metro · Nəriman Nərimanov</Typography>
-        </Box>
+        </Box>}
       </Card>
     </Container>
   );
