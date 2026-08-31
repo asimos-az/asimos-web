@@ -1,6 +1,5 @@
 "use client";
 
-import Header from "../components/Header";
 import LocationPicker from "../components/LocationPicker";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,6 +15,7 @@ import LiveStatsPanel from "./components/LiveStatsPanel";
 import HomeJobsMap from "./components/HomeJobsMap";
 import HomePageLoadingScreen from "./components/HomePageLoadingScreen";
 import HomePageSections from "./components/HomePageSections";
+import { AppHeader } from "./components/redesign/HomepageRedesign";
 import { getRouteForSection, getSectionForPath } from "./sectionRoutes";
 import {
   SOCKET_URL,
@@ -323,10 +323,10 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, [pathname, initialSection]);
 
   useEffect(() => {
-    if (!user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
+    if (!booting && !user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
       setActiveSection("auth", "replace");
     }
-  }, [user, activeSection, setActiveSection]);
+  }, [booting, user, activeSection, setActiveSection]);
 
   useEffect(() => {
     if (activeSection === "daily") {
@@ -337,10 +337,10 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, [activeSection]);
 
   useEffect(() => {
-    if (activeSection === "create" && roleName !== "employer") {
+    if (!booting && activeSection === "create" && roleName !== "employer") {
       setActiveSection(user ? "profile" : "auth");
     }
-  }, [activeSection, roleName, user, setActiveSection]);
+  }, [booting, activeSection, roleName, user, setActiveSection]);
 
   useEffect(() => {
     if (activeSection !== "create" || editingJobId || !effectiveLocation) return;
@@ -1923,21 +1923,7 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   return (
     <main className="site-shell">
-      {activeSection !== "home" ? <Header
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        navItems={navItems}
-        user={user}
-        handleSignOut={handleSignOut}
-        canCreateJob={canCreateJob}
-        onOpenSupport={openSupportModal}
-        showSupport={roleName === "employer"}
-        unreadNotificationsCount={activeUnreadCount}
-        currentLocation={effectiveLocation}
-        locationLoading={locationLoading}
-        onRefreshLocation={handleLocationActivation}
-      /> : null}
-
+      <AppHeader ctx={sectionCtx} />
       <HomePageSections ctx={sectionCtx} />
     </main>
   );

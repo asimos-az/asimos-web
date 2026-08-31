@@ -173,7 +173,7 @@ function SectionTitle({ children, action, onAction }: { children: ReactNode; act
   );
 }
 
-function Header({ ctx }: { ctx: HomeContext }) {
+export function AppHeader({ ctx }: { ctx: HomeContext }) {
   const [open, setOpen] = useState(false);
   const go = (section: string) => { ctx.setActiveSection(section); setOpen(false); };
   const navigation = [
@@ -398,5 +398,5 @@ function CareerAdvice() {
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;
-  return <Box className={styles.page}><Header ctx={ctx} /><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><ProximityMap ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta ctx={ctx} /><Stats ctx={ctx} /><CareerAdvice /></Box>;
+  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><ProximityMap ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta ctx={ctx} /><Stats ctx={ctx} /><CareerAdvice /></Box>;
 }
