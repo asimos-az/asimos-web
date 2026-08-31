@@ -250,6 +250,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
           preferCanvas: true,
           scrollWheelZoom: false,
           zoomControl: true,
+          attributionControl: false,
         });
 
         L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -259,6 +260,11 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
           updateWhenZooming: false,
           keepBuffer: 2,
         }).addTo(map);
+
+        L.control
+          .attribution({ position: "bottomright", prefix: false })
+          .addAttribution('&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noreferrer">OpenStreetMap contributors</a>')
+          .addTo(map);
 
         const jobsLayer = L.markerClusterGroup({
           chunkedLoading: true,
