@@ -1,12 +1,9 @@
 "use client";
 
 import Header from "../components/Header";
-import JobCard from "../components/JobCard";
 import LocationPicker from "../components/LocationPicker";
 
 import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
 import { useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
@@ -14,24 +11,23 @@ import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandl
 import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 
 import styles from "./HomePage.module.css";
-import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
 import LiveStatsPanel from "./components/LiveStatsPanel";
-import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
+import HomeJobsMap from "./components/HomeJobsMap";
+import HomePageLoadingScreen from "./components/HomePageLoadingScreen";
+import HomePageSections from "./components/HomePageSections";
 import {
-  HomeSearchSection,
-  HomeLandingSection,
-  JobsSection,
-  CreateJobSection,
-  AlertsSection,
-  NotificationsSection,
-  ProfileSection,
-  SupportPageSection,
-  AboutSection,
-  TermsSection,
-  AuthSectionView,
-  RoleSwitchConfirmModal,
-} from "./components/home-sections";
+  SOCKET_URL,
+  cityOptions,
+  employerNav,
+  employerSupportCategories,
+  guestNav,
+  jobLevelOptions,
+  salaryRangeOptions,
+  seekerNav,
+  seekerSupportCategories,
+  vacancyTypeOptions,
+} from "./config/homePageConfig";
 import {
   fileToDataUrl,
   safeImageUrl,
@@ -60,8 +56,6 @@ import {
   getTicketMessages,
 } from "./utils/homePageHelpers";
 
-const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
-
 function toJobSlug(value, fallback = "elan") {
   const slug = String(value || "")
     .toLowerCase()
@@ -78,100 +72,6 @@ function toJobSlug(value, fallback = "elan") {
 
   return slug || fallback;
 }
-
-const JobsMap = dynamic(() => import("../components/JobsMap"), {
-  ssr: false,
-  loading: () => (
-    <section className="container page-section jobs-map-section">
-      <header className="section-head jobs-map-head">
-        <h2>Elanların xəritədə görünüşü</h2>
-        <p>Xəritə yüklənir...</p>
-      </header>
-      <div className="jobs-map-shell card">
-        <p className="jobs-map-empty">Xəritə modulu hazırlanır.</p>
-      </div>
-    </section>
-  ),
-});
-
-const guestNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "about", label: "Haqqımızda" },
-];
-
-const seekerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const employerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const employerSupportCategories = [
-  "Elan yükləyə bilmirəm",
-  "Namizədlərlə əlaqə problemi",
-  "Ödəniş problemi",
-  "Hesab ilə bağlı problem",
-  "Təklif və İradlar",
-  "Digər",
-];
-
-const seekerSupportCategories = [
-  "İşə müraciət edə bilmirəm",
-  "Profilimi tamamlaya bilmirəm",
-  "Hesab ilə bağlı problem",
-  "Təklif və İradlar",
-  "Digər",
-];
-
-const cityOptions = [
-  "Bakı",
-  "Sumqayıt",
-  "Gəncə",
-  "Mingəçevir",
-  "Şəki",
-  "Lənkəran",
-  "Şirvan",
-  "Naxçıvan",
-  "Quba",
-  "Xaçmaz",
-  "Masallı",
-  "Salyan",
-];
-
-const vacancyTypeOptions = [
-  { label: "Növbə əsasında", value: "shift" },
-  { label: "Tam ştat", value: "full_time" },
-  { label: "Daimi", value: "permanent" },
-  { label: "Frilans", value: "freelance" },
-  { label: "Komisyon haqqı", value: "commission" },
-  { label: "Könüllü", value: "volunteer" },
-  { label: "Mövsümi", value: "seasonal" },
-  { label: "Müvəqqəti", value: "temporary" },
-  { label: "Təcrübə", value: "internship" },
-  { label: "Təqaüd proqramı", value: "scholarship" },
-  { label: "Yarım ştat", value: "part_time" },
-];
-
-const jobLevelOptions = [
-  { label: "Təcrübəsiz", value: "entry" },
-  { label: "Junior", value: "junior" },
-  { label: "Middle", value: "middle" },
-  { label: "Senior", value: "senior" },
-  { label: "Menecer", value: "manager" },
-  { label: "Rəhbər", value: "lead" },
-];
-
-const salaryRangeOptions = [
-  { label: "0 - 500 AZN", min: "0", max: "500" },
-  { label: "500 - 1000 AZN", min: "500", max: "1000" },
-  { label: "1000 - 1500 AZN", min: "1000", max: "1500" },
-  { label: "1500 - 2500 AZN", min: "1500", max: "2500" },
-  { label: "2500+ AZN", min: "2500", max: "" },
-];
-
 
 export default function HomePageClient() {
   const router = useRouter();
@@ -1963,15 +1863,7 @@ export default function HomePageClient() {
   }, []);
 
   if (booting) {
-    return (
-      <main className={styles.loadingScreen}>
-        <div className={styles.loadingCard}>
-          <div className={styles.loadingSpinner} aria-hidden="true" />
-          <h2 className={styles.loadingTitle}>Yüklənir</h2>
-          <p className={styles.loadingText}>Platforma hazırlanır, zəhmət olmasa bir neçə saniyə gözləyin.</p>
-        </div>
-      </main>
-    );
+    return <HomePageLoadingScreen />;
   }
 
 
@@ -1980,7 +1872,7 @@ export default function HomePageClient() {
     activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
-    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, effectiveLocation, JobsMap, AppLaunchPanel, LiveStatsPanel,
+    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, setFocusedMapJobId, effectiveLocation, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,
@@ -1989,7 +1881,7 @@ export default function HomePageClient() {
 
   return (
     <main className="site-shell">
-      <Header
+      {activeSection !== "home" ? <Header
         activeSection={activeSection}
         setActiveSection={setActiveSection}
         navItems={navItems}
@@ -2002,20 +1894,9 @@ export default function HomePageClient() {
         currentLocation={effectiveLocation}
         locationLoading={locationLoading}
         onRefreshLocation={handleLocationActivation}
-      />
+      /> : null}
 
-      <HomeSearchSection ctx={sectionCtx} />
-      <HomeLandingSection ctx={sectionCtx} />
-      <JobsSection ctx={sectionCtx} />
-      <CreateJobSection ctx={sectionCtx} />
-      <AlertsSection ctx={sectionCtx} />
-      <NotificationsSection ctx={sectionCtx} />
-      <ProfileSection ctx={sectionCtx} />
-      <SupportPageSection ctx={sectionCtx} />
-      <AboutSection ctx={sectionCtx} />
-      <TermsSection ctx={sectionCtx} />
-      <AuthSectionView ctx={sectionCtx} />
-      <RoleSwitchConfirmModal ctx={sectionCtx} />
+      <HomePageSections ctx={sectionCtx} />
     </main>
   );
 }

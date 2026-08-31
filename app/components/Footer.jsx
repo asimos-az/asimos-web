@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 
 function FacebookIcon() {
   return (
@@ -104,10 +105,10 @@ export default async function Footer() {
       <div className="container footer-shell">
         <div className="footer-brand">
           <Link href="/" className="footer-logo">
-            <img src="/logo.svg" alt="Asimos loqosu" />
+            <Image src="/logo.svg" width={118} height={38} alt="Asimos loqosu" />
           </Link>
           <p>
-            Asimos platformasında vakansiyaları izləyin, uyğun imkanları kəşf edin və karyera axınınızı daha rahat idarə edin.
+            Asimos — sənə ən yaxın işi tap. Lokasiyaya əsaslanan ağıllı iş platforması ilə doğru işi, doğru yerdə kəşf et.
           </p>
           <div className="footer-socials" aria-label="Sosial şəbəkələr">
             {socialLinks.map((item) => (
@@ -118,27 +119,46 @@ export default async function Footer() {
           </div>
         </div>
 
-        <div className="footer-links footer-links--compact">
+        <div className="footer-links">
           <div>
-            <h3>Naviqasiya</h3>
-            <Link href="/">Ana səhifə</Link>
+            <h3>Platforma</h3>
+            <Link href="/vakansiyalar">Vakansiyalar</Link>
+            <Link href="/is-elanlari">Şirkətlər</Link>
+            <Link href="/">Karyera məsləhətləri</Link>
+            <Link href="/xeritede-is-elanlari">Seçimlər</Link>
+          </div>
+          <div>
+            <h3>Şirkət</h3>
+            <Link href="/">Haqqımızda</Link>
+            <Link href="/">Karyera</Link>
+            <Link href="/">Bloq</Link>
             <Link href="/policy">Qaydalar</Link>
           </div>
           <div>
-            <h3>Platforma</h3>
-            <a href="https://play.google.com/store" target="_blank" rel="noreferrer">
-              Play Store
-            </a>
-            <a href="https://www.apple.com/app-store/" target="_blank" rel="noreferrer">
-              App Store
-            </a>
+            <h3>Dəstək</h3>
+            <Link href="/">Yardım mərkəzi</Link>
+            <Link href="/policy">Təhlükəsizlik</Link>
+            <Link href="/policy">Şikayət et</Link>
+            <Link href="/policy">İstifadə şərtləri</Link>
           </div>
+          <div className="footer-contact">
+            <h3>Əlaqə</h3>
+            <a href="tel:+994123100010">+994 12 310 00 10</a>
+            <a href="mailto:info@asimos.az">info@asimos.az</a>
+            <span>Bakı, Azərbaycan</span>
+            <span>Hər gün 09:00 – 18:00</span>
+          </div>
+        </div>
+        <div className="footer-newsletter">
+          <h3>Yeniliklərdən xəbərdar olun</h3>
+          <p>Ən yeni vakansiyalar və karyera məsləhətləri birbaşa emailinizdə.</p>
+          <form action="#"><label htmlFor="footer-email" className="sr-only">Email ünvanınız</label><input id="footer-email" type="email" placeholder="Email ünvanınız" required/><button type="submit">Abunə ol</button></form>
         </div>
       </div>
 
       <div className="container footer-bottom">
         <span>© 2026 Asimos. Bütün hüquqlar qorunur.</span>
-        <Link href="/">Asimos.az</Link>
+        <span>Made in Azerbaijan</span>
       </div>
     </footer>
   );
