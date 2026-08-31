@@ -13,6 +13,15 @@
 .publishBox h2{margin:0 0 4px;font-size:17px}
 .confirmation{align-items:flex-start!important;justify-content:flex-start!important;gap:10px;border-color:#8fd4c1!important;background:#effbf7;font-size:13px;line-height:1.45;color:#175f50}
 .confirmation input{width:18px;height:18px;margin:1px 0 0;accent-color:#079875;flex:0 0 auto}
+.publishBox .publishOption{min-height:64px;align-items:center;padding:11px 13px;cursor:pointer;transition:border-color .18s,background .18s,box-shadow .18s}
+.publishBox .publishOption:has(input:checked){border-color:#079875;background:#effbf7;box-shadow:0 0 0 1px rgba(7,152,117,.08)}
+.publishOption>span{display:grid;gap:3px;color:#20374f;font-size:14px;font-weight:800}
+.publishOption small{color:#758798;font-size:10px;font-weight:500}
+.publishOption input[type="radio"]{appearance:none;width:18px;height:18px;min-width:18px;margin:0;border:2px solid #a7b7c1;border-radius:50%;background:#fff;display:grid;place-items:center;cursor:pointer}
+.publishOption input[type="radio"]::before{content:"";width:8px;height:8px;border-radius:50%;background:#079875;transform:scale(0);transition:transform .15s}
+.publishOption input[type="radio"]:checked{border-color:#079875}
+.publishOption input[type="radio"]:checked::before{transform:scale(1)}
+.publishOption input[type="radio"]:focus-visible{outline:3px solid rgba(7,152,117,.2);outline-offset:2px}
 .next:disabled{background:#a8bbb6;cursor:not-allowed;box-shadow:none}
 .miniPreview{padding:16px;background:linear-gradient(145deg,#fff 0%,#f5fbf8 100%);box-shadow:0 8px 22px rgba(28,64,80,.08)}
 .miniCompany{display:flex;align-items:center;gap:10px;padding-bottom:13px;border-bottom:1px solid #e1eae7}

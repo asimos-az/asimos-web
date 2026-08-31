@@ -1174,11 +1174,11 @@ export default function HomePageClient({ initialSection = "home" }) {
     setOk("");
 
     try {
-      if (!title.trim()) {
+      if (!saveAsDraft && !title.trim()) {
         throw new Error("Elanın adını yazın");
       }
 
-      if (!category) {
+      if (!saveAsDraft && !category) {
         throw new Error("Kateqoriya seçin");
       }
 
@@ -1191,14 +1191,14 @@ export default function HomePageClient({ initialSection = "home" }) {
             : durationPreset
           : "";
 
-      if (selectedJobType === "temporary" && (!resolvedDuration || Number(resolvedDuration) < 1)) {
+      if (!saveAsDraft && selectedJobType === "temporary" && (!resolvedDuration || Number(resolvedDuration) < 1)) {
         throw new Error("Günəmuzd elan üçün müddət seçin");
       }
 
       const durationLabel = selectedJobType === "temporary" ? `${resolvedDuration} gün` : "";
 
       if (
-        publishMode === "scheduled" &&
+        !saveAsDraft && publishMode === "scheduled" &&
         (!publishAt || new Date(publishAt).getTime() <= Date.now())
       ) {
         throw new Error("Planlı yayım üçün gələcək tarix və saat seçin");
@@ -1206,7 +1206,7 @@ export default function HomePageClient({ initialSection = "home" }) {
 
       const resolvedWage = getResolvedWageValue();
 
-      if (wageMode === "range" && !resolvedWage) {
+      if (!saveAsDraft && wageMode === "range" && !resolvedWage) {
         throw new Error("Minimum və ya maksimum maaş rəqəmini yazın");
       }
 
@@ -1233,7 +1233,7 @@ export default function HomePageClient({ initialSection = "home" }) {
       };
 
       const payload = {
-        title,
+        title: title.trim() || "Adsız qaralama",
         wage: resolvedWage,
         category,
 
@@ -1326,34 +1326,44 @@ export default function HomePageClient({ initialSection = "home" }) {
         },
       };
 
-      let submittedPendingJob = null;
+      let submittedProfileJob = null;
 
       if (editingJobId) {
         const response = await api.updateJob(editingJobId, payload);
         if (!saveAsDraft) {
           const responseJob = response?.job || response?.item || response;
           const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
-          submittedPendingJob = pendingJob;
+          submittedProfileJob = pendingJob;
           if (pendingJob) {
             setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
           }
           setMyJobsStatus("pending");
           setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
         } else {
-          setOk("Elan yeniləndi");
+          const responseJob = response?.job || response?.item || response;
+          const draftJob = responseJob?.id ? { ...responseJob, status: "draft", jobStatus: "draft" } : null;
+          submittedProfileJob = draftJob;
+          if (draftJob) setMyJobs((items) => [draftJob, ...items.filter((item) => String(item.id) !== String(draftJob.id))]);
+          setMyJobsStatus("draft");
+          setOk("Qaralama yeniləndi");
         }
       } else {
         const response = await api.createJob(payload);
         if (!saveAsDraft) {
           const responseJob = response?.job || response?.item || response;
           const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
-          submittedPendingJob = pendingJob;
+          submittedProfileJob = pendingJob;
           if (pendingJob) {
             setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
           }
           setMyJobsStatus("pending");
           setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
         } else {
+          const responseJob = response?.job || response?.item || response;
+          const draftJob = responseJob?.id ? { ...responseJob, status: "draft", jobStatus: "draft" } : null;
+          submittedProfileJob = draftJob;
+          if (draftJob) setMyJobs((items) => [draftJob, ...items.filter((item) => String(item.id) !== String(draftJob.id))]);
+          setMyJobsStatus("draft");
           setOk("Elan qaralama olaraq yadda saxlanıldı");
         }
       }
@@ -1361,9 +1371,9 @@ export default function HomePageClient({ initialSection = "home" }) {
       resetJobForm();
 
       await loadAuthedData();
-      if (submittedPendingJob) {
-        setMyJobs((items) => [submittedPendingJob, ...items.filter((item) => String(item.id) !== String(submittedPendingJob.id))]);
-        setMyJobsStatus("pending");
+      if (submittedProfileJob) {
+        setMyJobs((items) => [submittedProfileJob, ...items.filter((item) => String(item.id) !== String(submittedProfileJob.id))]);
+        setMyJobsStatus(saveAsDraft ? "draft" : "pending");
       }
       await refreshJobs();
 
