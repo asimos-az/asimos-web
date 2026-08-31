@@ -3,8 +3,8 @@
 import Header from "../components/Header";
 import LocationPicker from "../components/LocationPicker";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
 
@@ -16,6 +16,7 @@ import LiveStatsPanel from "./components/LiveStatsPanel";
 import HomeJobsMap from "./components/HomeJobsMap";
 import HomePageLoadingScreen from "./components/HomePageLoadingScreen";
 import HomePageSections from "./components/HomePageSections";
+import { getRouteForSection, getSectionForPath } from "./sectionRoutes";
 import {
   SOCKET_URL,
   cityOptions,
@@ -73,13 +74,14 @@ function toJobSlug(value, fallback = "elan") {
   return slug || fallback;
 }
 
-export default function HomePageClient() {
+export default function HomePageClient({ initialSection = "home" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const prefetchedJobIds = useRef(new Set());
   const latestJobsCarouselRef = useRef(null);
   const jobsLoadMoreRef = useRef(null);
   const [booting, setBooting] = useState(true);
-  const [activeSection, setActiveSection] = useState("home");
+  const [activeSection, setActiveSectionState] = useState(initialSection === "daily" ? "jobs" : initialSection);
 
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -158,6 +160,17 @@ export default function HomePageClient() {
   const [myJobsStatus, setMyJobsStatus] = useState("open");
   const [jobsVisibleCount, setJobsVisibleCount] = useState(10);
   const [editingJobId, setEditingJobId] = useState(null);
+
+  const setActiveSection = useCallback((section, navigation = "push") => {
+    const nextSection = section === "daily" ? "jobs" : section;
+    if (section === "daily") setJobsMode("daily");
+    else if (section === "jobs") setJobsMode("all");
+    setActiveSectionState(nextSection);
+    const nextRoute = getRouteForSection(section);
+    if (pathname !== nextRoute) {
+      navigation === "replace" ? router.replace(nextRoute) : router.push(nextRoute);
+    }
+  }, [pathname, router]);
 
   const [title, setTitle] = useState("");
   const [companyObject, setCompanyObject] = useState("");
@@ -300,10 +313,20 @@ export default function HomePageClient() {
   }, [activeTicketId]);
 
   useEffect(() => {
-    if (!user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
-      setActiveSection("auth");
+    const routeSection = getSectionForPath(pathname, initialSection);
+    if (routeSection === "daily") {
+      setJobsMode("daily");
+      setActiveSectionState("jobs");
+      return;
     }
-  }, [user, activeSection]);
+    setActiveSectionState(routeSection);
+  }, [pathname, initialSection]);
+
+  useEffect(() => {
+    if (!user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
+      setActiveSection("auth", "replace");
+    }
+  }, [user, activeSection, setActiveSection]);
 
   useEffect(() => {
     if (activeSection === "daily") {
@@ -317,7 +340,7 @@ export default function HomePageClient() {
     if (activeSection === "create" && roleName !== "employer") {
       setActiveSection(user ? "profile" : "auth");
     }
-  }, [activeSection, roleName, user]);
+  }, [activeSection, roleName, user, setActiveSection]);
 
   useEffect(() => {
     if (activeSection !== "create" || editingJobId || !effectiveLocation) return;
