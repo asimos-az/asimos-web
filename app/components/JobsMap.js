@@ -399,9 +399,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
         {loadError ? <p className="jobs-map-empty">{loadError}</p> : null}
 
-        {!loadError && !jobsWithCoordinates.length ? (
-          <p className="jobs-map-empty">Koordinatı olan elan tapılmadı.</p>
-        ) : null}
+       
 
         {!mapReady ? <div className="jobs-map-skeleton">Xəritə yüklənir...</div> : null}
 

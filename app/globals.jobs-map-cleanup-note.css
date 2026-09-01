@@ -1,7 +1,0 @@
-/*
-  JobsMap CSS təmizliyi:
-  - .jobs-map-* ilə başlayan bütün xəritə CSS-ləri web/app/components/JobsMap.css faylına köçürüldü.
-  - app/globals.css içində əvvəlki .jobs-map-section, .jobs-map-shell, .jobs-map-toolbar,
-    .jobs-map-layer-toggles, .jobs-map-marker, .marker-cluster-* bloklarını sil.
-  - globals.css-də saxlanmalı olan xəritə kodu yoxdur; JobsMap.js artıq "./JobsMap.css" import edir.
-*/
