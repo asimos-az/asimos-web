@@ -1596,7 +1596,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     }
   }
 
-  async function handleProfileSave(e) {
+  async function handleProfileSave(e, seekerProfile) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -1620,6 +1620,7 @@ export default function HomePageClient({ initialSection = "home" }) {
         whatsapp: roleName === "employer" ? whatsapp || user?.whatsapp || "" : undefined,
         contactEmail: roleName === "employer" ? contactEmail || user?.email || "" : undefined,
         atsLink: roleName === "employer" ? link || user?.atsLink || user?.ats_link || "" : undefined,
+        seekerProfile: roleName === "seeker" ? seekerProfile : undefined,
       };
       const response = await api.updateProfile(payload);
       const nextUser = response?.user || {
@@ -1633,6 +1634,8 @@ export default function HomePageClient({ initialSection = "home" }) {
         contactEmail: payload.contactEmail ?? user?.contactEmail,
         atsLink: payload.atsLink ?? user?.atsLink,
         ats_link: payload.atsLink ?? user?.ats_link,
+        seekerProfile: payload.seekerProfile ?? user?.seekerProfile ?? user?.seeker_profile,
+        seeker_profile: payload.seekerProfile ?? user?.seeker_profile ?? user?.seekerProfile,
       };
 
       setUser(nextUser);
