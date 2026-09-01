@@ -1,0 +1,1102 @@
+.employer-dashboard-shell {
+          width: min(100%, 760px);
+          margin: 0 auto;
+          padding: 10px 8px 28px;
+          background: #eef3fb;
+        }
+        .employer-hero {
+          min-height: 150px;
+          border-radius: 14px;
+          padding: 22px 24px;
+          display: flex;
+          align-items: flex-start;
+          justify-content: space-between;
+          gap: 12px;
+          color: #ffffff;
+          background: linear-gradient(135deg, #22a478 0%, #078052 100%);
+          box-shadow: 0 18px 44px rgba(6, 128, 82, 0.18);
+        }
+        .employer-hero-main {
+          display: flex;
+          gap: 12px;
+          align-items: center;
+          min-width: 0;
+        }
+        .employer-logo-box {
+          width: 76px;
+          height: 76px;
+          border: 2px solid rgba(255,255,255,0.42);
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          overflow: hidden;
+          cursor: default;
+          text-align: center;
+          color: #ffffff;
+          font-size: 14px;
+          line-height: 1.25;
+          background: rgba(255,255,255,0.08);
+        }
+        .employer-company-initials {
+          font-size: 24px;
+          line-height: 1;
+          font-weight: 900;
+          letter-spacing: 0.04em;
+        }
+        .employer-hero-copy h1 {
+          margin: 0 0 8px;
+          font-size: clamp(22px, 3vw, 30px);
+          line-height: 1.1;
+          font-weight: 800;
+        }
+        .employer-role-pill {
+          display: inline-flex;
+          align-items: center;
+          min-height: 32px;
+          padding: 4px 14px;
+          border-radius: 999px;
+          background: rgba(255,255,255,0.22);
+          color: #ffffff;
+          font-size: 13px;
+          margin-bottom: 14px;
+        }
+        .employer-hero-copy p {
+          margin: 0;
+          font-size: 16px;
+          line-height: 1.35;
+          opacity: 0.9;
+        }
+        .employer-hero-logout {
+          border: 1px solid rgba(255,255,255,0.28);
+          border-radius: 14px;
+          background: rgba(255,255,255,0.16);
+          color: #ffffff;
+          min-width: 82px;
+          min-height: 46px;
+          font-size: 16px;
+          cursor: pointer;
+        }
+        .employer-card {
+          margin-top: 22px;
+          border: 1px solid #dce2ee;
+          border-radius: 14px;
+          background: #ffffff;
+          padding: 24px 26px;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+        }
+        .employer-section-title {
+          margin: 0 0 24px;
+          color: #9a9a9a;
+          font-size: 16px;
+          letter-spacing: 0.12em;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .employer-form-grid {
+          display: grid;
+          gap: 12px;
+        }
+        .employer-field label,
+        .employer-field-top label {
+          color: #686868;
+          font-size: 16px;
+          line-height: 1.2;
+        }
+        .employer-field label span,
+        .employer-field-top label span { color: #ef4444; }
+        .employer-field-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 14px;
+          margin-bottom: 12px;
+        }
+        .employer-lock-actions {
+          display: flex;
+          align-items: center;
+          gap: 8px;
+        }
+        .employer-lock-badge {
+          display: inline-flex;
+          align-items: center;
+          min-height: 40px;
+          padding: 5px 14px;
+          border-radius: 999px;
+          background: #eff6ff;
+          color: #2368b8;
+          font-size: 14px;
+          white-space: nowrap;
+        }
+        .employer-lock-actions button {
+          border: 1px solid #13a873;
+          color: #13a873;
+          background: #ffffff;
+          border-radius: 16px;
+          min-height: 52px;
+          padding: 0 22px;
+          font-size: 15px;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .employer-field input,
+        .employer-field-locked input {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #d8deea;
+          border-radius: 14px;
+          padding: 0 16px;
+          font-size: 14px;
+          color: #111827;
+          outline: none;
+          box-sizing: border-box;
+          background: #ffffff;
+        }
+        .employer-field input:focus {
+          border-color: #13a873;
+          box-shadow: 0 0 0 4px rgba(19,168,115,0.12);
+        }
+        .employer-field-locked.is-locked input {
+          background: #f5f7fc;
+          color: #9a9a9a;
+        }
+        .employer-field-locked.is-open input {
+          background: #ffffff;
+          color: #111827;
+        }
+        .employer-save-button {
+          margin-top: 4px;
+          border: 0;
+          border-radius: 22px;
+          min-height: 50px;
+          width: 100%;
+          background: #1ea476;
+          color: #ffffff;
+          font-size: 14px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .employer-tabs {
+          display: grid;
+          grid-template-columns: repeat(6, minmax(125px, 1fr));
+          gap: 0;
+          border-bottom: 1px solid #e5e7eb;
+          margin-bottom: 28px;
+          overflow-x: auto;
+          overflow-y: hidden;
+          scrollbar-width: thin;
+        }
+        .employer-tabs button {
+          border: 0;
+          background: transparent;
+          min-height: 56px;
+          color: #8a8a8a;
+          font-size: 13px;
+          cursor: pointer;
+          border-bottom: 4px solid transparent;
+        }
+        .employer-tabs button.active {
+          color: #13a873;
+          border-bottom-color: #13a873;
+        }
+        .employer-tab-icon { display: none; }
+        .employer-jobs-list {
+          display: grid;
+          gap: 18px;
+        }
+        .employer-job-card {
+          border: 1px solid #dde3ee;
+          border-radius: 14px;
+          padding: 18px 20px;
+          background: #ffffff;
+        }
+        .employer-job-card.is-draft {
+          border-color: #acd1ff;
+          border-style: dashed;
+          background: #f7fbff;
+        }
+        .employer-job-card.is-pending {
+          border-color: #f2c66d;
+          background: #fffbeb;
+        }
+        .employer-job-card.is-rejected {
+          border-color: #e0e4ee;
+          background: #ffffff;
+        }
+        .employer-job-card.is-closed {
+          border-color: #f0d5a8;
+          background: #fffaf2;
+        }
+        .employer-job-card.is-deleted {
+          border-color: #f1b9b9;
+          background: #fff7f7;
+          opacity: 0.92;
+        }
+        .employer-job-head {
+          display: flex;
+          justify-content: space-between;
+          gap: 12px;
+          align-items: flex-start;
+        }
+        .employer-job-card h3 {
+          margin: 0 0 6px;
+          color: #0f172a;
+          font-size: 15px;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+        .employer-job-card p {
+          margin: 0 0 18px;
+          color: #8a8a8a;
+          font-size: 16px;
+          line-height: 1.35;
+        }
+        .employer-job-status {
+          display: inline-flex;
+          align-items: center;
+          min-height: 34px;
+          padding: 4px 18px;
+          border-radius: 999px;
+          background: #dff8ee;
+          color: #087d55;
+          font-size: 15px;
+          white-space: nowrap;
+        }
+        .employer-job-status.is-draft { background: #eaf3ff; color: #1558a8; }
+        .employer-job-status.is-pending { background: #fff0c2; color: #8a5600; }
+        .employer-job-status.is-rejected { background: #fde8e8; color: #c33131; }
+        .employer-job-status.is-closed { background: #fff0d6; color: #96520a; }
+        .employer-job-status.is-deleted { background: #fee2e2; color: #991b1b; }
+        .employer-job-note {
+          margin: 12px 0 16px;
+          border-radius: 16px;
+          padding: 14px 18px;
+          background: #fff0d6;
+          color: #96520a;
+          font-size: 15px;
+        }
+        .employer-job-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .employer-job-actions button {
+          min-height: 40px;
+          border-radius: 16px;
+          padding: 0 20px;
+          border: 1px solid #d1d5db;
+          background: #ffffff;
+          color: #555555;
+          font-size: 15px;
+          cursor: pointer;
+        }
+        .employer-job-actions .edit { border-color: #7bb4ff; background: #eff6ff; color: #1558a8; }
+        .employer-job-actions .publish { border-color: #13a873; color: #0f8a62; background: #f0fff8; }
+        .employer-job-actions .pause { border-color: #e5b567; color: #96520a; background: #fff9ed; }
+        .employer-job-actions .reason { border-color: #d1d5db; color: #606060; background: #ffffff; }
+        .employer-job-actions .danger {
+          border-color: #ff8a8a;
+          background: #fff1f1;
+          color: #c91f1f;
+        }
+        .employer-empty {
+          color: #8a8a8a;
+          font-size: 15px;
+          margin: 0;
+        }
+        .employer-logout-card {
+          margin-top: 22px;
+          border: 1px solid #fed7d7;
+          border-radius: 14px;
+          background: #fffdfc;
+          padding: 22px 24px;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 18px;
+        }
+        .employer-logout-card h3 {
+          margin: 0 0 6px;
+          font-size: 15px;
+          color: #111827;
+        }
+        .employer-logout-card p {
+          margin: 0;
+          color: #8a8a8a;
+          font-size: 16px;
+        }
+        .employer-logout-card button {
+          min-height: 50px;
+          border-radius: 22px;
+          border: 1px solid #ff8080;
+          background: #fff1f1;
+          color: #c72626;
+          font-size: 14px;
+          padding: 0 20px;
+          cursor: pointer;
+        }
+
+        .employer-field-top {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          flex-direction: row;
+          gap: 8px;
+          margin-bottom: 10px;
+        }
+        .employer-lock-actions {
+          display: inline-flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 10px;
+          flex-shrink: 0;
+        }
+        .employer-lock-toggle,
+        .employer-request-button {
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          min-height: 32px;
+          border-radius: 999px;
+          padding: 0 12px;
+          font-size: 14px;
+          font-weight: 700;
+          line-height: 1;
+          white-space: nowrap;
+        }
+        .employer-lock-toggle {
+          border: 0;
+          background: #eff6ff;
+          color: #2368b8;
+          cursor: pointer;
+        }
+        .employer-lock-toggle.open {
+          background: #ecfdf5;
+          color: #0f8a62;
+          cursor: default;
+        }
+        .employer-request-button {
+          border: 1px solid #13a873;
+          color: #13a873;
+          background: #ffffff;
+          cursor: pointer;
+        }
+        .employer-request-button:disabled {
+          opacity: 0.5;
+          cursor: not-allowed;
+        }
+        .employer-field label,
+        .employer-field-top label {
+          font-size: 14px;
+        }
+        .employer-field input,
+        .employer-field-locked input {
+          min-height: 44px;
+          border-radius: 16px;
+          padding: 0 18px;
+          font-size: 15px;
+        }
+        .employer-form-grid {
+          gap: 20px;
+        }
+        .employer-card {
+          padding: 28px 32px;
+        }
+        .employer-save-button {
+          min-height: 44px;
+          border-radius: 14px;
+          font-size: 15px;
+        }
+        .employer-dashboard-shell {
+          width: min(100%, 860px);
+          padding: 10px 8px 30px;
+        }
+        .employer-hero {
+          min-height: 104px;
+          padding: 18px 20px;
+          border-radius: 14px;
+        }
+        .employer-logo-box {
+          width: 66px;
+          height: 66px;
+          border-radius: 16px;
+          font-size: 12px;
+        }
+        .employer-logo-empty span {
+          font-size: 15px;
+          margin-bottom: 3px;
+        }
+        .employer-hero-copy h1 {
+          font-size: clamp(20px, 2.4vw, 26px);
+          margin-bottom: 8px;
+        }
+        .employer-role-pill {
+          min-height: 28px;
+          padding: 3px 12px;
+          font-size: 14px;
+          margin-bottom: 8px;
+        }
+        .employer-hero-copy p {
+          font-size: 14px;
+        }
+        .employer-hero-logout {
+          min-width: 54px;
+          min-height: 40px;
+          border-radius: 14px;
+          font-size: 14px;
+        }
+        .employer-card {
+          margin-top: 16px;
+          border-radius: 14px;
+          padding: 20px 22px;
+        }
+        .employer-section-title {
+          margin-bottom: 18px;
+          font-size: 15px;
+          letter-spacing: 0.11em;
+        }
+        .employer-form-grid {
+          gap: 14px;
+        }
+        .employer-field-top {
+          margin-bottom: 7px;
+          gap: 10px;
+        }
+        .employer-field label,
+        .employer-field-top label {
+          font-size: 15px;
+        }
+        .employer-field input,
+        .employer-field-locked input {
+          min-height: 44px;
+          border-radius: 13px;
+          padding: 0 14px;
+          font-size: 15px;
+        }
+        .employer-lock-actions {
+          gap: 8px;
+        }
+        .employer-lock-toggle,
+        .employer-request-button {
+          min-height: 30px;
+          padding: 0 11px;
+          font-size: 13px;
+        }
+        .employer-save-button {
+          min-height: 46px;
+          border-radius: 15px;
+          font-size: 16px;
+        }
+        @media (max-width: 720px) {
+          .employer-tabs {
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            overflow: hidden;
+          }
+          .employer-tabs button {
+            min-width: 0;
+            min-height: 52px;
+            padding: 0;
+          }
+          .employer-tab-label { display: none; }
+          .employer-tab-icon {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            line-height: 1;
+          }
+          .seeker-dashboard-shell {
+            padding: 10px 8px 28px;
+          }
+          .seeker-hero {
+            min-height: 104px;
+            padding: 18px 20px;
+            border-radius: 18px;
+            gap: 14px;
+          }
+          .seeker-hero-main {
+            gap: 14px;
+          }
+          .seeker-avatar {
+            width: 66px;
+            height: 66px;
+            font-size: 26px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 22px;
+          }
+          .seeker-role-pill {
+            min-height: 30px;
+            font-size: 14px;
+            padding: 4px 13px;
+          }
+          .seeker-hero-logout {
+            min-width: 78px;
+            min-height: 44px;
+            font-size: 15px;
+          }
+          .seeker-card {
+            margin-top: 16px;
+            padding: 22px 20px;
+            border-radius: 18px;
+          }
+          .seeker-section-title {
+            font-size: 13px;
+            margin-bottom: 18px;
+          }
+          .seeker-form-grid {
+            gap: 16px;
+          }
+          .seeker-field {
+            font-size: 14px;
+            gap: 8px;
+          }
+          .seeker-field input {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 16px;
+            padding: 0 16px;
+          }
+          .seeker-save-button {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+          }
+          .seeker-switch-card {
+            align-items: flex-start;
+            gap: 14px;
+          }
+          .seeker-switch-icon {
+            width: 52px;
+            height: 52px;
+            font-size: 22px;
+          }
+          .seeker-switch-content h3 {
+            font-size: 18px;
+          }
+          .seeker-switch-content p {
+            font-size: 14px;
+          }
+          .seeker-switch-button {
+            min-height: 42px;
+            font-size: 15px;
+            padding: 0 18px;
+          }
+          .seeker-logout-card {
+            padding: 20px;
+          }
+          .seeker-logout-card h3 {
+            font-size: 18px;
+          }
+          .seeker-logout-card p {
+            font-size: 14px;
+          }
+          .seeker-logout-card button {
+            min-height: 42px;
+            font-size: 15px;
+            padding: 0 18px;
+          }
+        }
+        @media (max-width: 520px) {
+          .seeker-hero {
+            padding: 16px;
+            min-height: 96px;
+          }
+          .seeker-avatar {
+            width: 58px;
+            height: 58px;
+            font-size: 23px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 19px;
+          }
+          .seeker-role-pill {
+            font-size: 13px;
+            min-height: 28px;
+          }
+          .seeker-hero-logout {
+            min-width: 68px;
+            min-height: 40px;
+            font-size: 14px;
+          }
+          .seeker-card {
+            padding: 20px 16px;
+          }
+          .seeker-field input {
+            min-height: 48px;
+            font-size: 15px;
+          }
+          .seeker-save-button {
+            min-height: 48px;
+            font-size: 16px;
+          }
+          .seeker-switch-icon {
+            width: 48px;
+            height: 48px;
+            font-size: 20px;
+          }
+          .seeker-switch-content h3,
+          .seeker-logout-card h3 {
+            font-size: 17px;
+          }
+          .seeker-switch-content p,
+          .seeker-logout-card p {
+            font-size: 13px;
+          }
+          .seeker-switch-button,
+          .seeker-logout-card button {
+            min-height: 40px;
+            font-size: 14px;
+            padding: 0 16px;
+          }
+        }
+
+/* Job seeker profile completion workspace */
+.profile-design-page{max-width:1440px;margin:0 auto 32px;background:#fff;border:1px solid #dce5ea;border-radius:14px;box-shadow:0 14px 40px rgba(20,45,72,.07);overflow:hidden;color:#132c47}.profile-design-top{height:72px;padding:0 28px;display:flex;align-items:center;border-bottom:1px solid #dce5ea}.profile-design-top>strong{font-size:22px;color:#087f66}.profile-steps{flex:1;display:flex;justify-content:center;gap:80px}.profile-steps span{display:flex;align-items:center;gap:8px;color:#718294;font-size:13px}.profile-steps b,.profile-steps svg{width:28px;height:28px;border-radius:50%;display:grid;place-items:center;background:#edf2f5;color:#67798b}.profile-steps .active{color:#087f66;font-weight:800}.profile-steps .active b,.profile-steps .done svg{background:#078d70;color:#fff}.profile-design-heading{padding:24px 28px 10px}.profile-design-heading h1{margin:0 0 8px;font-size:25px}.profile-design-heading p{margin:0;color:#607487}.profile-design-layout{display:grid;grid-template-columns:minmax(0,1fr) 270px;gap:20px;padding:10px 28px 20px}.profile-design-main{display:grid;gap:14px}.profile-design-section{border:1px solid #dce5ea;border-radius:11px;padding:18px;background:#fff}.profile-design-section h2{font-size:14px;margin:0 0 16px}.profile-mobile-toggle{display:none}.profile-design-grid{display:grid;grid-template-columns:1.3fr .7fr .7fr;gap:14px}.profile-design-three{grid-template-columns:repeat(3,1fr)}.profile-design-field{display:grid;gap:7px;font-size:12px;font-weight:800}.profile-design-field input,.profile-design-field select,.profile-location-box input{height:42px;border:1px solid #cfdbe2;border-radius:7px;padding:0 12px;background:#fff;color:#20374f;font:inherit;outline:0}.profile-design-field input:focus,.profile-design-field select:focus,.profile-location-box input:focus{border-color:#078d70;box-shadow:0 0 0 3px rgba(7,141,112,.1)}.profile-upload{height:82px;border:1px dashed #b8c8d1;border-radius:8px;margin-bottom:15px;display:grid;grid-template-columns:34px 1fr;align-content:center;column-gap:10px;padding:12px;cursor:pointer;background:#fbfcfd}.profile-upload svg{grid-row:1/3;color:#078d70}.profile-upload strong{font-size:12px}.profile-upload small{color:#718294}.profile-upload input{display:none}.profile-choice{border:0;padding:0;margin:0;display:flex;align-items:center;gap:22px}.profile-choice legend{font-size:12px;font-weight:800;margin-bottom:10px}.profile-choice label{display:flex;align-items:center;gap:6px;font-size:12px}.profile-choice input{accent-color:#078d70}.profile-location-box{display:grid;grid-template-columns:1.4fr .8fr 1fr;gap:14px;padding:14px;border:1px solid #e0e8ec;border-radius:8px}.profile-location-box>div{display:grid;gap:9px}.profile-location-box strong,.profile-notifications strong{font-size:12px}.profile-location-actions{display:flex;gap:8px}.profile-location-actions button{height:38px;border:1px solid #078d70;border-radius:7px;background:#fff;color:#078d70;padding:0 12px;display:flex;align-items:center;gap:5px;font-weight:750}.profile-location-actions button:first-child{background:#078d70;color:#fff}.profile-location-actions svg{font-size:17px}.profile-radius{display:flex;gap:6px}.profile-radius button{height:34px;border:1px solid #cbd8df;border-radius:7px;background:#fff;color:#385169}.profile-radius .active{background:#078d70;color:#fff;border-color:#078d70}.profile-notifications{margin-top:12px;padding:14px;border:1px solid #e0e8ec;border-radius:8px;display:flex;align-items:center;gap:20px}.profile-notifications>div{margin-right:auto;display:grid;gap:4px}.profile-notifications small{color:#718294}.profile-notifications label{display:flex;gap:6px;font-size:12px}.profile-notifications input{accent-color:#078d70}.profile-design-aside{display:grid;align-content:start;gap:14px}.profile-design-aside section{border:1px solid #dce5ea;border-radius:11px;padding:16px;display:grid;gap:9px}.profile-design-aside h3{font-size:13px;margin:0}.profile-percent{font-size:24px;color:#078d70}.profile-progress{height:8px;border-radius:99px;background:#e2eee9;overflow:hidden}.profile-progress span{display:block;height:100%;background:#078d70;border-radius:inherit}.profile-design-aside p,.profile-design-aside small{font-size:11px;color:#718294;margin:0}.profile-design-aside section>span{display:flex;align-items:center;gap:7px;font-size:11px;color:#728496}.profile-design-aside section>span svg{font-size:15px}.profile-design-aside section>span.done{color:#087f66}.profile-match strong{color:#078d70}.profile-match b{font-size:24px;color:#087f66}.profile-design-footer{height:68px;border-top:1px solid #dce5ea;padding:0 28px;display:flex;justify-content:space-between;align-items:center}.profile-design-footer button{height:42px;min-width:110px;border:1px solid #cbd7de;border-radius:7px;background:#fff;color:#20374f;font-weight:800}.profile-design-footer button:last-child{background:#078d70;color:#fff;border-color:#078d70}.profile-design-footer button:disabled{opacity:.6}.profile-secondary{display:none}
+@media(max-width:900px){.profile-design-layout{grid-template-columns:1fr}.profile-design-aside{grid-template-columns:repeat(3,1fr)}.profile-location-box{grid-template-columns:1fr 1fr}.profile-location-box>div:first-child{grid-column:1/-1}}
+@media(max-width:600px){.profile-design-page{border-radius:0;border-left:0;border-right:0;margin:0}.profile-design-top{height:62px;padding:0 16px}.profile-design-top>strong{font-size:20px}.profile-steps{gap:12px;margin-left:14px}.profile-steps span{font-size:10px;gap:4px}.profile-steps b,.profile-steps svg{width:22px;height:22px}.profile-design-heading{padding:22px 16px 12px}.profile-design-heading h1{font-size:21px}.profile-design-heading p{font-size:12px;line-height:1.5}.profile-design-layout{padding:0 14px 86px;display:block}.profile-design-main{gap:0;border:1px solid #dce5ea;border-radius:10px;overflow:hidden}.profile-design-section{padding:0;border:0;border-bottom:1px solid #dce5ea;border-radius:0}.profile-design-section:last-child{border-bottom:0}.profile-mobile-toggle{width:100%;height:54px;border:0;background:#fff;display:flex;align-items:center;gap:10px;padding:0 14px;color:#20374f;font-weight:800}.profile-mobile-toggle svg{color:#20374f}.profile-mobile-toggle span{margin-left:auto}.profile-design-section.open .profile-mobile-toggle{color:#078d70;background:#f0faf7}.profile-section-content{display:none;padding:14px}.profile-design-section.open .profile-section-content{display:block}.profile-section-content h2{display:none}.profile-design-grid,.profile-design-three,.profile-location-box{grid-template-columns:1fr}.profile-choice{flex-wrap:wrap}.profile-location-box>div:first-child{grid-column:auto}.profile-notifications{align-items:flex-start;display:grid}.profile-location-actions{display:grid}.profile-location-actions button{justify-content:center}.profile-design-aside{display:none}.profile-design-footer{position:fixed;z-index:20;bottom:0;left:0;right:0;height:72px;background:#fff;padding:0 14px;gap:12px;box-shadow:0 -8px 22px rgba(20,45,72,.08)}.profile-design-footer button{flex:1;min-width:0}.profile-upload{height:100px}.profile-radius{flex-wrap:wrap}}
+
+/* Employer profile: full-width responsive workspace matching the reference. */
+.employer-dashboard-shell{width:min(calc(100% - 48px),1180px);margin:0 auto;padding:16px 0 40px;background:#f5f9fc}.employer-hero{min-height:150px;padding:24px 30px;border-radius:18px;background:linear-gradient(115deg,#179978,#0d735f);box-shadow:0 18px 40px rgba(7,126,99,.18)}.employer-logo-box{width:88px;height:88px;border-radius:16px;background:rgba(255,255,255,.2);border:2px solid rgba(255,255,255,.4)}.employer-company-initials{font-size:32px}.employer-hero-copy h1{font-size:30px}.employer-role-pill{background:rgba(255,255,255,.22);min-height:34px}.employer-hero-copy p{font-size:16px}.employer-card{margin-top:18px;border-radius:18px;padding:28px 30px;box-shadow:0 10px 30px rgba(20,45,72,.05)}.employer-section-title{color:#168b72;font-size:18px;letter-spacing:.14em}.employer-form-grid{grid-template-columns:1fr 1fr;gap:22px}.employer-field-top{min-height:32px}.employer-lock-actions button,.employer-lock-toggle,.employer-request-button{font-size:14px}.employer-tabs{grid-template-columns:repeat(6,minmax(100px,1fr));margin:0 -30px 22px;padding:0 30px}.employer-tabs button{font-size:13px}.employer-jobs-list{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.employer-job-card{border-radius:12px;padding:16px}.employer-job-status{font-size:12px;min-height:28px;padding:4px 10px}.employer-job-actions button{font-size:12px;padding:0 12px;min-height:36px;border-radius:8px}.employer-logout-card{margin-top:18px;border-radius:14px}.employer-dashboard-shell{color:#19324c}
+@media(max-width:720px){.employer-dashboard-shell{width:100%;padding:0 0 24px}.employer-hero{border-radius:0;padding:22px 18px;min-height:130px}.employer-logo-box{width:66px;height:66px}.employer-hero-copy h1{font-size:22px}.employer-hero-copy p{font-size:13px}.employer-card{margin-top:12px;border-radius:0;padding:22px 18px}.employer-form-grid{grid-template-columns:1fr;gap:18px}.employer-field-top{align-items:flex-start;flex-direction:column}.employer-lock-actions{width:100%;justify-content:flex-start}.employer-tabs{grid-template-columns:repeat(6,minmax(112px,1fr));margin:0 -18px 18px;padding:0 18px;overflow-x:auto}.employer-jobs-list{grid-template-columns:1fr}.employer-logout-card{margin:12px 0 0;border-radius:0}}
+
+.seeker-dashboard-shell {
+          width: min(100%, 760px);
+          margin: 0 auto;
+          padding: 10px 8px 28px;
+          background: #eef3fb;
+        }
+        .seeker-hero {
+          min-height: 104px;
+          border-radius: 14px;
+          padding: 18px 20px;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 12px;
+          color: #ffffff;
+          background: linear-gradient(135deg, #22a478 0%, #078052 100%);
+          box-shadow: 0 18px 44px rgba(6, 128, 82, 0.16);
+        }
+        .seeker-hero-main {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          min-width: 0;
+        }
+        .seeker-avatar {
+          width: 66px;
+          height: 66px;
+          border-radius: 999px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 auto;
+          background: rgba(255, 255, 255, 0.24);
+          color: #ffffff;
+          font-size: 26px;
+          font-weight: 800;
+        }
+        .seeker-hero-copy {
+          min-width: 0;
+        }
+        .seeker-hero-copy h1 {
+          margin: 0 0 8px;
+          color: #ffffff;
+          font-size: clamp(20px, 2.3vw, 25px);
+          line-height: 1.1;
+          font-weight: 800;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+        .seeker-role-pill {
+          display: inline-flex;
+          align-items: center;
+          min-height: 30px;
+          padding: 4px 14px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.22);
+          color: #ffffff;
+          font-size: 14px;
+          line-height: 1;
+        }
+        .seeker-hero-logout {
+          min-width: 78px;
+          min-height: 44px;
+          border: 1px solid rgba(255,255,255,0.32);
+          border-radius: 14px;
+          background: rgba(255,255,255,0.15);
+          color: #ffffff;
+          font-size: 15px;
+          cursor: pointer;
+        }
+        .seeker-card {
+          margin-top: 16px;
+          border: 1px solid #dce2ee;
+          border-radius: 14px;
+          background: #ffffff;
+          padding: 22px 24px;
+          box-shadow: 0 12px 30px rgba(15, 23, 42, 0.04);
+        }
+        .seeker-section-title {
+          margin: 0 0 18px;
+          color: #9a9a9a;
+          font-size: 13px;
+          letter-spacing: 0.12em;
+          font-weight: 700;
+          text-transform: uppercase;
+        }
+        .seeker-form-grid {
+          display: grid;
+          gap: 18px;
+        }
+        .seeker-field {
+          display: grid;
+          gap: 8px;
+          color: #696969;
+          font-size: 14px;
+          line-height: 1.2;
+        }
+        .seeker-field span {
+          color: #ef4444;
+        }
+        .seeker-field input {
+          width: 100%;
+          min-height: 50px;
+          border: 1px solid #d8deea;
+          border-radius: 14px;
+          padding: 0 16px;
+          font-size: 16px;
+          color: #111827;
+          outline: none;
+          box-sizing: border-box;
+          background: #ffffff;
+        }
+        .seeker-field input::placeholder {
+          color: #a3aab7;
+        }
+        .seeker-field input:focus {
+          border-color: #13a873;
+          box-shadow: 0 0 0 4px rgba(19,168,115,0.12);
+        }
+        .seeker-save-button {
+          margin-top: 4px;
+          border: 0;
+          border-radius: 14px;
+          min-height: 50px;
+          width: 100%;
+          background: #1ea476;
+          color: #ffffff;
+          font-size: 17px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-save-button:disabled {
+          opacity: 0.7;
+          cursor: wait;
+        }
+        .seeker-switch-card {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+        }
+        .seeker-switch-icon {
+          width: 54px;
+          height: 54px;
+          border-radius: 14px;
+          display: grid;
+          place-items: center;
+          flex: 0 0 auto;
+          background: #fff3d9;
+          color: #0f172a;
+          font-size: 22px;
+        }
+        .seeker-switch-content {
+          flex: 1 1 auto;
+          min-width: 0;
+        }
+        .seeker-switch-content h3 {
+          margin: 0 0 6px;
+          color: #111827;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+        .seeker-switch-content p {
+          margin: 0 0 12px;
+          color: #7b7b7b;
+          font-size: 15px;
+          line-height: 1.35;
+        }
+        .seeker-switch-button {
+          min-height: 42px;
+          border: 1px solid #7bb4ff;
+          border-radius: 14px;
+          padding: 0 18px;
+          background: #eff6ff;
+          color: #1558a8;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-logout-card {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 18px;
+          background: #fffdfc;
+          border-color: #fed7d7;
+        }
+        .seeker-logout-card h3 {
+          margin: 0 0 6px;
+          color: #111827;
+          font-size: 18px;
+          line-height: 1.2;
+          font-weight: 800;
+        }
+        .seeker-logout-card p {
+          margin: 0;
+          color: #8a8a8a;
+          font-size: 15px;
+        }
+        .seeker-logout-card button {
+          min-height: 44px;
+          border-radius: 14px;
+          border: 1px solid #ff8080;
+          background: #fff1f1;
+          color: #c72626;
+          font-size: 15px;
+          font-weight: 800;
+          padding: 0 20px;
+          cursor: pointer;
+          white-space: nowrap;
+        }
+        .seeker-favorites-list {
+          display: grid;
+          gap: 12px;
+        }
+        .seeker-muted {
+          margin: 0;
+          color: #8a8a8a;
+          font-size: 14px;
+        }
+        .seeker-hidden-location {
+          display: none;
+        }
+        .seeker-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          z-index: 9999;
+          display: grid;
+          place-items: center;
+          padding: 20px;
+          background: rgba(15, 23, 42, 0.42);
+          backdrop-filter: blur(6px);
+        }
+        .seeker-role-modal {
+          width: min(100%, 520px);
+          border: 1px solid #dce2ee;
+          border-radius: 22px;
+          background: #ffffff;
+          box-shadow: 0 28px 80px rgba(15, 23, 42, 0.26);
+          overflow: hidden;
+        }
+        .seeker-role-modal-head {
+          padding: 22px 24px 18px;
+          background: linear-gradient(135deg, #22a478 0%, #078052 100%);
+          color: #ffffff;
+          display: flex;
+          justify-content: space-between;
+          gap: 16px;
+          align-items: flex-start;
+        }
+        .seeker-role-modal-head h3 {
+          margin: 0 0 7px;
+          font-size: 21px;
+          line-height: 1.2;
+          font-weight: 850;
+          color: #ffffff;
+        }
+        .seeker-role-modal-head p {
+          margin: 0;
+          color: rgba(255,255,255,0.82);
+          font-size: 14px;
+          line-height: 1.45;
+        }
+        .seeker-modal-close {
+          width: 36px;
+          height: 36px;
+          border: 1px solid rgba(255,255,255,0.34);
+          border-radius: 12px;
+          background: rgba(255,255,255,0.14);
+          color: #ffffff;
+          font-size: 22px;
+          line-height: 1;
+          cursor: pointer;
+        }
+        .seeker-role-modal-body {
+          padding: 22px 24px 24px;
+          display: grid;
+          gap: 14px;
+        }
+        .seeker-modal-field {
+          display: grid;
+          gap: 8px;
+          color: #5f6876;
+          font-size: 14px;
+          font-weight: 650;
+        }
+        .seeker-modal-field span {
+          color: #ef4444;
+        }
+        .seeker-modal-field input,
+        .seeker-modal-field select {
+          width: 100%;
+          min-height: 48px;
+          border: 1px solid #d8deea;
+          border-radius: 14px;
+          padding: 0 14px;
+          font-size: 15px;
+          color: #111827;
+          outline: none;
+          background: #ffffff;
+          box-sizing: border-box;
+        }
+        .seeker-modal-field input:focus,
+        .seeker-modal-field select:focus {
+          border-color: #13a873;
+          box-shadow: 0 0 0 4px rgba(19,168,115,0.12);
+        }
+        .seeker-modal-error {
+          margin: 0;
+          border: 1px solid #fecaca;
+          border-radius: 14px;
+          padding: 10px 12px;
+          background: #fff1f2;
+          color: #be123c;
+          font-size: 14px;
+          font-weight: 700;
+        }
+        .seeker-modal-actions {
+          display: flex;
+          justify-content: flex-end;
+          gap: 10px;
+          margin-top: 4px;
+        }
+        .seeker-modal-cancel,
+        .seeker-modal-submit {
+          min-height: 44px;
+          border-radius: 14px;
+          padding: 0 18px;
+          font-size: 15px;
+          font-weight: 800;
+          cursor: pointer;
+        }
+        .seeker-modal-cancel {
+          border: 1px solid #d8deea;
+          background: #ffffff;
+          color: #596275;
+        }
+        .seeker-modal-submit {
+          border: 0;
+          background: #1ea476;
+          color: #ffffff;
+        }
+        @media (max-width: 720px) {
+          .seeker-dashboard-shell {
+            padding: 10px 8px 28px;
+          }
+          .seeker-hero {
+            min-height: 104px;
+            padding: 18px 20px;
+            border-radius: 14px;
+          }
+          .seeker-hero-main {
+            gap: 12px;
+          }
+          .seeker-avatar {
+            width: 88px;
+            height: 88px;
+            font-size: 35px;
+          }
+          .seeker-hero-copy h1 {
+            font-size: 28px;
+          }
+          .seeker-role-pill {
+            min-height: 30px;
+            font-size: 14px;
+          }
+          .seeker-hero-logout {
+            min-width: 78px;
+            min-height: 44px;
+            font-size: 15px;
+          }
+          .seeker-card {
+            margin-top: 16px;
+            padding: 32px 32px;
+            border-radius: 14px;
+          }
+          .seeker-section-title {
+            font-size: 13px;
+            margin-bottom: 28px;
+          }
+          .seeker-form-grid {
+            gap: 18px;
+          }
+          .seeker-field {
+            font-size: 15px;
+          }
+          .seeker-field input {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+            padding: 0 16px;
+          }
+          .seeker-save-button {
+            min-height: 50px;
+            border-radius: 14px;
+            font-size: 17px;
+          }
+          .seeker-switch-card {
+            align-items: flex-start;
+          }
+          .seeker-switch-content h3 {
+            font-size: 18px;
+          }
+          .seeker-switch-content p {
+            font-size: 15px;
+          }
+          .seeker-switch-button {
+            min-height: 42px;
+            font-size: 15px;
+          }
+          .seeker-logout-card h3 {
+            font-size: 18px;
+          }
+          .seeker-logout-card p {
+            font-size: 15px;
+          }
+          .seeker-logout-card button {
+            min-height: 44px;
+            font-size: 15px;
+          }
+        }
+        @media (max-width: 520px) {
+          .seeker-hero { padding: 20px; gap: 14px; }
+          .seeker-hero-main { gap: 14px; }
+          .seeker-avatar { width: 70px; height: 70px; font-size: 30px; }
+          .seeker-hero-copy h1 { font-size: 15px; }
+          .seeker-role-pill { font-size: 15px; min-height: 32px; }
+          .seeker-hero-logout { min-width: 76px; min-height: 48px; font-size: 16px; }
+          .seeker-card { padding: 24px 20px; }
+          .seeker-field input { min-height: 44px; font-size: 15px; }
+          .seeker-save-button { min-height: 44px; font-size: 15px; }
+          .seeker-switch-card { gap: 12px; }
+          .seeker-switch-icon { width: 56px; height: 56px; font-size: 17px; }
+          .seeker-switch-content h3 { font-size: 15px; }
+          .seeker-switch-content p { font-size: 13px; }
+          .seeker-switch-button { min-height: 52px; font-size: 14px; padding: 0 22px; }
+          .seeker-logout-card { padding: 24px 20px; }
+          .seeker-logout-card h3 { font-size: 15px; }
+          .seeker-logout-card p { font-size: 13px; }
+          .seeker-logout-card button { min-height: 52px; font-size: 14px; padding: 0 22px; }
+        }

@@ -1,29 +1,4 @@
-import SeoLandingPage from '../_seo/SeoLandingPage';
-import { getSeoPage, SITE_URL } from '../../lib/seo-pages';
+import AppRoutePage from "../_home/AppRoutePage";
 
-const page = getSeoPage('vakansiyalar');
-
-export const metadata = {
-  title: page.metaTitle,
-  description: page.description,
-  keywords: page.primaryKeywords,
-  alternates: {
-    canonical: '/vakansiyalar',
-  },
-  openGraph: {
-    title: page.metaTitle,
-    description: page.description,
-    url: `${SITE_URL}/vakansiyalar`,
-    type: 'website',
-    locale: 'az_AZ',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: page.metaTitle,
-    description: page.description,
-  },
-};
-
-export default function Page() {
-  return <SeoLandingPage page={page} />;
-}
+export const metadata = { title: "Vakansiyalar", description: "Asimos-da vakansiyaları filterləyin, siyahı və xəritədə müqayisə edin.", alternates: { canonical: "/vakansiyalar" } };
+export default function Page() { return <AppRoutePage section="jobs" />; }

@@ -2,26 +2,12 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
-import Header from "../../../components/Header";
 import JobDetail from "../../../components/JobDetail";
-import { clearAuth, loadAuth } from "../../../../lib/auth-store";
+import { AppHeader } from "../../../_home/components/redesign/HomepageRedesign";
+import { getRouteForSection } from "../../../_home/sectionRoutes";
+import { loadAuth } from "../../../../lib/auth-store";
 
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
-
-const guestNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const seekerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const employerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
 
 function normalizeRole(role) {
   const raw = String(role || "").trim().toLowerCase();
@@ -123,46 +109,14 @@ export default function JobSlugDetailPage() {
   const [error, setError] = useState("");
 
   const roleName = normalizeRole(user?.role);
-  const navItems = roleName === "employer" ? employerNav : roleName === "seeker" ? seekerNav : guestNav;
   const canCreateJob = roleName === "employer";
 
   function goToSection(section) {
-    if (section === "home") {
-      router.push("/");
-      return;
-    }
-
-    if (section === "jobs") {
-      router.push("/?section=jobs");
-      return;
-    }
-
-    if (section === "create") {
-      router.push("/?section=create");
-      return;
-    }
-
-    router.push("/");
-  }
-
-  function handleSignOut() {
-    clearAuth();
-    setUser(null);
-    router.push("/");
+    router.push(getRouteForSection(section));
   }
 
   const detailHeader = (
-    <Header
-      activeSection="jobs"
-      setActiveSection={goToSection}
-      navItems={navItems}
-      user={user}
-      handleSignOut={handleSignOut}
-      canCreateJob={canCreateJob}
-      onOpenSupport={() => router.push("/?section=profile")}
-      showSupport={roleName === "employer"}
-      unreadNotificationsCount={0}
-    />
+    <AppHeader ctx={{ activeSection: "jobs", setActiveSection: goToSection, user, canCreateJob }} />
   );
 
   useEffect(() => {

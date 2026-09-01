@@ -1,37 +1,34 @@
 "use client";
 
-import Header from "../components/Header";
-import JobCard from "../components/JobCard";
 import LocationPicker from "../components/LocationPicker";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Link from "next/link";
-import dynamic from "next/dynamic";
-import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import { io } from "socket.io-client";
 import { api, clearAuthToken, setAuthToken, setRefreshToken, setTokenUpdateHandler } from "../../lib/api";
 
 import { clearAuth, loadAuth, saveAuth } from "../../lib/auth-store";
 
 import styles from "./HomePage.module.css";
-import AuthSection from "./components/AuthSection";
 import AppLaunchPanel from "./components/AppLaunchPanel";
 import LiveStatsPanel from "./components/LiveStatsPanel";
-import LocationPermissionPrompt from "./components/LocationPermissionPrompt";
+import HomeJobsMap from "./components/HomeJobsMap";
+import HomePageLoadingScreen from "./components/HomePageLoadingScreen";
+import HomePageSections from "./components/HomePageSections";
+import { AppHeader } from "./components/redesign/HomepageRedesign";
+import { getRouteForSection, getSectionForPath } from "./sectionRoutes";
 import {
-  HomeSearchSection,
-  HomeLandingSection,
-  JobsSection,
-  CreateJobSection,
-  AlertsSection,
-  NotificationsSection,
-  ProfileSection,
-  SupportPageSection,
-  AboutSection,
-  TermsSection,
-  AuthSectionView,
-  RoleSwitchConfirmModal,
-} from "./components/home-sections";
+  SOCKET_URL,
+  cityOptions,
+  employerNav,
+  employerSupportCategories,
+  guestNav,
+  jobLevelOptions,
+  salaryRangeOptions,
+  seekerNav,
+  seekerSupportCategories,
+  vacancyTypeOptions,
+} from "./config/homePageConfig";
 import {
   fileToDataUrl,
   safeImageUrl,
@@ -60,8 +57,6 @@ import {
   getTicketMessages,
 } from "./utils/homePageHelpers";
 
-const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
-
 function toJobSlug(value, fallback = "elan") {
   const slug = String(value || "")
     .toLowerCase()
@@ -79,107 +74,14 @@ function toJobSlug(value, fallback = "elan") {
   return slug || fallback;
 }
 
-const JobsMap = dynamic(() => import("../components/JobsMap"), {
-  ssr: false,
-  loading: () => (
-    <section className="container page-section jobs-map-section">
-      <header className="section-head jobs-map-head">
-        <h2>Elanların xəritədə görünüşü</h2>
-        <p>Xəritə yüklənir...</p>
-      </header>
-      <div className="jobs-map-shell card">
-        <p className="jobs-map-empty">Xəritə modulu hazırlanır.</p>
-      </div>
-    </section>
-  ),
-});
-
-const guestNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "about", label: "Haqqımızda" },
-];
-
-const seekerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const employerNav = [
-  { key: "home", label: "Ana səhifə" },
-  { key: "jobs", label: "Elanlar" },
-];
-
-const employerSupportCategories = [
-  "Elan yükləyə bilmirəm",
-  "Namizədlərlə əlaqə problemi",
-  "Ödəniş problemi",
-  "Hesab ilə bağlı problem",
-  "Təklif və İradlar",
-  "Digər",
-];
-
-const seekerSupportCategories = [
-  "İşə müraciət edə bilmirəm",
-  "Profilimi tamamlaya bilmirəm",
-  "Hesab ilə bağlı problem",
-  "Təklif və İradlar",
-  "Digər",
-];
-
-const cityOptions = [
-  "Bakı",
-  "Sumqayıt",
-  "Gəncə",
-  "Mingəçevir",
-  "Şəki",
-  "Lənkəran",
-  "Şirvan",
-  "Naxçıvan",
-  "Quba",
-  "Xaçmaz",
-  "Masallı",
-  "Salyan",
-];
-
-const vacancyTypeOptions = [
-  { label: "Növbə əsasında", value: "shift" },
-  { label: "Tam ştat", value: "full_time" },
-  { label: "Daimi", value: "permanent" },
-  { label: "Frilans", value: "freelance" },
-  { label: "Komisyon haqqı", value: "commission" },
-  { label: "Könüllü", value: "volunteer" },
-  { label: "Mövsümi", value: "seasonal" },
-  { label: "Müvəqqəti", value: "temporary" },
-  { label: "Təcrübə", value: "internship" },
-  { label: "Təqaüd proqramı", value: "scholarship" },
-  { label: "Yarım ştat", value: "part_time" },
-];
-
-const jobLevelOptions = [
-  { label: "Təcrübəsiz", value: "entry" },
-  { label: "Junior", value: "junior" },
-  { label: "Middle", value: "middle" },
-  { label: "Senior", value: "senior" },
-  { label: "Menecer", value: "manager" },
-  { label: "Rəhbər", value: "lead" },
-];
-
-const salaryRangeOptions = [
-  { label: "0 - 500 AZN", min: "0", max: "500" },
-  { label: "500 - 1000 AZN", min: "500", max: "1000" },
-  { label: "1000 - 1500 AZN", min: "1000", max: "1500" },
-  { label: "1500 - 2500 AZN", min: "1500", max: "2500" },
-  { label: "2500+ AZN", min: "2500", max: "" },
-];
-
-
-export default function HomePageClient() {
+export default function HomePageClient({ initialSection = "home" }) {
   const router = useRouter();
+  const pathname = usePathname();
   const prefetchedJobIds = useRef(new Set());
   const latestJobsCarouselRef = useRef(null);
   const jobsLoadMoreRef = useRef(null);
   const [booting, setBooting] = useState(true);
-  const [activeSection, setActiveSection] = useState("home");
+  const [activeSection, setActiveSectionState] = useState(initialSection === "daily" ? "jobs" : initialSection);
 
   const [user, setUser] = useState(null);
   const [token, setToken] = useState(null);
@@ -251,11 +153,24 @@ export default function HomePageClient() {
     jobLevel: "",
     minWage: "",
     maxWage: "",
+    radiusM: "1000",
   });
   const [radiusM, setRadiusM] = useState("0");
+  const [homeRadiusM, setHomeRadiusM] = useState("1000");
   const [myJobsStatus, setMyJobsStatus] = useState("open");
   const [jobsVisibleCount, setJobsVisibleCount] = useState(10);
   const [editingJobId, setEditingJobId] = useState(null);
+
+  const setActiveSection = useCallback((section, navigation = "push") => {
+    const nextSection = section === "daily" ? "jobs" : section;
+    if (section === "daily") setJobsMode("daily");
+    else if (section === "jobs") setJobsMode("all");
+    setActiveSectionState(nextSection);
+    const nextRoute = getRouteForSection(section);
+    if (pathname !== nextRoute) {
+      navigation === "replace" ? router.replace(nextRoute) : router.push(nextRoute);
+    }
+  }, [pathname, router]);
 
   const [title, setTitle] = useState("");
   const [companyObject, setCompanyObject] = useState("");
@@ -398,10 +313,20 @@ export default function HomePageClient() {
   }, [activeTicketId]);
 
   useEffect(() => {
-    if (!user && activeSection !== "home" && activeSection !== "about" && activeSection !== "auth") {
-      setActiveSection("auth");
+    const routeSection = getSectionForPath(pathname, initialSection);
+    if (routeSection === "daily") {
+      setJobsMode("daily");
+      setActiveSectionState("jobs");
+      return;
     }
-  }, [user, activeSection]);
+    setActiveSectionState(routeSection);
+  }, [pathname, initialSection]);
+
+  useEffect(() => {
+    if (!booting && !user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
+      setActiveSection("auth", "replace");
+    }
+  }, [booting, user, activeSection, setActiveSection]);
 
   useEffect(() => {
     if (activeSection === "daily") {
@@ -412,10 +337,10 @@ export default function HomePageClient() {
   }, [activeSection]);
 
   useEffect(() => {
-    if (activeSection === "create" && roleName !== "employer") {
+    if (!booting && activeSection === "create" && roleName !== "employer") {
       setActiveSection(user ? "profile" : "auth");
     }
-  }, [activeSection, roleName, user]);
+  }, [booting, activeSection, roleName, user, setActiveSection]);
 
   useEffect(() => {
     if (activeSection !== "create" || editingJobId || !effectiveLocation) return;
@@ -589,6 +514,7 @@ export default function HomePageClient() {
           q: appliedFilters.search || undefined,
           lat: effectiveLocation?.lat,
           lng: effectiveLocation?.lng,
+          radius_m: effectiveLocation && Number(appliedFilters.radiusM || 0) > 0 ? Number(appliedFilters.radiusM) : undefined,
           daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: appliedFilters.jobType || undefined,
           jobLevel: appliedFilters.jobLevel || undefined,
@@ -687,12 +613,14 @@ export default function HomePageClient() {
       jobLevel: nextFilters?.jobLevel ?? appliedFilters.jobLevel,
       minWage: nextFilters?.minWage ?? appliedFilters.minWage,
       maxWage: nextFilters?.maxWage ?? appliedFilters.maxWage,
+      radiusM: nextFilters?.radiusM ?? appliedFilters.radiusM ?? homeRadiusM,
     };
 
     const res = await api.listJobsWithSearch({
       q: filters.search || undefined,
       lat: effectiveLocation?.lat,
       lng: effectiveLocation?.lng,
+      radius_m: effectiveLocation && Number(filters.radiusM || 0) > 0 ? Number(filters.radiusM) : undefined,
       daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: filters.jobType || undefined,
       jobLevel: filters.jobLevel || undefined,
@@ -707,6 +635,20 @@ export default function HomePageClient() {
     return nextJobs;
   }
 
+  async function handleHomeRadiusChange(nextRadiusM) {
+    const nextFilters = { ...appliedFilters, radiusM: nextRadiusM };
+    setHomeRadiusM(nextRadiusM);
+    setAppliedFilters(nextFilters);
+    try {
+      setLoading(true);
+      await refreshJobs(nextFilters);
+    } catch (nextError) {
+      setError(nextError.message || "Radius üzrə elanlar yenilənmədi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   useEffect(() => {
     if (booting) return;
     refreshJobs(appliedFilters).catch((err) => setError(err.message || "Elanlar yenilənmədi"));
@@ -718,7 +660,7 @@ export default function HomePageClient() {
 
     try {
       setLoading(true);
-      const heroFilters = { search, category, city, jobType, jobLevel, minWage, maxWage };
+      const heroFilters = { search, category, city, jobType, jobLevel, minWage, maxWage, radiusM: homeRadiusM };
       setAppliedFilters(heroFilters);
       const nextJobs = await refreshJobs(heroFilters);
 
@@ -1232,11 +1174,11 @@ export default function HomePageClient() {
     setOk("");
 
     try {
-      if (!title.trim()) {
+      if (!saveAsDraft && !title.trim()) {
         throw new Error("Elanın adını yazın");
       }
 
-      if (!category) {
+      if (!saveAsDraft && !category) {
         throw new Error("Kateqoriya seçin");
       }
 
@@ -1249,14 +1191,14 @@ export default function HomePageClient() {
             : durationPreset
           : "";
 
-      if (selectedJobType === "temporary" && (!resolvedDuration || Number(resolvedDuration) < 1)) {
+      if (!saveAsDraft && selectedJobType === "temporary" && (!resolvedDuration || Number(resolvedDuration) < 1)) {
         throw new Error("Günəmuzd elan üçün müddət seçin");
       }
 
       const durationLabel = selectedJobType === "temporary" ? `${resolvedDuration} gün` : "";
 
       if (
-        publishMode === "scheduled" &&
+        !saveAsDraft && publishMode === "scheduled" &&
         (!publishAt || new Date(publishAt).getTime() <= Date.now())
       ) {
         throw new Error("Planlı yayım üçün gələcək tarix və saat seçin");
@@ -1264,7 +1206,7 @@ export default function HomePageClient() {
 
       const resolvedWage = getResolvedWageValue();
 
-      if (wageMode === "range" && !resolvedWage) {
+      if (!saveAsDraft && wageMode === "range" && !resolvedWage) {
         throw new Error("Minimum və ya maksimum maaş rəqəmini yazın");
       }
 
@@ -1291,7 +1233,7 @@ export default function HomePageClient() {
       };
 
       const payload = {
-        title,
+        title: title.trim() || "Adsız qaralama",
         wage: resolvedWage,
         category,
 
@@ -1384,34 +1326,44 @@ export default function HomePageClient() {
         },
       };
 
-      let submittedPendingJob = null;
+      let submittedProfileJob = null;
 
       if (editingJobId) {
         const response = await api.updateJob(editingJobId, payload);
         if (!saveAsDraft) {
           const responseJob = response?.job || response?.item || response;
           const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
-          submittedPendingJob = pendingJob;
+          submittedProfileJob = pendingJob;
           if (pendingJob) {
             setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
           }
           setMyJobsStatus("pending");
           setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
         } else {
-          setOk("Elan yeniləndi");
+          const responseJob = response?.job || response?.item || response;
+          const draftJob = responseJob?.id ? { ...responseJob, status: "draft", jobStatus: "draft" } : null;
+          submittedProfileJob = draftJob;
+          if (draftJob) setMyJobs((items) => [draftJob, ...items.filter((item) => String(item.id) !== String(draftJob.id))]);
+          setMyJobsStatus("draft");
+          setOk("Qaralama yeniləndi");
         }
       } else {
         const response = await api.createJob(payload);
         if (!saveAsDraft) {
           const responseJob = response?.job || response?.item || response;
           const pendingJob = responseJob?.id ? { ...responseJob, status: "pending", jobStatus: "pending" } : null;
-          submittedPendingJob = pendingJob;
+          submittedProfileJob = pendingJob;
           if (pendingJob) {
             setMyJobs((items) => [pendingJob, ...items.filter((item) => String(item.id) !== String(pendingJob.id))]);
           }
           setMyJobsStatus("pending");
           setOk("Elan admin yoxlamasına göndərildi. Təsdiq edildikdən sonra paylaşılacaq.");
         } else {
+          const responseJob = response?.job || response?.item || response;
+          const draftJob = responseJob?.id ? { ...responseJob, status: "draft", jobStatus: "draft" } : null;
+          submittedProfileJob = draftJob;
+          if (draftJob) setMyJobs((items) => [draftJob, ...items.filter((item) => String(item.id) !== String(draftJob.id))]);
+          setMyJobsStatus("draft");
           setOk("Elan qaralama olaraq yadda saxlanıldı");
         }
       }
@@ -1419,9 +1371,9 @@ export default function HomePageClient() {
       resetJobForm();
 
       await loadAuthedData();
-      if (submittedPendingJob) {
-        setMyJobs((items) => [submittedPendingJob, ...items.filter((item) => String(item.id) !== String(submittedPendingJob.id))]);
-        setMyJobsStatus("pending");
+      if (submittedProfileJob) {
+        setMyJobs((items) => [submittedProfileJob, ...items.filter((item) => String(item.id) !== String(submittedProfileJob.id))]);
+        setMyJobsStatus(saveAsDraft ? "draft" : "pending");
       }
       await refreshJobs();
 
@@ -1644,7 +1596,7 @@ export default function HomePageClient() {
     }
   }
 
-  async function handleProfileSave(e) {
+  async function handleProfileSave(e, seekerProfile) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -1668,6 +1620,7 @@ export default function HomePageClient() {
         whatsapp: roleName === "employer" ? whatsapp || user?.whatsapp || "" : undefined,
         contactEmail: roleName === "employer" ? contactEmail || user?.email || "" : undefined,
         atsLink: roleName === "employer" ? link || user?.atsLink || user?.ats_link || "" : undefined,
+        seekerProfile: roleName === "seeker" ? seekerProfile : undefined,
       };
       const response = await api.updateProfile(payload);
       const nextUser = response?.user || {
@@ -1681,6 +1634,8 @@ export default function HomePageClient() {
         contactEmail: payload.contactEmail ?? user?.contactEmail,
         atsLink: payload.atsLink ?? user?.atsLink,
         ats_link: payload.atsLink ?? user?.ats_link,
+        seekerProfile: payload.seekerProfile ?? user?.seekerProfile ?? user?.seeker_profile,
+        seeker_profile: payload.seekerProfile ?? user?.seeker_profile ?? user?.seekerProfile,
       };
 
       setUser(nextUser);
@@ -1963,15 +1918,7 @@ export default function HomePageClient() {
   }, []);
 
   if (booting) {
-    return (
-      <main className={styles.loadingScreen}>
-        <div className={styles.loadingCard}>
-          <div className={styles.loadingSpinner} aria-hidden="true" />
-          <h2 className={styles.loadingTitle}>Yüklənir</h2>
-          <p className={styles.loadingText}>Platforma hazırlanır, zəhmət olmasa bir neçə saniyə gözləyin.</p>
-        </div>
-      </main>
-    );
+    return <HomePageLoadingScreen />;
   }
 
 
@@ -1980,7 +1927,7 @@ export default function HomePageClient() {
     activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
-    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, effectiveLocation, JobsMap, AppLaunchPanel, LiveStatsPanel,
+    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, setFocusedMapJobId, effectiveLocation, homeRadiusM, handleHomeRadiusChange, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,
@@ -1989,33 +1936,8 @@ export default function HomePageClient() {
 
   return (
     <main className="site-shell">
-      <Header
-        activeSection={activeSection}
-        setActiveSection={setActiveSection}
-        navItems={navItems}
-        user={user}
-        handleSignOut={handleSignOut}
-        canCreateJob={canCreateJob}
-        onOpenSupport={openSupportModal}
-        showSupport={roleName === "employer"}
-        unreadNotificationsCount={activeUnreadCount}
-        currentLocation={effectiveLocation}
-        locationLoading={locationLoading}
-        onRefreshLocation={handleLocationActivation}
-      />
-
-      <HomeSearchSection ctx={sectionCtx} />
-      <HomeLandingSection ctx={sectionCtx} />
-      <JobsSection ctx={sectionCtx} />
-      <CreateJobSection ctx={sectionCtx} />
-      <AlertsSection ctx={sectionCtx} />
-      <NotificationsSection ctx={sectionCtx} />
-      <ProfileSection ctx={sectionCtx} />
-      <SupportPageSection ctx={sectionCtx} />
-      <AboutSection ctx={sectionCtx} />
-      <TermsSection ctx={sectionCtx} />
-      <AuthSectionView ctx={sectionCtx} />
-      <RoleSwitchConfirmModal ctx={sectionCtx} />
+      <AppHeader ctx={sectionCtx} />
+      <HomePageSections ctx={sectionCtx} />
     </main>
   );
 }

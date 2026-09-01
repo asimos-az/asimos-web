@@ -1,29 +1,4 @@
-import SeoLandingPage from '../_seo/SeoLandingPage';
-import { getSeoPage, SITE_URL } from '../../lib/seo-pages';
+import AppRoutePage from "../_home/AppRoutePage";
 
-const page = getSeoPage('gundelik-isler');
-
-export const metadata = {
-  title: page.metaTitle,
-  description: page.description,
-  keywords: page.primaryKeywords,
-  alternates: {
-    canonical: '/gundelik-isler',
-  },
-  openGraph: {
-    title: page.metaTitle,
-    description: page.description,
-    url: `${SITE_URL}/gundelik-isler`,
-    type: 'website',
-    locale: 'az_AZ',
-  },
-  twitter: {
-    card: 'summary_large_image',
-    title: page.metaTitle,
-    description: page.description,
-  },
-};
-
-export default function Page() {
-  return <SeoLandingPage page={page} />;
-}
+export const metadata = { title: "Gündəlik işlər", description: "Gündəlik və müvəqqəti iş elanlarını kəşf edin.", alternates: { canonical: "/gundelik-isler" } };
+export default function Page() { return <AppRoutePage section="daily" />; }

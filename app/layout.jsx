@@ -3,6 +3,7 @@ import './_home/components/AuthSection.css';
 import './_home/components/LocationPermissionPrompt.css';
 import './_home/components/AppLaunchPanel.css';
 import './_home/components/NotificationsSection.css';
+import './_home/components/home-sections/profile/ProfilePanels.css';
 import './components/Header.css';
 import './components/JobCard.css';
 import './components/JobDetail.css';
@@ -14,6 +15,7 @@ import './mobile-app-responsive.css';
 import './professional-refresh.css';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
+import ThemeRegistry from './ThemeRegistry';
 
 const siteUrl = 'https://asimos.az';
 const siteName = 'Asimos';
@@ -129,6 +131,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="az">
       <body>
+        <ThemeRegistry>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
@@ -140,6 +143,7 @@ export default function RootLayout({ children }) {
         <SplashScreen />
         {children}
         <Footer />
+        </ThemeRegistry>
       </body>
     </html>
   );

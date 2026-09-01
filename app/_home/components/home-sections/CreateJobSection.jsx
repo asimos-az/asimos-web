@@ -1,401 +1,102 @@
 "use client";
 
-import Link from "next/link";
-import JobCard from "../../../components/JobCard";
-import LocationPermissionPrompt from "../LocationPermissionPrompt";
-import AuthSection from "../AuthSection";
-import AppLaunchPanel from "../AppLaunchPanel";
-import LiveStatsPanel from "../LiveStatsPanel";
-import SponsoredJobCard from "../SponsoredJobCard";
-import FloatingHomeWidgets from "../FloatingHomeWidgets";
+import { useMemo, useState } from "react";
+import { ArrowBackRounded, ArrowForwardRounded, BusinessCenterRounded, CheckCircleOutlineRounded, EmailOutlined, LocationOnOutlined, PaymentsOutlined, PhoneOutlined, SaveOutlined, ScheduleRounded, VerifiedRounded, VisibilityOutlined, WorkOutlineRounded } from "@mui/icons-material";
+import pageStyles from "./CreateJobSection.module.css";
+
+const steps = ["Əsas məlumatlar", "İş şərtləri", "Ünvan", "Əlaqə", "Önizləmə"];
 
 export default function CreateJobSection({ ctx }) {
-  const {
-    styles,
-    activeSection,
-    search,
-    setSearch,
-    city,
-    setCity,
-    cityOptions,
-    loading,
-    handleHeroSearchSubmit,
-    homeFilterTabs,
-    activeHomeFilterTab,
-    setActiveHomeFilterTab,
-    activeVacancyTypeOptions,
-    jobType,
-    setJobType,
-    homeCategoryOptions,
-    category,
-    setCategory,
-    activeJobLevelOptions,
-    jobLevel,
-    setJobLevel,
-    activeSalaryRangeOptions,
-    activeSalaryLabel,
-    minWage,
-    maxWage,
-    setMinWage,
-    setMaxWage,
-    setAppliedFilters,
-    refreshJobs,
-    homeWidgets,
-    locationPromptOpen,
-    user,
-    locationLoading,
-    handleLocationActivation,
-    setLocationPromptOpen,
-    error,
-    ok,
-    supportModalOpen,
-    closeSupportModal,
-    supportMode,
-    setSupportMode,
-    setActiveTicketId,
-    getTicketSubject,
-    activeTicket,
-    setTicketCategory,
-    supportCategories,
-    setTicketMessage,
-    tickets,
-    openTicketDetail,
-    handleCreateTicket,
-    ticketCategory,
-    ticketMessage,
-    getTicketMessages,
-    ticketReply,
-    setTicketReply,
-    handleReply,
-    handleDeleteTicket,
-    siteStats,
-    homeJobs,
-    hasHomeJobs,
-    latestJobsCarouselRef,
-    scrollLatestJobs,
-    sponsoredCard,
-    recommendedCard,
-    favoriteJobIds,
-    handleToggleFavorite,
-    openJobDetail,
-    prefetchJobDetail,
-    hasHomeMapJobs,
-    homeMapJobs,
-    focusedMapJobId,
-    JobsMap,
-    AppLaunchPanel,
-    LiveStatsPanel,
-    shownJobs,
-    visibleShownJobs,
-    hasMoreShownJobs,
-    jobsLoadMoreRef,
-    canCreateJob,
-    editingJobId,
-    title,
-    setTitle,
-    companyObject,
-    setCompanyObject,
-    vacancyStartDate,
-    setVacancyStartDate,
-    vacancyEndDate,
-    setVacancyEndDate,
-    contactVisibility,
-    setContactVisibility,
-    primaryContact,
-    setPrimaryContact,
-    wage,
-    setWage,
-    wageMode,
-    setWageMode,
-    wageMin,
-    setWageMin,
-    wageMax,
-    setWageMax,
-    activeCreateSalaryLabel,
-    description,
-    setDescription,
-    contactPhone,
-    setContactPhone,
-    whatsapp,
-    setWhatsapp,
-    contactEmail,
-    setContactEmail,
-    link,
-    setLink,
-    voen,
-    setVoen,
-    durationPreset,
-    setDurationPreset,
-    customDurationDays,
-    setCustomDurationDays,
-    durationDays,
-    setDurationDays,
-    workType,
-    setWorkType,
-    scheduleStart,
-    setScheduleStart,
-    scheduleEnd,
-    setScheduleEnd,
-    publishMode,
-    setPublishMode,
-    publishAt,
-    setPublishAt,
-    locationText,
-    setLocationText,
-    lat,
-    setLat,
-    lng,
-    setLng,
-    radiusM,
-    setRadiusM,
-    activeCreateFilterTab,
-    setActiveCreateFilterTab,
-    handleCreateJob,
-    resetJobForm,
-    LocationPicker,
-    alerts,
-    alertCategory,
-    setAlertCategory,
-    alertRadius,
-    setAlertRadius,
-    alertKeywords,
-    setAlertKeywords,
-    handleCreateAlert,
-    handleDeleteAlert,
-    notifications,
-    unread,
-    handleMarkAllRead,
-    handleOpenNotification,
-    formatNotificationTime,
-    getNotificationTone,
-    getNotificationJobId,
-    getNotificationCreatedAt,
-    roleName,
-    navTitle,
-    editingName,
-    setEditingName,
-    editingPhone,
-    setEditingPhone,
-    profileLogoPreview,
-    setProfileLogoPreview,
-    handleProfileLogoFileChange,
-    handleProfileSave,
-    handleDeleteAccount,
-    myJobsStatus,
-    setMyJobsStatus,
-    profileJobs,
-    formatProfileJobDate,
-    getProfileJobLogo,
-    getProfileJobCompany,
-    startEditJob,
-    handlePublishJob,
-    handleCloseJob,
-    handleReopenJob,
-    handleDeleteJob,
-    favoriteJobs,
-    roleSwitchStatus,
-    handleRoleSwitch,
-    nextRoleLabel,
-    switchCompany,
-    setSwitchCompany,
-    switchVoen,
-    setSwitchVoen,
-    setRoleSwitchConfirmOpen,
-    terms,
-    mode,
-    setMode,
-    email,
-    setEmail,
-    password,
-    setPassword,
-    showPassword,
-    setShowPassword,
-    confirmPassword,
-    setConfirmPassword,
-    showConfirmPassword,
-    setShowConfirmPassword,
-    fullName,
-    setFullName,
-    companyName,
-    setCompanyName,
-    registerLogoPreview,
-    setRegisterLogoPreview,
-    handleRegisterLogoFileChange,
-    phone,
-    setPhone,
-    role,
-    setRole,
-    registerCategory,
-    setRegisterCategory,
-    categories,
-    otp,
-    setOtp,
-    forgotEmail,
-    setForgotEmail,
-    resetCode,
-    setResetCode,
-    resetPassword,
-    setResetPassword,
-    showResetPassword,
-    setShowResetPassword,
-    handleLogin,
-    handleRegister,
-    handleVerifyOtp,
-    handleForgotPassword,
-    handleResetPassword,
-    setActiveSection,
-    roleSwitchConfirmOpen,
-    confirmRoleSwitchRequest
-  } = ctx;
+  const [step, setStep] = useState(0);
+  const [furthestStep, setFurthestStep] = useState(0);
+  const [confirmed, setConfirmed] = useState(false);
+  const { activeSection, canCreateJob, user, loading, editingJobId, title, setTitle, companyObject, setCompanyObject, category, setCategory, homeCategoryOptions, jobLevel, setJobLevel, activeJobLevelOptions, description, setDescription, wageMode, setWageMode, setWage, wageMin, setWageMin, wageMax, setWageMax, jobType, setJobType, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, contactPhone, whatsapp, contactEmail, link, setLink, locationText, lat, lng, LocationPicker, handleLocationActivation, locationLoading, publishMode, setPublishMode, publishAt, setPublishAt, handleCreateJob, resetJobForm, setActiveSection } = ctx;
 
-  return (
-    <>
-      {activeSection === "create" && canCreateJob ? (
-        <section className="container page-section" style={{ maxWidth: 760 }}>
-          <header className="section-head" style={{ marginBottom: 10, padding: "0 4px" }}>
-            <h2>{editingJobId ? "Elanı redaktə et" : "Yeni vakansiya yerləşdir"}</h2>
-            <p>{editingJobId ? "Vakansiya məlumatlarını yeniləyin və yenidən təsdiqə göndərin." : "Məlumatları tam doldurun. Elan admin təsdiqindən sonra yayımlanacaq."}</p>
-          </header>
+  const qualityChecks = useMemo(() => [
+    [Boolean(title.trim()), "Vəzifənin adı aydındır"],
+    [Boolean(category), "Kateqoriya seçilib"],
+    [description.trim().length >= 80, "Təsvir kifayət qədər ətraflıdır"],
+    [furthestStep >= 1 && (wageMode !== "range" || Boolean(wageMin && wageMax)), "Maaş məlumatı tamamlanıb"],
+    [furthestStep >= 1 && Boolean(jobType && workType), "İş şərtləri seçilib"],
+    [furthestStep >= 2 && Boolean(locationText && lat && lng), "İş ünvanı müəyyən edilib"],
+    [furthestStep >= 3 && Boolean((contactVisibility.phone && (contactPhone || user?.phone)) || (contactVisibility.whatsapp && (whatsapp || user?.phone)) || (contactVisibility.email && (contactEmail || user?.email)) || link), "Əlaqə üsulu hazırdır"],
+  ], [title, category, description, furthestStep, wageMode, wageMin, wageMax, jobType, workType, locationText, lat, lng, contactVisibility, contactPhone, whatsapp, contactEmail, link, user]);
+  const quality = Math.round((qualityChecks.filter(([done]) => done).length / qualityChecks.length) * 100);
 
-          {!user ? <p className="muted">Bu bölmə üçün daxil olun.</p> : null}
+  if (activeSection !== "create" || !canCreateJob) return null;
 
-          {user ? (
-            <form onSubmit={handleCreateJob} style={{ display: "grid", gap: 10 }} className="asimos-compact-job-form">
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Vakansiya məlumatları</div>
-                <div style={{ display: "grid", gap: 12 }}>
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>
-                    Vakansiya adı <span style={{ color: "#ef4444" }}>*</span>
-                    <input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Məs: Mühasib, React proqramçısı..." required style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 46, padding: "0 14px", fontSize: 15, outline: "none" }} />
-                  </label>
+  const changeWageMode = (mode) => {
+    setWageMode(mode);
+    if (mode === "agreement") setWage("Razılaşma əsasında");
+    if (mode === "skill") setWage("Bacarığa uyğun");
+  };
+  const updateWage = (kind, rawValue) => {
+    const value = rawValue.replace(/[^0-9]/g, "");
+    const min = kind === "min" ? value : wageMin;
+    const max = kind === "max" ? value : wageMax;
+    kind === "min" ? setWageMin(value) : setWageMax(value);
+    setWage(min && max ? `${min} - ${max} AZN` : min ? `${min} AZN` : max ? `${max} AZN` : "");
+  };
+  const goToStep = (nextStep) => {
+    setStep(nextStep);
+    setFurthestStep((current) => Math.max(current, nextStep));
+  };
+  const next = () => goToStep(Math.min(steps.length - 1, step + 1));
+  const previous = () => setStep((current) => Math.max(0, current - 1));
+  const wageLabel = wageMode === "range" ? (wageMin || wageMax ? `${wageMin || "0"}–${wageMax || wageMin} AZN` : "Maaş qeyd edilməyib") : wageMode === "skill" ? "Bacarığa uyğun" : "Razılaşma əsasında";
+  const workTypeLabel = { full_time: "Tam ştat", part_time: "Yarım ştat", remote: "Uzaqdan", hybrid: "Hibrid" }[workType] || "İş rejimi";
+  const handleWizardSubmit = (event) => {
+    if (step < steps.length - 1) {
+      event.preventDefault();
+      next();
+      return;
+    }
+    if (!confirmed) {
+      event.preventDefault();
+      return;
+    }
+    handleCreateJob(event);
+  };
 
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>
-                    Filial / iş yeri
-                    <input value={companyObject} onChange={(e) => setCompanyObject(e.target.value)} placeholder="Məs: Nərimanov filialı, Mərkəzi ofis..." style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 46, padding: "0 14px", fontSize: 15, outline: "none" }} />
-                  </label>
+  return <main className={pageStyles.page}>
+    <header className={pageStyles.workspaceHeader}><div className={pageStyles.brand}><BusinessCenterRounded /><strong>{editingJobId ? "Vakansiyanı redaktə et" : "Yeni vakansiya yarat"}</strong></div><div className={pageStyles.topActions}><button type="button" onClick={(event) => handleCreateJob(event, true)} disabled={loading}><SaveOutlined /> Qaralama saxla</button><button type="button" onClick={() => goToStep(4)}><VisibilityOutlined /> Önizlə</button></div></header>
 
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>
-                    Kateqoriya <span style={{ color: "#ef4444" }}>*</span>
-                    <select value={category} onChange={(e) => setCategory(e.target.value)} required style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 46, padding: "0 14px", fontSize: 15, background: "#fff", outline: "none" }}>
-                      <option value="">Kateqoriya seçin</option>
-                      {homeCategoryOptions.map((item) => <option key={item} value={item}>{item}</option>)}
-                    </select>
-                  </label>
+    <nav className={pageStyles.stepper} aria-label="Vakansiya yaratma addımları">{steps.map((label, index) => <button type="button" key={label} className={index === step ? pageStyles.currentStep : index < furthestStep ? pageStyles.doneStep : ""} onClick={() => goToStep(index)}><span>{index < furthestStep ? "✓" : index + 1}</span><small>{label}</small></button>)}</nav>
 
-                  <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>
-                    Dərəcə
-                    <select value={jobLevel} onChange={(e) => setJobLevel(e.target.value)} style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 46, padding: "0 14px", fontSize: 15, background: "#fff", outline: "none" }}>
-                      <option value="">Seçin (məcburi deyil)</option>
-                      {activeJobLevelOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}
-                    </select>
-                  </label>
-                </div>
-              </div>
+    <div className={pageStyles.layout}><form className={pageStyles.formCard} onSubmit={handleWizardSubmit}>
+      <h1>{editingJobId ? "Vakansiya məlumatlarını yenilə" : "Yeni vakansiya yarat"}</h1>
 
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Maaş <span style={{ color: "#ef4444" }}>*</span></div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: wageMode === "range" ? 12 : 4 }}>
-                  {[
-                    ["agreement", "Razılaşma"],
-                    ["skill", "Bacarığa əsasən"],
-                    ["range", "Rəqəm göstər"],
-                  ].map(([value, label]) => (
-                    <button key={value} type="button" onClick={() => { setWageMode(value); if (value === "agreement") setWage("Razılaşma əsasında"); if (value === "skill") setWage("Bacarığa uyğun"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: wageMode === value ? "#1fa276" : "#fff", color: wageMode === value ? "#fff" : "#666", cursor: "pointer" }}>
-                      {label}
-                    </button>
-                  ))}
-                </div>
-                {wageMode === "range" ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 12 }}>
-                    <input value={wageMin} onChange={(event) => { const value = event.target.value.replace(/[^0-9]/g, ""); setWageMin(value); const max = String(wageMax || "").replace(/[^0-9]/g, ""); setWage(value && max ? `${value} - ${max} AZN` : value ? `${value} AZN` : ""); }} inputMode="numeric" placeholder="Minimum maaş" style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                    <input value={wageMax} onChange={(event) => { const value = event.target.value.replace(/[^0-9]/g, ""); setWageMax(value); const min = String(wageMin || "").replace(/[^0-9]/g, ""); setWage(min && value ? `${min} - ${value} AZN` : min ? `${min} AZN` : value ? `${value} AZN` : ""); }} inputMode="numeric" placeholder="Maksimum maaş" style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                  </div>
-                ) : <p style={{ margin: "10px 0 0", color: "#9a9a9a", fontSize: 13 }}>Elanda "{wageMode === "skill" ? "Bacarığa uyğun" : "Razılaşma əsasında"}" görünəcək</p>}
-              </div>
+      {step === 0 ? <div className={pageStyles.formGrid}>
+        <Field label="Şirkət"><div className={pageStyles.companyField}><BusinessCenterRounded /><span>{user?.companyName || user?.company_name || companyObject || "Şirkət profili"}</span><small>Təsdiqlənmiş şirkət</small></div></Field>
+        <Field label="Vəzifənin adı" required><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Məs: Müştəri xidməti üzrə mütəxəssis" required /></Field>
+        <Field label="Filial / iş yeri"><input value={companyObject} onChange={(event) => setCompanyObject(event.target.value)} placeholder="Məs: Mərkəzi ofis" /></Field>
+        <Field label="Kateqoriya" required><select value={category} onChange={(event) => setCategory(event.target.value)} required><option value="">Kateqoriya seçin</option>{homeCategoryOptions.map((item) => <option key={item}>{item}</option>)}</select></Field>
+        <Field label="Vəzifə dərəcəsi"><select value={jobLevel} onChange={(event) => setJobLevel(event.target.value)}><option value="">Dərəcə seçin</option>{activeJobLevelOptions.map((item) => <option key={item.value} value={item.value}>{item.label}</option>)}</select></Field>
+        <Field label="Vəzifə haqqında qısa məlumat" required wide><div className={pageStyles.editor}><div className={pageStyles.toolbar}><b>B</b><i>I</i><u>U</u><span>☷</span><span>↗</span></div><textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={3000} rows={8} placeholder="Əsas məsuliyyətlər, tələblər və iş mühiti haqqında aydın məlumat yazın." required /><small>{description.length}/3000</small></div></Field>
+      </div> : null}
 
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>İş növü <span style={{ color: "#ef4444" }}>*</span></div>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 8, marginBottom: 14 }}>
-                  <button type="button" onClick={() => { setJobType("permanent"); setDurationPreset("1"); setDurationDays("1"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: jobType !== "temporary" ? "#1fa276" : "#fff", color: jobType !== "temporary" ? "#fff" : "#666", cursor: "pointer" }}>Daimi iş</button>
-                  <button type="button" onClick={() => { setJobType("temporary"); setDurationPreset("1"); setDurationDays("1"); }} style={{ border: "1px solid #dbe3ee", borderRadius: 999, minHeight: 42, padding: "0 18px", fontSize: 15, fontWeight: 700, background: jobType === "temporary" ? "#1fa276" : "#fff", color: jobType === "temporary" ? "#fff" : "#666", cursor: "pointer" }}>Günəmuzd</button>
-                </div>
-                {jobType === "temporary" ? (
-                  <div style={{ display: "grid", gridTemplateColumns: "repeat(2, minmax(0, 1fr))", gap: 10 }}>
-                    <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Başlama tarixi
-                      <input type="date" value={vacancyStartDate} onChange={(e) => setVacancyStartDate(e.target.value)} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                    </label>
-                    <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Bitmə tarixi <span style={{ color: "#ef4444" }}>*</span>
-                      <input type="date" value={vacancyEndDate} onChange={(e) => setVacancyEndDate(e.target.value)} required={jobType === "temporary"} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                    </label>
-                  </div>
-                ) : (
-                  <p style={{ margin: "0", color: "#8b949e", fontSize: 13, lineHeight: 1.45 }}>Daimi iş üçün başlama və bitmə tarixi tələb olunmur. Elan təsdiqdən sonra standart müddət ərzində aktiv qalacaq.</p>
-                )}
-              </div>
+      {step === 1 ? <div className={pageStyles.formGrid}>
+        <Field label="Maaş forması" required wide><div className={pageStyles.choiceRow}>{[["agreement","Razılaşma"],["skill","Bacarığa əsasən"],["range","Maaş aralığı"]].map(([value,label]) => <button type="button" key={value} className={wageMode === value ? pageStyles.selectedChoice : ""} onClick={() => changeWageMode(value)}>{label}</button>)}</div></Field>
+        {wageMode === "range" ? <><Field label="Minimum maaş"><input value={wageMin} inputMode="numeric" onChange={(event) => updateWage("min", event.target.value)} placeholder="800 AZN" /></Field><Field label="Maksimum maaş"><input value={wageMax} inputMode="numeric" onChange={(event) => updateWage("max", event.target.value)} placeholder="1200 AZN" /></Field></> : null}
+        <Field label="Vakansiyanın növü" required><select value={jobType} onChange={(event) => setJobType(event.target.value)}><option value="permanent">Daimi iş</option><option value="temporary">Günəmuzd / müvəqqəti</option></select></Field>
+        <Field label="İş rejimi"><select value={workType} onChange={(event) => setWorkType(event.target.value)}><option value="full_time">Tam ştat</option><option value="part_time">Yarım ştat</option><option value="remote">Uzaqdan</option><option value="hybrid">Hibrid</option></select></Field>
+        <Field label="İşin başlama saatı"><input type="time" value={scheduleStart} onChange={(event) => setScheduleStart(event.target.value)} /></Field><Field label="İşin bitmə saatı"><input type="time" value={scheduleEnd} onChange={(event) => setScheduleEnd(event.target.value)} /></Field>
+        {jobType === "temporary" ? <><Field label="Başlama tarixi"><input type="date" value={vacancyStartDate} onChange={(event) => setVacancyStartDate(event.target.value)} /></Field><Field label="Son tarix" required><input type="date" value={vacancyEndDate} onChange={(event) => setVacancyEndDate(event.target.value)} required /></Field></> : null}
+      </div> : null}
 
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase", marginBottom: 14 }}>Əlaqə məlumatları</div>
-                <div style={{ background: "#eef4ff", borderRadius: 14, padding: 12, display: "grid", gap: 14 }}>
-                  <div style={{ color: "#9a9a9a", fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase" }}>🔄 Profildən avtomatik — elanda görünməsini seçin</div>
-                  {[
-                    ["phone", "📞", contactPhone || user?.phone || "+994"],
-                    ["whatsapp", "💬", whatsapp || user?.phone || "+994"],
-                    ["email", "✉️", contactEmail || user?.email || "email@example.com"],
-                  ].map(([key, icon, value]) => (
-                    <div key={key} style={{ display: "grid", gridTemplateColumns: "54px 24px minmax(0, 1fr) auto", gap: 8, alignItems: "center" }}>
-                      <button type="button" onClick={() => setContactVisibility((prev) => ({ ...prev, [key]: !prev[key] }))} aria-pressed={Boolean(contactVisibility[key])} style={{ width: 46, height: 26, borderRadius: 999, border: 0, padding: 4, background: contactVisibility[key] ? "#1fa276" : "#cfd3d8", cursor: "pointer", display: "flex", justifyContent: contactVisibility[key] ? "flex-end" : "flex-start" }}><span style={{ width: 20, height: 20, borderRadius: "50%", background: "#fff", display: "block" }} /></button>
-                      <span style={{ fontSize: 17 }}>{icon}</span>
-                      <span style={{ fontSize: 15, color: "#111827", overflow: "hidden", textOverflow: "ellipsis" }}>{value}</span>
-                      {primaryContact === key ? <span style={{ background: "#dcfce7", color: "#147555", borderRadius: 999, padding: "6px 10px", fontWeight: 800 }}>İlk göstərilməlidir</span> : <button type="button" onClick={() => setPrimaryContact(key)} style={{ border: "1px solid #6ee7b7", color: "#15956d", background: "#fff", borderRadius: 14, padding: "6px 10px", fontWeight: 800, cursor: "pointer" }}>İlk et</button>}
-                    </div>
-                  ))}
-                  <p style={{ margin: 0, color: "#9a9a9a", fontSize: 13 }}>Aktiv etdiyiniz əlaqə yolları elanda göstərilir. “İlk göstərilməlidir” seçimi həmin əlaqə vasitəsini siyahının başına çıxarır.</p>
-                </div>
-                <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700, marginTop: 18 }}>Daxili CV bazası
-                  <input value={link} onChange={(e) => setLink(e.target.value)} placeholder="https://ats.sirketiniz.az/apply" style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                </label>
-              </div>
+      {step === 2 ? <div className={pageStyles.locationStep}><div><h2>İş ünvanını seçin</h2><p>Marker-i iş yerinin dəqiq mövqeyinə yerləşdirin.</p></div><button type="button" onClick={handleLocationActivation} disabled={locationLoading}><LocationOnOutlined />{locationLoading ? "Lokasiya müəyyən edilir..." : "Mövcud lokasiyamı seç"}</button><div className={pageStyles.locationSummary}><LocationOnOutlined /><span>{locationText || "Ünvan hələ seçilməyib"}</span></div><div className={pageStyles.map}><LocationPicker lat={lat} lng={lng} address={locationText} onChange={({ lat: nextLat, lng: nextLng, address }) => { ctx.setLat(nextLat); ctx.setLng(nextLng); ctx.setLocationText(address); }} /></div></div> : null}
 
-              <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                Təsvir
-                <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={4} required placeholder="Vakansiyanın tələbləri, vəzifələr və əlavə qeydlər..." style={{ width: "100%", border: "1px solid #dbe3ee", borderRadius: 14, padding: 12, fontSize: 14, resize: "vertical" }} />
-              </label>
+      {step === 3 ? <div className={pageStyles.contactStep}><h2>Namizədlər necə müraciət etsin?</h2>{[["phone",PhoneOutlined,"Telefon",contactPhone || user?.phone],["whatsapp",PhoneOutlined,"WhatsApp",whatsapp || user?.phone],["email",EmailOutlined,"E-poçt",contactEmail || user?.email]].map(([key,Icon,label,value]) => <div className={pageStyles.contactRow} key={key}><button type="button" className={contactVisibility[key] ? pageStyles.toggleOn : pageStyles.toggle} onClick={() => setContactVisibility((current) => ({ ...current, [key]: !current[key] }))}><span /></button><Icon /><div><strong>{label}</strong><small>{value || "Qeyd edilməyib"}</small></div><button type="button" className={primaryContact === key ? pageStyles.primaryContact : ""} onClick={() => setPrimaryContact(key)}>{primaryContact === key ? "Əsas əlaqə" : "Əsas et"}</button></div>)}<Field label="Xarici ATS / müraciət linki"><input value={link} onChange={(event) => setLink(event.target.value)} placeholder="https://sirket.az/apply" /></Field></div> : null}
 
-              <div style={{ background: "#fff", border: "1px solid #e5e7eb", borderRadius: 18, padding: "16px 18px", boxShadow: "0 10px 26px rgba(15,23,42,.045)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12, marginBottom: 14 }}>
-                  <div style={{ color: "#9a9a9a", fontSize: 12, fontWeight: 800, letterSpacing: 1.2, textTransform: "uppercase" }}>Lokasiya <span style={{ color: "#ef4444" }}>*</span></div>
-                  <button type="button" onClick={handleLocationActivation} disabled={locationLoading} style={{ border: "1px solid #a7f3d0", borderRadius: 12, background: "#ecfdf5", color: "#08775b", padding: "8px 12px", fontWeight: 800, cursor: locationLoading ? "wait" : "pointer" }}>
-                    {locationLoading ? "Yenilənir..." : "📍 Mövcud lokasiyamı seç"}
-                  </button>
-                </div>
-                <div style={{ border: "1px solid #a7f3d0", borderRadius: 14, overflow: "hidden", minHeight: 150 }}>
-                  <LocationPicker lat={lat} lng={lng} address={locationText} onChange={({ lat: nextLat, lng: nextLng, address: nextAddress }) => { setLat(nextLat); setLng(nextLng); setLocationText(nextAddress); }} />
-                </div>
-              </div>
+      {step === 4 ? <div className={pageStyles.previewStep}><div className={pageStyles.previewJob}><div className={pageStyles.previewCompany}><BusinessCenterRounded /><span>{user?.companyName || user?.company_name || companyObject || "Şirkət"}</span><VerifiedRounded /></div><span className={pageStyles.previewSalary}>{wageLabel}</span><h2>{title || "Vakansiyanın adı"}</h2><div className={pageStyles.previewTags}><span>{category || "Kateqoriya"}</span><span>{jobLevel || "Dərəcə"}</span><span>{jobType === "temporary" ? "Müvəqqəti" : "Daimi"}</span></div><p>{description || "Vakansiya təsviri burada görünəcək."}</p><div className={pageStyles.previewMeta}><span><LocationOnOutlined />{locationText || "Ünvan seçilməyib"}</span><span><WorkOutlineRounded />{workTypeLabel}</span><span><ScheduleRounded />{scheduleStart && scheduleEnd ? `${scheduleStart}–${scheduleEnd}` : "Qrafik qeyd edilməyib"}</span></div></div><div className={pageStyles.publishBox}><h2>Yayım seçimi</h2><label className={pageStyles.publishOption}><span>Elanı indi göndər<small>Təsdiqdən sonra dərhal yayımlansın</small></span><input type="radio" name="publish-mode" checked={publishMode === "instant"} onChange={() => setPublishMode("instant")} /></label><label className={pageStyles.publishOption}><span>Yayımı planlaşdır<small>Tarix və saatı əvvəlcədən seçin</small></span><input type="radio" name="publish-mode" checked={publishMode === "scheduled"} onChange={() => setPublishMode("scheduled")} /></label>{publishMode === "scheduled" ? <input type="datetime-local" value={publishAt} onChange={(event) => setPublishAt(event.target.value)} /> : null}<p>Bu mərhələyə keçmək elan yaratmır. Yalnız aşağıdakı təsdiqdən sonra göndəriləcək.</p><label className={pageStyles.confirmation}><input type="checkbox" checked={confirmed} onChange={(event) => setConfirmed(event.target.checked)} /><span>Məlumatları yoxladım və elanı göndərməyi təsdiq edirəm.</span></label></div></div> : null}
 
-              <div style={{ background: "#f8fbff", border: "1px solid #bfdbfe", borderRadius: 18, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 18 }}>
-                <strong style={{ color: "#1d5fae", fontSize: 17 }}>📅 Yayımlanma planlaması</strong>
-                <button type="button" onClick={() => setPublishMode((value) => value === "scheduled" ? "instant" : "scheduled")} aria-pressed={publishMode === "scheduled"} style={{ width: 56, height: 32, borderRadius: 999, border: 0, padding: 4, background: publishMode === "scheduled" ? "#1fa276" : "#cfd3d8", cursor: "pointer", display: "flex", justifyContent: publishMode === "scheduled" ? "flex-end" : "flex-start" }}><span style={{ width: 24, height: 24, borderRadius: "50%", background: "#fff", display: "block" }} /></button>
-              </div>
+      <footer className={pageStyles.formFooter}><button type="button" className={pageStyles.cancel} onClick={step ? previous : () => setActiveSection("profile")}><ArrowBackRounded />{step ? "Geri" : "Ləğv et"}</button><div>{!editingJobId ? <button type="button" className={pageStyles.draft} onClick={(event) => handleCreateJob(event, true)} disabled={loading}><SaveOutlined /> Qaralama saxla</button> : <button type="button" className={pageStyles.draft} onClick={resetJobForm}>Redaktəni ləğv et</button>}{step < 4 ? <button type="button" className={pageStyles.next} onClick={next}>Növbəti: {steps[step + 1]} <ArrowForwardRounded /></button> : <button type="submit" className={pageStyles.next} disabled={loading || !confirmed}>{loading ? "Göndərilir..." : editingJobId ? "Dəyişiklikləri saxla" : "Elanı adminə göndər"}<ArrowForwardRounded /></button>}</div></footer>
+    </form>
 
-              {publishMode === "scheduled" ? (
-                <label style={{ display: "grid", gap: 6, fontSize: 14, color: "#5f5f64", fontWeight: 700 }}>Yayım tarixi və saatı
-                  <input type="datetime-local" value={publishAt} onChange={(e) => setPublishAt(e.target.value)} style={{ border: "1px solid #dbe3ee", borderRadius: 14, minHeight: 44, padding: "0 12px", fontSize: 15 }} />
-                </label>
-              ) : null}
+    <aside className={pageStyles.sidebar}><section><h2>Elan keyfiyyəti</h2><div className={pageStyles.quality}><div style={{ "--progress": `${quality * 3.6}deg` }}><span>{quality}%</span></div><p><strong>{quality >= 80 ? "Əla görünür!" : quality >= 40 ? "Yaxşı başlanğıcdır!" : "Məlumatları tamamlayın"}</strong><span>Faiz yalnız daxil etdiyiniz və yoxladığınız məlumatlara əsaslanır.</span></p></div><ul>{qualityChecks.map(([done,label]) => <li className={done ? pageStyles.checked : ""} key={label}><CheckCircleOutlineRounded />{label}</li>)}</ul></section><section><h2>Canlı önizləmə</h2><div className={pageStyles.miniPreview}><div className={pageStyles.miniCompany}><BusinessCenterRounded /><div><strong>{user?.companyName || user?.company_name || companyObject || "Şirkət"}</strong><small><VerifiedRounded /> Təsdiqlənmiş şirkət</small></div></div><h3>{title || "Vakansiyanın adı"}</h3><strong className={pageStyles.miniSalary}>{wageLabel}</strong><div className={pageStyles.miniTags}><span>{category || "Kateqoriya"}</span><span>{workTypeLabel}</span></div><p>{description.slice(0, 150) || "Qısa vakansiya məlumatı burada görünəcək."}</p><div className={pageStyles.miniMeta}><span><LocationOnOutlined />{locationText || "Ünvan seçilməyib"}</span><span><PaymentsOutlined />{wageLabel}</span></div></div></section></aside></div>
+  </main>;
+}
 
-              <p style={{ color: "#747b87", fontSize: 14, lineHeight: 1.4, margin: "4px 0" }}>🛡️ Elan adminə göndəriləcək. Təsdiqləndikdən sonra yayımlanacaq. Daha sürətli təsdiq almaq üçün elanı qaydalara uyğun və ətraflı formada doldurun.</p>
-
-              <div style={{ display: "grid", gap: 12 }}>
-                {!editingJobId ? <button type="button" disabled={loading} onClick={(e) => handleCreateJob(e, true)} style={{ minHeight: 46, border: "1px solid #dbe3ee", borderRadius: 16, background: "#fff", color: "#555", fontSize: 17, fontWeight: 800, cursor: "pointer" }}>✏️ Qaralama olaraq saxla</button> : null}
-                <button type="submit" disabled={loading} style={{ minHeight: 48, border: 0, borderRadius: 16, background: "#1fa276", color: "#fff", fontSize: 17, fontWeight: 800, cursor: loading ? "not-allowed" : "pointer", opacity: loading ? .7 : 1 }}>{loading ? "Göndərilir..." : editingJobId ? "Dəyişiklikləri saxla" : "📥 Elanı adminə göndər"}</button>
-                {editingJobId ? <button type="button" onClick={resetJobForm} style={{ minHeight: 42, border: "1px solid #dbe3ee", borderRadius: 18, background: "#fff", color: "#555", fontSize: 14, fontWeight: 800, cursor: "pointer" }}>Redaktəni ləğv et</button> : null}
-              </div>
-            </form>
-          ) : null}
-        </section>
-      ) : null}
-
-    </>
-  );
+function Field({ label, required = false, wide = false, children }) {
+  return <label className={wide ? pageStyles.wideField : pageStyles.field}><span>{label}{required ? <b> *</b> : null}</span>{children}</label>;
 }
