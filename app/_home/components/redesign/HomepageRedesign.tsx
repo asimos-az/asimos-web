@@ -51,6 +51,7 @@ import {
   WarehouseRounded,
 } from "@mui/icons-material";
 import styles from "./HomepageRedesign.module.css";
+import { useI18n } from "../../../../lib/i18n";
 
 type JobLocation = { address?: string; lat?: number | string; lng?: number | string };
 type Job = {
@@ -175,40 +176,42 @@ function SectionTitle({ children, action, onAction }: { children: ReactNode; act
 
 export function AppHeader({ ctx }: { ctx: HomeContext }) {
   const [open, setOpen] = useState(false);
+  const { locale, setLocale, t } = useI18n();
   const go = (section: string) => { ctx.setActiveSection(section); setOpen(false); };
   const navigation = [
-    ["jobs", "Vakansiyalar"], ["companies", "Şirkətlər"], ["career", "Karyera məsləhətləri"], ["about", "Haqqımızda"],
+    ["jobs", t("nav_jobs")], ["companies", t("nav_companies")], ["career", t("nav_career")], ["about", t("nav_about")],
   ];
   return (
     <Box component="header" className={styles.header}>
       <Container maxWidth="xl" className={styles.headerInner}>
-        <Link href="/" className={styles.logoLink} aria-label="Asimos ana səhifə">
+        <Link href="/" className={styles.logoLink} aria-label={`Asimos ${t("home")}`}>
           <Image src="/logo.svg" width={124} height={38} alt="Asimos" priority />
         </Link>
-        <Stack component="nav" direction="row" className={styles.desktopNav} aria-label="Əsas naviqasiya">
+        <Stack component="nav" direction="row" className={styles.desktopNav} aria-label="Navigation">
           {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} color="inherit" onClick={() => go(key)}>{label}</Button>)}
         </Stack>
         <Stack direction="row" alignItems="center" gap={1} className={styles.desktopActions}>
-          <Button color="inherit" size="small" endIcon={<LanguageRounded fontSize="small" />}>AZ</Button>
-          <IconButton aria-label="Seçimlər" onClick={() => go("profile")}><BookmarkBorderRounded /></IconButton>
+          <Select value={locale} onChange={(event) => setLocale(String(event.target.value))} size="small" IconComponent={LanguageRounded} sx={{ minWidth: 76, height: 36, borderRadius: 2, fontWeight: 800 }} aria-label="Language"><MenuItem value="az">AZ</MenuItem><MenuItem value="ru">RU</MenuItem><MenuItem value="en">EN</MenuItem></Select>
+          <IconButton aria-label={t("favorites")} onClick={() => go("profile")}><BookmarkBorderRounded /></IconButton>
           {ctx.user ? (
-            <Button variant="outlined" onClick={() => go("profile")}>{ctx.user.fullName || ctx.user.full_name || "Profil"}</Button>
-          ) : <Button variant="outlined" onClick={() => go("auth")}>Daxil ol</Button>}
+            <Button variant="outlined" onClick={() => go("profile")}>{ctx.user.fullName || ctx.user.full_name || t("profile")}</Button>
+          ) : <Button variant="outlined" onClick={() => go("auth")}>{t("login")}</Button>}
           <Button variant="contained" onClick={() => go(ctx.canCreateJob ? "create" : "auth")} startIcon={<BusinessCenterRounded />}>
-            Elan yerləşdir
+            {t("post_job")}
           </Button>
         </Stack>
-        <IconButton className={styles.mobileMenu} onClick={() => setOpen(true)} aria-label="Menyunu aç"><MenuRounded /></IconButton>
+        <IconButton className={styles.mobileMenu} onClick={() => setOpen(true)} aria-label={t("open_menu")}><MenuRounded /></IconButton>
       </Container>
       <Drawer anchor="right" open={open} onClose={() => setOpen(false)} PaperProps={{ sx: { width: "min(86vw, 340px)", p: 2.5 } }}>
         <Stack direction="row" justifyContent="space-between" alignItems="center" mb={3}>
           <Image src="/logo.svg" width={110} height={34} alt="Asimos" />
-          <IconButton onClick={() => setOpen(false)} aria-label="Menyunu bağla"><CloseRounded /></IconButton>
+          <IconButton onClick={() => setOpen(false)} aria-label={t("close_menu")}><CloseRounded /></IconButton>
         </Stack>
         {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} onClick={() => go(key)} fullWidth sx={{ justifyContent: "flex-start", mb: 1 }}>{label}</Button>)}
         <Divider sx={{ my: 2 }} />
-        <Button variant="outlined" fullWidth onClick={() => go(ctx.user ? "profile" : "auth")} sx={{ mb: 1 }}>Daxil ol</Button>
-        <Button variant="contained" fullWidth onClick={() => go(ctx.canCreateJob ? "create" : "auth")}>Elan yerləşdir</Button>
+        <Select value={locale} onChange={(event) => setLocale(String(event.target.value))} fullWidth size="small" sx={{ mb: 2 }}><MenuItem value="az">Azərbaycan dili</MenuItem><MenuItem value="ru">Русский</MenuItem><MenuItem value="en">English</MenuItem></Select>
+        <Button variant="outlined" fullWidth onClick={() => go(ctx.user ? "profile" : "auth")} sx={{ mb: 1 }}>{t("login")}</Button>
+        <Button variant="contained" fullWidth onClick={() => go(ctx.canCreateJob ? "create" : "auth")}>{t("post_job")}</Button>
       </Drawer>
     </Box>
   );

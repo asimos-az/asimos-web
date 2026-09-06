@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useI18n } from "../../lib/i18n";
 
 const NEW_JOB_WINDOW_MS = 4 * 60 * 60 * 1000;
 
@@ -303,11 +304,12 @@ export default function JobCard({
   showEdit = false,
   onEdit,
 }) {
+  const { tv } = useI18n();
   const companyLabel = getCompanyLabel(job);
   const distanceLabel = formatDistance(job?.distanceM);
-  const jobTypeLabel = getJobTypeLabel(job);
-  const typeLabel = job?.category || jobTypeLabel;
-  const wageLabel = getWageLabel(job);
+  const jobTypeLabel = tv(getJobTypeLabel(job));
+  const typeLabel = tv(job?.category || jobTypeLabel);
+  const wageLabel = tv(getWageLabel(job));
   const levelLabel = getLevelLabel(job);
   const remainingLabel = getRemainingLabel(job);
   const premium = isPremiumJob(job);

@@ -17,6 +17,7 @@ import './professional-refresh.css';
 import Footer from './components/Footer';
 import SplashScreen from './components/SplashScreen';
 import ThemeRegistry from './ThemeRegistry';
+import { LanguageProvider } from '../lib/i18n';
 
 const siteUrl = 'https://asimos.az';
 const siteName = 'Asimos';
@@ -132,7 +133,7 @@ export default function RootLayout({ children }) {
   return (
     <html lang="az">
       <body>
-        <ThemeRegistry>
+        <LanguageProvider><ThemeRegistry>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationSchema) }}
@@ -144,7 +145,7 @@ export default function RootLayout({ children }) {
         <SplashScreen />
         {children}
         <Footer />
-        </ThemeRegistry>
+        </ThemeRegistry></LanguageProvider>
       </body>
     </html>
   );

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { api } from "../../../../lib/api";
+import { useI18n } from "../../../../lib/i18n";
 
 const advice = [
   ["Müsahibə", "Müsahibəyə necə hazırlaşmalı?", "İlk təəssüratdan düzgün cavablara qədər uğurlu müsahibənin əsas mərhələləri.", "5 dəq"],
@@ -17,6 +18,7 @@ function companyName(job) { return job?.companyName || job?.company_name || job?
 function companyLogo(job) { return job?.companyLogo || job?.company_logo || job?.logoUrl || job?.logo_url || ""; }
 
 export default function DiscoveryPages({ ctx }) {
+  const { t, tv } = useI18n();
   const [companyQuery, setCompanyQuery] = useState("");
   const [companyData, setCompanyData] = useState({ items: [], total: 0 });
   const [companiesLoading, setCompaniesLoading] = useState(false);
@@ -49,8 +51,8 @@ export default function DiscoveryPages({ ctx }) {
 
   if (ctx.activeSection === "companies") return (
     <main className="discovery-page">
-      <section className="discovery-hero"><span>Şirkətlər</span><h1>Doğru şirkəti kəşf et</h1><p>Azərbaycanda aktiv vakansiya paylaşan şirkətləri araşdırın və sizə uyğun iş imkanlarını görün.</p><div className="discovery-search"><span>⌕</span><input value={companyQuery} onChange={(event) => setCompanyQuery(event.target.value)} placeholder="Şirkət adı və ya sahə üzrə axtar" /><button onClick={() => ctx.setActiveSection("jobs")}>Vakansiyalara bax</button></div></section>
-      <section className="discovery-shell"><div className="discovery-heading"><div><small>Real işəgötürənlər</small><h2>Platformadakı şirkətlər</h2></div><span>{companyQuery ? companies.length : companyData.total} şirkət</span></div><div className="company-directory">{companies.length ? companies.map((job) => { const name=companyName(job); const count=Number(job.activeJobs || 0); const logo=companyLogo(job); return <article className="company-directory-card" key={job.id || name}><div className="company-directory-logo">{logo?<img src={logo} alt=""/>:name.charAt(0)}</div>{job.verified ? <span className="company-verified">✓ Təsdiqlənib</span> : null}<h3>{name}</h3><p>{job.category || "Müxtəlif sahələr"}</p><div><span>▣ {count} aktiv vakansiya</span><span>⌖ {job?.location?.address || job?.location?.city || job?.city || "Azərbaycan"}</span></div><Link className="company-directory-action" href={`/sirketler/${encodeURIComponent(String(job.id))}`}>Vakansiyalara bax →</Link></article>; }) : <div className="discovery-empty"><b>{companiesLoading ? "Şirkətlər yüklənir" : companiesError ? "Şirkətləri yükləmək mümkün olmadı" : "Şirkət tapılmadı"}</b><p>{companiesError || (companyQuery ? "Axtarış sözünü dəyişərək yenidən yoxlayın." : "İşəgötürənlər burada görünəcək.")}</p></div>}</div></section>
+      <section className="discovery-hero"><span>{t("companies_badge")}</span><h1>{t("discover_company")}</h1><p>{t("companies_intro")}</p><div className="discovery-search"><span>⌕</span><input value={companyQuery} onChange={(event) => setCompanyQuery(event.target.value)} placeholder={t("search_company")} /><button onClick={() => ctx.setActiveSection("jobs")}>{t("view_jobs")}</button></div></section>
+      <section className="discovery-shell"><div className="discovery-heading"><div><small>{t("real_employers")}</small><h2>{t("platform_companies")}</h2></div><span>{t("companies_count", { count: companyQuery ? companies.length : companyData.total })}</span></div><div className="company-directory">{companies.length ? companies.map((job) => { const name=companyName(job); const count=Number(job.activeJobs || 0); const logo=companyLogo(job); return <article className="company-directory-card" key={job.id || name}><div className="company-directory-logo">{logo?<img src={logo} alt=""/>:name.charAt(0)}</div>{job.verified ? <span className="company-verified">✓ {t("verified")}</span> : null}<h3>{name}</h3><p>{tv(job.category || "Müxtəlif sahələr")}</p><div><span>▣ {t("active_jobs_count", { count })}</span><span>⌖ {job?.location?.address || job?.location?.city || job?.city || "Azərbaycan"}</span></div><Link className="company-directory-action" href={`/sirketler/${encodeURIComponent(String(job.id))}`}>{t("view_jobs")} →</Link></article>; }) : <div className="discovery-empty"><b>{companiesLoading ? t("companies_loading") : companiesError ? t("companies_load_error") : t("no_company")}</b><p>{companiesError || (companyQuery ? t("change_search") : t("companies_appear"))}</p></div>}</div></section>
       <section className="discovery-cta"><div><small>İşəgötürənsiniz?</small><h2>Şirkətinizi minlərlə namizədə tanıdın</h2><p>Vakansiyanızı yerləşdirin, yaxınlıqdakı uyğun namizədlərə daha tez çatın.</p></div><button onClick={() => ctx.setActiveSection(ctx.canCreateJob ? "create" : "auth")}>Elan yerləşdir →</button></section>
     </main>
   );
