@@ -123,13 +123,13 @@ export default async function Footer() {
           <div>
             <h3>Platforma</h3>
             <Link href="/vakansiyalar">Vakansiyalar</Link>
-            <Link href="/is-elanlari">Şirkətlər</Link>
-            <Link href="/">Karyera məsləhətləri</Link>
+            <Link href="/sirketler">Şirkətlər</Link>
+            <Link href="/karyera-meslehetleri">Karyera məsləhətləri</Link>
             <Link href="/xeritede-is-elanlari">Seçimlər</Link>
           </div>
           <div>
             <h3>Şirkət</h3>
-            <Link href="/">Haqqımızda</Link>
+            <Link href="/haqqimizda">Haqqımızda</Link>
             <Link href="/">Karyera</Link>
             <Link href="/">Bloq</Link>
             <Link href="/policy">Qaydalar</Link>

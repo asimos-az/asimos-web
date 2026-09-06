@@ -177,7 +177,7 @@ export function AppHeader({ ctx }: { ctx: HomeContext }) {
   const [open, setOpen] = useState(false);
   const go = (section: string) => { ctx.setActiveSection(section); setOpen(false); };
   const navigation = [
-    ["jobs", "Vakansiyalar"], ["jobs", "Şirkətlər"], ["about", "Karyera məsləhətləri"], ["about", "Haqqımızda"],
+    ["jobs", "Vakansiyalar"], ["companies", "Şirkətlər"], ["career", "Karyera məsləhətləri"], ["about", "Haqqımızda"],
   ];
   return (
     <Box component="header" className={styles.header}>

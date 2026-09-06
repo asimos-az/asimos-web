@@ -4,6 +4,7 @@ import './_home/components/LocationPermissionPrompt.css';
 import './_home/components/AppLaunchPanel.css';
 import './_home/components/NotificationsSection.css';
 import './_home/components/home-sections/profile/ProfilePanels.css';
+import './_home/components/home-sections/DiscoveryPages.css';
 import './components/Header.css';
 import './components/JobCard.css';
 import './components/JobDetail.css';

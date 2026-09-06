@@ -1,4 +1,3 @@
-import AboutSection from "./home-sections/AboutSection";
 import AlertsSection from "./home-sections/AlertsSection";
 import AuthSectionView from "./home-sections/AuthSectionView";
 import CreateJobSection from "./home-sections/CreateJobSection";
@@ -11,11 +10,13 @@ import RoleSwitchConfirmModal from "./home-sections/RoleSwitchConfirmModal";
 import SupportPageSection from "./home-sections/SupportPageSection";
 import TermsSection from "./home-sections/TermsSection";
 import HomepageRedesign from "./redesign/HomepageRedesign";
+import DiscoveryPages from "./home-sections/DiscoveryPages";
 
 export default function HomePageSections({ ctx }) {
   return (
     <>
       <HomepageRedesign ctx={ctx} />
+      <DiscoveryPages ctx={ctx} />
       {ctx.activeSection !== "home" ? <HomeSearchSection ctx={ctx} /> : null}
       {ctx.activeSection !== "home" ? <HomeLandingSection ctx={ctx} /> : null}
       <JobsSection ctx={ctx} />
@@ -24,7 +25,6 @@ export default function HomePageSections({ ctx }) {
       <NotificationsSection ctx={ctx} />
       <ProfileSection ctx={ctx} />
       <SupportPageSection ctx={ctx} />
-      <AboutSection ctx={ctx} />
       <TermsSection ctx={ctx} />
       <AuthSectionView ctx={ctx} />
       <RoleSwitchConfirmModal ctx={ctx} />

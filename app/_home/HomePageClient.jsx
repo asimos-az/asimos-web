@@ -323,7 +323,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, [pathname, initialSection]);
 
   useEffect(() => {
-    if (!booting && !user && !["home", "about", "auth", "jobs", "daily"].includes(activeSection)) {
+    if (!booting && !user && !["home", "about", "companies", "career", "auth", "jobs", "daily"].includes(activeSection)) {
       setActiveSection("auth", "replace");
     }
   }, [booting, user, activeSection, setActiveSection]);

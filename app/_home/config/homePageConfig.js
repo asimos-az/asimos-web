@@ -1,8 +1,16 @@
 export const SOCKET_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || "https://asimos-backend.onrender.com").replace(/\/+$/, "");
 
-export const guestNav = [{ key: "home", label: "Ana səhifə" }, { key: "about", label: "Haqqımızda" }];
-export const seekerNav = [{ key: "home", label: "Ana səhifə" }, { key: "jobs", label: "Elanlar" }];
-export const employerNav = [{ key: "home", label: "Ana səhifə" }, { key: "jobs", label: "Elanlar" }];
+const publicNav = [
+  { key: "home", label: "Ana səhifə" },
+  { key: "jobs", label: "Vakansiyalar" },
+  { key: "companies", label: "Şirkətlər" },
+  { key: "career", label: "Karyera məsləhətləri" },
+  { key: "about", label: "Haqqımızda" },
+];
+
+export const guestNav = publicNav;
+export const seekerNav = publicNav;
+export const employerNav = publicNav;
 
 export const employerSupportCategories = ["Elan yükləyə bilmirəm", "Namizədlərlə əlaqə problemi", "Ödəniş problemi", "Hesab ilə bağlı problem", "Təklif və İradlar", "Digər"];
 export const seekerSupportCategories = ["İşə müraciət edə bilmirəm", "Profilimi tamamlaya bilmirəm", "Hesab ilə bağlı problem", "Təklif və İradlar", "Digər"];

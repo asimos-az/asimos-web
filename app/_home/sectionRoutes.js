@@ -3,6 +3,8 @@ export const SECTION_ROUTES = Object.freeze({
   jobs: "/vakansiyalar",
   daily: "/gundelik-isler",
   about: "/haqqimizda",
+  companies: "/sirketler",
+  career: "/karyera-meslehetleri",
   auth: "/daxil-ol",
   create: "/elan-yerlesdir",
   profile: "/profil",
