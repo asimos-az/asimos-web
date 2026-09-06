@@ -1069,8 +1069,8 @@ export default function HomePageClient({ initialSection = "home" }) {
     setWageMin("");
     setWageMax("");
     setDescription("");
-    setContactEmail(user?.email || "");
-    setLink("");
+    setContactEmail(user?.contactEmail || user?.contact_email || user?.email || "");
+    setLink(user?.atsLink || user?.ats_link || "");
     setVoen("");
     setScheduleStart("");
     setScheduleEnd("");

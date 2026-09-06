@@ -261,6 +261,11 @@ textarea:focus {
   background: linear-gradient(135deg, #0f8068, #0a5e50) !important;
   box-shadow: 0 24px 54px rgba(9,96,80,.18);
 }
+.job-detail-v2 .job-detail-hero {
+  background: #fff !important;
+  border-radius: 12px !important;
+  box-shadow: 0 5px 20px rgba(30,55,75,.045) !important;
+}
 .quick-stat-card { border: 1px solid var(--as-line); border-radius: 18px; background: #fff; box-shadow: var(--as-shadow-sm); }
 .similar-job-card { border-radius: 18px !important; }
 .notifications-hero { border-radius: 26px; box-shadow: var(--as-shadow-md); }

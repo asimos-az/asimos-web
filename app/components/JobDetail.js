@@ -342,6 +342,15 @@ function cleanDescription(value) {
     .trim();
 }
 
+function getTextList(...values) {
+  const value = values.find((item) => item !== undefined && item !== null && String(item).trim());
+  if (Array.isArray(value)) return value.map(String).filter(Boolean);
+  return String(value || '')
+    .split(/\n|•|;/)
+    .map((item) => item.replace(/^[-–—✓\s]+/, '').trim())
+    .filter(Boolean);
+}
+
 function JobDetailMap({ lat, lng, userLat, userLng, hasUserLocation, address, userAddress }) {
   const mapRef = useRef(null);
   const mapInstanceRef = useRef(null);
@@ -471,6 +480,11 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const statusLabel = getStatusLabel(job);
   const applyContact = getVisibleContactItems(job, user).find((item) => item.href);
   const applyHref = atsLink || applyContact?.href || '';
+  const requirements = getTextList(job?.requirements, job?.requirements_text, job?.skills, job?.qualifications);
+  const responsibilities = getTextList(job?.responsibilities, job?.duties, job?.tasks);
+  const benefits = getTextList(job?.benefits, job?.advantages, job?.perks);
+  const education = getFirstValue(job?.education, job?.education_level, job?.qualification);
+  const experience = getFirstValue(job?.experience, job?.experience_level, getJobLevel(job));
 
 
   const lat = Number(job.location?.lat ?? job.lat);
@@ -557,34 +571,27 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   };
 
   const content = (
-    <div className={isPage ? 'job-detail-page-container' : 'job-detail-container'} onClick={isPage ? undefined : (e) => e.stopPropagation()}>
+    <div className={isPage ? 'job-detail-page-container job-detail-v2' : 'job-detail-container job-detail-v2'} onClick={isPage ? undefined : (e) => e.stopPropagation()}>
+      <div className="job-detail-breadcrumb">Ana səhifə <span>/</span> Vakansiyalar <span>/</span> {job.category || 'Elan'} <span>/</span> {job.title}</div>
       <section className="job-detail-hero">
-        <div className="job-detail-hero-pattern" aria-hidden="true" />
-        <div className="job-detail-hero-content">
-          <div className="job-detail-breadcrumb">Asimos / Elan detalları</div>
-          <div className="job-detail-header-main">
-            <div className="job-detail-logo">{logoUrl ? <img src={logoUrl} alt="" /> : companyInitial}</div>
-            <div className="job-detail-title-section">
-              <div className="job-detail-badges-row">
-                <div className="job-detail-badges">
-                  <span className="job-detail-badge">Elan</span>
-                  {job.category ? <span className="job-detail-badge muted">{job.category}</span> : null}
-                </div>
-                {isPage ? (
-                  <button
-                    type="button"
-                    className={`job-detail-share-btn${copiedShareLink ? ' copied' : ''}`}
-                    onClick={copyShareLink}
-                    aria-label="Elan linkini kopyala"
-                  >
-                    <span aria-hidden="true">{copiedShareLink ? '✓' : '↗'}</span>
-                    {copiedShareLink ? 'Link kopyalandı' : 'Paylaş'}
-                  </button>
-                ) : null}
-              </div>
-              <h1 className="job-detail-title">{job.title}</h1>
-              <p className="job-detail-company">{companyName}</p>
+        <div className="job-detail-header-main">
+          <div className="job-detail-logo">{logoUrl ? <img src={logoUrl} alt="" /> : companyInitial}</div>
+          <div className="job-detail-title-section">
+            <h1 className="job-detail-title">{job.title}</h1>
+            <p className="job-detail-company">{companyName} <span className="verified-mark">✓</span></p>
+            <strong className="job-detail-wage">{getWage(job)}</strong>
+            <p className="job-detail-location">⌖ {getAddress(job)} {hasUserLocation ? <b>• Sizə yaxın</b> : null}</p>
+            <div className="job-detail-badges">
+              <span className="job-detail-badge">{getJobTypeLabel(job)}</span>
+              {job?.workMode || job?.work_mode ? <span className="job-detail-badge muted">{job.workMode || job.work_mode}</span> : null}
+              {experience ? <span className="job-detail-badge">{experience}</span> : null}
             </div>
+            <div className="job-detail-facts"><span>▣ {jobDate === 'Qeyd edilməyib' ? 'Bu gün yerləşdirilib' : `${jobDate} tarixində yerləşdirilib`}</span><span>◉ {job?.views || job?.view_count || 0} baxış</span><span>◷ {expiryRemainingLabel}</span></div>
+          </div>
+          <div className="job-detail-hero-actions">
+            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel="noopener noreferrer">⚡ 1 kliklə müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət mümkün deyil</button>}
+            <button type="button" className="job-detail-outline-action">♡ Elanı yadda saxla</button>
+            <button type="button" className={`job-detail-outline-action${copiedShareLink ? ' copied' : ''}`} onClick={copyShareLink}>{copiedShareLink ? '✓ Link kopyalandı' : '⌯ Paylaş'}</button>
           </div>
         </div>
         {!isPage ? (
@@ -594,40 +601,22 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         ) : null}
       </section>
 
-      <div className="job-detail-quick-grid">
-        <div className="quick-stat-card primary">
-          <span className="quick-stat-icon">₼</span>
-          <span className="quick-stat-label">Maaş</span>
-          <strong className={!getWage(job) || getWage(job) === 'Qeyd edilməyib' ? 'is-empty-value' : ''}>{getWage(job)}</strong>
-        </div>
-        <div className="quick-stat-card">
-          <span className="quick-stat-icon">📍</span>
-          <span className="quick-stat-label">Lokasiya</span>
-          <strong className={getAddress(job) === 'Qeyd edilməyib' ? 'is-empty-value' : ''}>{getAddress(job)}</strong>
-        </div>
-        <div className="quick-stat-card">
-          <span className="quick-stat-icon">💼</span>
-          <span className="quick-stat-label">İş növü</span>
-          <strong className={getJobTypeLabel(job) === 'Qeyd edilməyib' ? 'is-empty-value' : ''}>{getJobTypeLabel(job)}</strong>
-        </div>
-        <div className="quick-stat-card countdown">
-          <span className="quick-stat-icon">📅</span>
-          <span className="quick-stat-label">Vakansiya bitişi</span>
-          <strong className={!vacancyEndDate ? 'is-empty-value' : ''}>{vacancyEndDate ? formatJobDate(vacancyEndDate) : 'Qeyd edilməyib'}</strong>
-        </div>
-      </div>
-
       <div className="job-detail-body">
         <main className="job-detail-main-content">
           <section className="job-detail-card description-card">
-            <div className="section-heading-row">
-              <div>
-                <span className="section-kicker">Vakansiya haqqında</span>
-                <h2 className="job-detail-section-title">Təsvir</h2>
-              </div>
-            </div>
+            <h2 className="job-detail-section-title"><span>♙</span> Vəzifə haqqında</h2>
             <div className="job-detail-description">{cleanJobDescription || 'Təsvir qeyd edilməyib.'}</div>
           </section>
+
+          {responsibilities.length ? <section className="job-detail-card"><h2 className="job-detail-section-title"><span>♟</span> Öhdəliklər</h2><ul className="job-detail-list">{responsibilities.map((item) => <li key={item}>{item}</li>)}</ul></section> : null}
+
+          <section className="job-detail-card"><h2 className="job-detail-section-title"><span>♙</span> Tələblər</h2>{requirements.length ? <ul className="job-detail-list">{requirements.map((item) => <li key={item}>{item}</li>)}</ul> : <p className="job-detail-muted">Əlavə tələb qeyd edilməyib.</p>}<div className="job-detail-requirement-grid"><span><b>Təcrübə</b>{experience || 'Tələb olunmur'}</span><span><b>Təhsil</b>{education || 'Qeyd edilməyib'}</span><span><b>Kateqoriya</b>{job.category || 'Qeyd edilməyib'}</span><span><b>İş formatı</b>{getJobTypeLabel(job)}</span></div></section>
+
+          <section className="job-detail-card"><h2 className="job-detail-section-title"><span>▣</span> İş şəraiti və üstünlüklər</h2><div className="job-detail-condition-grid"><span><b>İş qrafiki</b>{workSchedule || 'Qeyd edilməyib'}</span><span><b>Əmək müqaviləsi</b>{job?.contract || 'Rəsmi'}</span><span><b>İş yeri</b>{workplace || getAddress(job)}</span></div>{benefits.length ? <ul className="job-detail-list benefits">{benefits.map((item) => <li key={item}>{item}</li>)}</ul> : null}</section>
+
+          <section className="job-detail-card job-detail-process"><h2 className="job-detail-section-title"><span>⌁</span> Müraciət prosesi</h2><div><span><i>➤</i><b>Göndərildi</b><small>0–1 gün</small></span><em>→</em><span><i>◉</i><b>Baxıldı</b><small>1–3 gün</small></span><em>→</em><span><i>♙</i><b>Müsahibə</b><small>3–7 gün</small></span><em>→</em><span><i>✓</i><b>Nəticə</b><small>1–3 gün</small></span></div></section>
+
+          <section className="job-detail-security-note"><span>!</span><div><strong>İş üçün ödəniş tələb edən elanları şikayət edin</strong><p>Asimos-da bütün vakansiyalar tamamilə pulsuzdur. İşə qəbul zamanı ödəniş tələb edilə bilməz.</p></div><button type="button">Elanı şikayət et</button></section>
 
           <section className="job-detail-card similar-jobs-card">
             <div className="section-heading-row">
@@ -670,84 +659,16 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
         </main>
 
         <aside className="job-detail-sidebar">
-          <section className="job-detail-card company-summary-card">
-            <div className="company-summary-head"><div className="company-summary-logo">{logoUrl ? <img src={logoUrl} alt={`${companyName} loqosu`} /> : companyInitial}</div><div><h2>{companyName}</h2><p>{job?.companyDescription || job?.company_description || job?.category || 'Şirkət məlumatları'}</p></div></div>
-            <div className="company-summary-row"><span>Elanın statusu</span><strong>{statusLabel}</strong></div>
-            <div className="company-summary-row"><span>İş formatı</span><strong>{getJobTypeLabel(job)}</strong></div>
-          </section>
           <section className="job-detail-card apply-card">
-            <h2>Müraciət et</h2><p>Vakansiya məlumatlarını yoxlayın və uyğun əlaqə kanalı ilə müraciət edin.</p>
-            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel={atsLink || applyContact?.external ? 'noopener noreferrer' : undefined}>Müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət kanalı qeyd edilməyib</button>}
+            <h2>Bu vakansiyaya müraciət et</h2><p>Vakansiya məlumatlarını yoxlayın və uyğun əlaqə kanalı ilə müraciət edin.</p>
+            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel="noopener noreferrer">⚡ 1 kliklə müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət kanalı qeyd edilməyib</button>}
+            <small className="job-detail-privacy">▣ Məlumatlarınız yalnız işəgötürənlə paylaşılacaq.</small>
           </section>
-          <section className="job-detail-meta job-detail-card sticky-card">
-            <div className="meta-card-head">
-              <span className="section-kicker">Müraciət</span>
-              <h2 className="meta-title">Əlaqə və lokasiya</h2>
-            </div>
-            <div className="meta-list">
-              <div className="meta-item">
-                <span className="meta-label">Əlaqə</span>
-                <span className="meta-value">{renderContact()}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Daxili CV bazası</span>
-                <span className="meta-value">{atsLink ? <a href={atsLink} target="_blank" rel="noopener noreferrer">Müraciət et</a> : 'Qeyd edilməyib'}</span>
-              </div>
-              <div className="meta-item">
-                <span className="meta-label">Elan lokasiyası</span>
-                <span className="meta-value">{getAddress(job)}</span>
-              </div>
-              {hasLocation ? (
-                <div className="meta-item highlighted">
-                  <span className="meta-label">Xəritə və marşrut</span>
-                  <div className="map-action-row">
-                    <a className="map-text-action" href={mapViewUrl} target="_blank" rel="noopener noreferrer">
-                      <span>🗺️</span>
-                      Google Maps-də aç
-                    </a>
-                  </div>
-                </div>
-              ) : null}
-            </div>
-          </section>
+          {hasLocation ? <section className="job-detail-card job-detail-side-map"><h2>İş yeri</h2><JobDetailMap lat={lat} lng={lng} userLat={userLat} userLng={userLng} hasUserLocation={hasUserLocation} address={getAddress(job)} userAddress={userLocation?.address}/><strong>{getAddress(job)}</strong><p>{hasUserLocation ? 'Seçilmiş lokasiyanızdan marşrut mövcuddur.' : 'Dəqiq ünvan yalnız seçilmiş namizədlərlə paylaşılır.'}</p><a href={mapViewUrl} target="_blank" rel="noopener noreferrer">🗺 Xəritədə göstər</a></section> : null}
+          <section className="job-detail-card company-summary-card"><h2>Şirkət haqqında</h2><div className="company-summary-head"><div className="company-summary-logo">{logoUrl ? <img src={logoUrl} alt={`${companyName} loqosu`} /> : companyInitial}</div><div><h2>{companyName} <span className="verified-mark">✓</span></h2><p>{job.category || 'Şirkət'}</p></div></div><p className="company-description">{job?.companyDescription || job?.company_description || `${companyName} şirkətinin aktiv vakansiyası.`}</p><div className="company-summary-row"><span>Elanın statusu</span><strong>{statusLabel}</strong></div><div className="company-summary-row"><span>İş formatı</span><strong>{getJobTypeLabel(job)}</strong></div></section>
+          <section className="job-detail-card job-detail-actions-card"><h2>Əlavə</h2><button type="button">♡ Elanı yadda saxla</button><button type="button" onClick={copyShareLink}>⌯ Paylaş</button><button type="button">△ Elanı şikayət et</button></section>
         </aside>
       </div>
-
-
-
-      <section className="job-detail-security-note" aria-label="Asimos təhlükəsizlik qaydası">
-        <span aria-hidden="true">🛡️</span>
-        <div>
-          <strong>Asimos Təhlükəsizlik Qaydası</strong>
-          <p>İşə qəbul prosesində sizdən heç bir ödəniş tələb oluna bilməz, bütün müraciətlər ödənişsizdir. Təhlükəsizliyiniz üçün bu növ hallardan uzaq durun.</p>
-        </div>
-      </section>
-
-
-      {hasLocation ? (
-        <section className="job-detail-map-card job-detail-card job-detail-map-card-wide">
-          <div className="map-card-head">
-            <div>
-              <span className="section-kicker">Xəritə</span>
-              <h2 className="job-detail-section-title">Elan və cihaz lokasiyası</h2>
-            </div>
-            <span className="map-pin">📍</span>
-          </div>
-          <div className="job-map-legend">
-            <span><i className="legend-dot job" /> Elan lokasiyası</span>
-            {hasUserLocation ? <span><i className="legend-dot user" /> Sizin lokasiya</span> : null}
-          </div>
-          <JobDetailMap
-            lat={lat}
-            lng={lng}
-            userLat={userLat}
-            userLng={userLng}
-            hasUserLocation={hasUserLocation}
-            address={getAddress(job)}
-            userAddress={userLocation?.address}
-          />
-        </section>
-      ) : null}
     </div>
   );
 

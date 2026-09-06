@@ -1,9 +1,13 @@
 "use client";
 
+import { useState } from "react";
+import { BusinessOutlined, CheckCircleRounded, LogoutRounded, WorkOutlineRounded } from "@mui/icons-material";
+import JobCard from "../../../../components/JobCard";
 import EmployerLockedField from "./EmployerLockedField";
 import { getCompanyName, getCompanyInitials, getEmployerPhone, getEmployerWhatsapp, getEmployerEmail, getEmployerAts, getEmployerVoen, formatMoney, formatAddress, formatDuration, getStatusLabel, formatScheduledText, normalizeEmployerJobStatus, formatEmployerJobSubtitle, getEmployerCardClass, getEmployerStatusClass } from "./employerProfileHelpers";
 
 export default function EmployerProfilePanel({ ctx }) {
+  const [openSection, setOpenSection] = useState("company");
   const {
     user,
     loading,
@@ -57,6 +61,8 @@ export default function EmployerProfilePanel({ ctx }) {
   })();
   const displayEmail = getEmployerEmail(ctx);
   const displayAts = getEmployerAts(ctx);
+  const completionChecks = [companyFieldValue, displayVoen, companyPhoneValue, companyWhatsappValue, contactEmail || displayEmail, link || displayAts];
+  const completionPercent = Math.round((completionChecks.filter((value) => String(value || "").trim()).length / completionChecks.length) * 100);
 
   function requestChange({ fieldKey, fieldLabel, oldValue, newValue, hasSavedValue }) {
     const category = (supportCategories || []).find((item) => String(item).toLowerCase().includes("hesab")) || "Hesab ilə bağlı problem";
@@ -88,28 +94,44 @@ export default function EmployerProfilePanel({ ctx }) {
     ["deleted", "Silinmiş", "🗑"],
   ];
 
+  const renderMobileToggle = (id, label, Icon) => (
+    <button
+      type="button"
+      className="employer-mobile-toggle"
+      onClick={() => setOpenSection(openSection === id ? "" : id)}
+      aria-expanded={openSection === id}
+    >
+      <Icon />
+      <span>{label}</span>
+      <b aria-hidden="true">⌄</b>
+    </button>
+  );
+
   return (
-    <section className="employer-dashboard-shell">
+    <main className="employer-workspace">
+      <div className="employer-workspace-top">
+        <strong><span>Λ</span>simos</strong>
+        <span className="employer-cabinet-label">İşəgötürən kabineti</span>
+        <button type="button" className="employer-top-logout" onClick={handleSignOut} aria-label="Hesabdan çıxış"><LogoutRounded /></button>
+      </div>
 
-      <header className="employer-hero">
-        <div className="employer-hero-main">
-          <div className="employer-logo-upload" aria-label={`${displayCompany} baş hərfləri`}>
-            <div className="employer-logo-box">
-              <span className="employer-company-initials" aria-hidden="true">{companyInitials}</span>
-            </div>
-          </div>
-          <div className="employer-hero-copy">
+      <form onSubmit={handleProfileSave}>
+        <header className="employer-workspace-heading">
+          <div className="employer-company-mark" aria-label={`${displayCompany} baş hərfləri`}>{companyInitials}</div>
+          <div>
             <h1>{displayCompany}</h1>
-            <span className="employer-role-pill">İşəgötürən</span>
-            <p>Şirkətinizin baş hərfləri profil və elanlarda görünür</p>
+            <p>Şirkət profilinizi tamamlayın və elanlarınızı bir yerdən idarə edin.</p>
           </div>
-        </div>
-        <button type="button" className="employer-hero-logout" onClick={handleSignOut}>Çıxış</button>
-      </header>
+          <span>İşəgötürən</span>
+        </header>
 
-      <form className="employer-card" onSubmit={handleProfileSave}>
-        <h2 className="employer-section-title">Şirkət məlumatları</h2>
-        <div className="employer-form-grid">
+        <div className="employer-workspace-layout">
+          <div className="employer-workspace-main">
+            <section className={`employer-workspace-section ${openSection === "company" ? "open" : ""}`}>
+              {renderMobileToggle("company", "Şirkət məlumatları", BusinessOutlined)}
+              <div className="employer-section-content">
+                <h2>Şirkət məlumatları</h2>
+                <div className="employer-form-grid">
           <EmployerLockedField
             fieldKey="companyName"
             label="Şirkət adı"
@@ -153,10 +175,12 @@ export default function EmployerProfilePanel({ ctx }) {
             <input
               type="email"
               value={contactEmail || displayEmail}
-              onChange={(event) => setContactEmail(event.target.value)}
               placeholder="hr@sirketiniz.az"
+              disabled
+              readOnly
               required
             />
+            <small className="employer-field-hint">E-poçt ünvanı hesabınıza bağlıdır və dəyişdirilə bilməz.</small>
           </div>
 
           <div className="employer-field">
@@ -168,15 +192,18 @@ export default function EmployerProfilePanel({ ctx }) {
             />
           </div>
 
-          <button type="submit" className="employer-save-button" disabled={loading}>
-            {loading ? "Yadda saxlanılır..." : "Yadda saxla"}
-          </button>
-        </div>
-      </form>
+                  <button type="submit" className="employer-save-button" disabled={loading}>
+                    {loading ? "Yadda saxlanılır..." : "Məlumatları yadda saxla"}
+                  </button>
+                </div>
+              </div>
+            </section>
 
-      <section className="employer-card">
-        <h2 className="employer-section-title">Elanlarım</h2>
-        <div className="employer-tabs">
+            <section className={`employer-workspace-section employer-jobs-section ${openSection === "jobs" ? "open" : ""}`}>
+              {renderMobileToggle("jobs", "Elanlarım", WorkOutlineRounded)}
+              <div className="employer-section-content">
+                <h2>Elanlarım</h2>
+                <div className="employer-tabs">
           {tabs.map(([value, label, icon]) => (
             <button
               type="button"
@@ -190,27 +217,24 @@ export default function EmployerProfilePanel({ ctx }) {
               <span className="employer-tab-icon" aria-hidden="true">{icon}</span>
             </button>
           ))}
-        </div>
+                </div>
 
-        <div className="employer-jobs-list">
+                <div className="employer-jobs-list">
           {(profileJobs || []).map((job) => {
             const status = normalizeEmployerJobStatus(job, getJobStatus ? getJobStatus(job) : null);
             const note = formatScheduledText(job, formatProfileJobDate);
             const meta = formatEmployerJobSubtitle(job, status, formatProfileJobDate);
             const reason = job?.rejection_reason || job?.reject_reason || job?.admin_note || "Rədd səbəbi qeyd edilməyib";
             return (
-              <article className={`employer-job-card ${getEmployerCardClass(status)}`} key={job.id}>
-                <div className="employer-job-head">
-                  <div>
-                    <h3>{job.title || "Adsız elan"}</h3>
-                    <p>{meta}</p>
+              <div className={`employer-managed-job ${getEmployerCardClass(status)}`} key={job.id}>
+                <JobCard job={job} />
+                <div className="employer-managed-job-footer">
+                  <div className="employer-managed-job-state">
+                    <span className={`employer-job-status ${getEmployerStatusClass(status)}`}>{getStatusLabel(status)}</span>
+                    {note ? <span className="employer-job-note">{note}</span> : null}
+                    {!note && meta ? <span className="employer-job-meta">{meta}</span> : null}
                   </div>
-                  <span className={`employer-job-status ${getEmployerStatusClass(status)}`}>{getStatusLabel(status)}</span>
-                </div>
-
-                {note ? <div className="employer-job-note">{note}</div> : null}
-
-                <div className="employer-job-actions">
+                  <div className="employer-job-actions">
                   {status === "draft" ? (
                     <>
                       <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Davam et</button>
@@ -255,21 +279,49 @@ export default function EmployerProfilePanel({ ctx }) {
                       <button type="button" className="edit" onClick={() => startEditJob(job)}>✏️ Kopya kimi aç</button>
                     </>
                   ) : null}
+                  </div>
                 </div>
-              </article>
+              </div>
             );
           })}
           {!profileJobs?.length ? <p className="employer-empty">Bu bölmədə elan yoxdur.</p> : null}
-        </div>
-      </section>
+                </div>
+              </div>
+            </section>
+          </div>
 
-      <section className="employer-logout-card">
-        <div>
-          <h3>Hesabdan çıxış</h3>
-          <p>Cihazdan çıxış edəcəksiniz</p>
+          <aside className="employer-workspace-aside">
+            <section>
+              <h3>Profil tamamlanma faizi</h3>
+              <strong className="employer-percent">{completionPercent}%</strong>
+              <div className="employer-progress"><span style={{ width: `${completionPercent}%` }} /></div>
+              <p>{completionPercent === 100 ? "Şirkət profiliniz tam hazırdır." : "Bir az da məlumat əlavə edin."}</p>
+            </section>
+            <section>
+              <h3>Tövsiyə olunanlar</h3>
+              {[
+                [companyFieldValue, "Şirkət adını tamamlayın"],
+                [displayVoen, "VÖEN məlumatını əlavə edin"],
+                [companyPhoneValue && companyWhatsappValue, "Əlaqə nömrələrini tamamlayın"],
+                [contactEmail || displayEmail, "E-poçt ünvanını əlavə edin"],
+                [link || displayAts, "ATS linkini əlavə edin"],
+              ].map(([done, label]) => <span className={done ? "done" : ""} key={label}><CheckCircleRounded />{label}</span>)}
+            </section>
+            <section className="employer-summary">
+              <h3>Elanlarınız</h3>
+              <strong>{myJobs?.length || 0}</strong>
+              <p>ümumi elan</p>
+              <button type="button" onClick={() => setOpenSection("jobs")}>Elanlara bax <span>→</span></button>
+            </section>
+            <button type="button" className="employer-aside-logout" onClick={handleSignOut}><LogoutRounded /> Hesabdan çıxış</button>
+          </aside>
         </div>
-        <button type="button" onClick={handleSignOut}>Çıxış et</button>
-      </section>
-    </section>
+
+        <footer className="employer-workspace-footer">
+          <button type="button" onClick={() => setOpenSection("company")}>Geri</button>
+          <button type="submit" disabled={loading}>{loading ? "Yadda saxlanılır..." : "Yadda saxla"}</button>
+        </footer>
+      </form>
+    </main>
   );
 }
