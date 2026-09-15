@@ -248,6 +248,11 @@ export default function AuthSectionView({ ctx }) {
     <>
       {activeSection === "auth" ? (
         <AuthSection
+          registerWhatsapp={ctx.registerWhatsapp}
+          setRegisterWhatsapp={ctx.setRegisterWhatsapp}
+          otpResendAt={ctx.otpResendAt}
+          handleResendOtp={ctx.handleResendOtp}
+          otpEmail={ctx.otpPayload?.email || email}
           mode={mode}
           setMode={setMode}
           loading={loading}

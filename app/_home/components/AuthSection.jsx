@@ -1,3 +1,5 @@
+import { useEffect, useState } from "react";
+
 function PasswordVisibilityIcon({ visible }) {
   if (visible) {
     return (
@@ -25,6 +27,7 @@ function PasswordVisibilityIcon({ visible }) {
 }
 
 export default function AuthSection({
+  registerWhatsapp, setRegisterWhatsapp, otpResendAt, handleResendOtp, otpEmail,
   mode,
   setMode,
   loading,
@@ -69,32 +72,43 @@ export default function AuthSection({
   handleResetPassword,
   onBack,
 }) {
+  const [now, setNow] = useState(Date.now());
+  useEffect(() => {
+    if (mode !== "verifyOtp") return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, [mode, otpResendAt]);
+  const remaining = Math.max(0, Math.ceil((otpResendAt - now) / 1000));
   return (
-    <section className="container page-section">
+    <section className="container page-section auth-page">
       <div className="auth-container">
         <div className="auth-form-container">
           <div className="auth-form-shell">
             <button type="button" className="auth-back-button" onClick={onBack} aria-label="Ana səhifəyə qayıt">
               <span aria-hidden="true">←</span>
             </button>
+            <div className="auth-brand"><span>ASIMOS</span><p>İş həyatında növbəti addımınız.</p></div>
             <div className="auth-header">
-              <button className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => setMode("login")}>
+              <button disabled={loading} type="button" className={`auth-tab ${mode === "login" ? "active" : ""}`} onClick={() => setMode("login")}>
                 Daxil ol
               </button>
-              <button className={`auth-tab ${mode === "register" ? "active" : ""}`} onClick={() => setMode("register")}>
+              <button disabled={loading} type="button" className={`auth-tab ${mode === "register" ? "active" : ""}`} onClick={() => setMode("register")}>
                 Qeydiyyat
               </button>
             </div>
             {mode === "login" ? (
               <form className="auth-form" onSubmit={handleLogin}>
-                <h3>Daxil ol</h3>
+                <h3>Yenidən xoş gəlmisiniz</h3><p className="auth-description">Hesabınıza daxil olun, fürsətləri izləməyə davam edin.</p>
                 <div className="input-group">
-                  <input type="email" placeholder="E-poçt ünvanı" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                  <label htmlFor="auth-email">E-poçt ünvanı</label>
+                  <input id="auth-email" type="email" autoComplete="email" aria-label="E-poçt ünvanı" placeholder="E-poçt ünvanı" value={email} onChange={(event) => setEmail(event.target.value)} required />
                 </div>
+                <label className="auth-field-label" htmlFor="auth-password">Şifrə{mode === "register" ? " (ən azı 8 simvol)" : ""}</label>
                 <div className="input-group input-group-password">
-                  <input
+                  <input id="auth-password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Şifrə"
+                    aria-label="Şifrə" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "register" ? 8 : undefined} placeholder="Şifrə"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -121,17 +135,20 @@ export default function AuthSection({
 
             {mode === "register" ? (
               <form className="auth-form" onSubmit={handleRegister}>
-                <h3>Qeydiyyat</h3>
+                <h3>Hesabınızı yaradın</h3><p className="auth-description">İş axtarın və ya komandanız üçün uyğun insanı tapın.</p>
                 <div className="input-group">
-                  <input placeholder="Ad və soyad" value={fullName} onChange={(event) => setFullName(event.target.value)} required />
+                  <label htmlFor="register-name">Ad və soyad</label>
+                  <input id="register-name" minLength={2} autoComplete="name" aria-label="Ad və soyad" placeholder="Ad və soyad" value={fullName} onChange={(event) => setFullName(event.target.value)} required />
                 </div>
                 <div className="input-group">
-                  <input type="email" placeholder="E-poçt ünvanı" value={email} onChange={(event) => setEmail(event.target.value)} required />
+                  <label htmlFor="auth-email">E-poçt ünvanı</label>
+                  <input id="auth-email" type="email" autoComplete="email" aria-label="E-poçt ünvanı" placeholder="E-poçt ünvanı" value={email} onChange={(event) => setEmail(event.target.value)} required />
                 </div>
+                <label className="auth-field-label" htmlFor="auth-password">Şifrə{mode === "register" ? " (ən azı 8 simvol)" : ""}</label>
                 <div className="input-group input-group-password">
-                  <input
+                  <input id="auth-password"
                     type={showPassword ? "text" : "password"}
-                    placeholder="Şifrə"
+                    aria-label="Şifrə" autoComplete={mode === "login" ? "current-password" : "new-password"} minLength={mode === "register" ? 8 : undefined} placeholder="Şifrə"
                     value={password}
                     onChange={(event) => setPassword(event.target.value)}
                     required
@@ -145,10 +162,11 @@ export default function AuthSection({
                     <PasswordVisibilityIcon visible={showPassword} />
                   </button>
                 </div>
+                <label className="auth-field-label" htmlFor="auth-confirm-password">Şifrəni təkrar daxil edin</label>
                 <div className="input-group input-group-password">
-                  <input
+                  <input id="auth-confirm-password"
                     type={showConfirmPassword ? "text" : "password"}
-                    placeholder="Şifrəni təsdiqləyin"
+                    aria-label="Şifrəni təsdiqləyin" autoComplete="new-password" minLength={8} placeholder="Şifrəni təsdiqləyin"
                     value={confirmPassword}
                     onChange={(event) => setConfirmPassword(event.target.value)}
                     required
@@ -163,10 +181,16 @@ export default function AuthSection({
                   </button>
                 </div>
                 <div className="input-group">
-                  <input placeholder="Telefon nömrəsi" value={phone} onChange={(event) => setPhone(event.target.value)} required />
+                  <label htmlFor="register-phone">Əlaqə nömrəsi <span>*</span></label>
+                  <input id="register-phone" type="tel" autoComplete="tel" placeholder="+994 50 123 45 67" value={phone} onChange={(event) => setPhone(event.target.value)} required />
                 </div>
                 <div className="input-group">
-                  <select value={role} onChange={(event) => setRole(event.target.value)}>
+                  <label htmlFor="register-whatsapp">WhatsApp nömrəsi <small>(istəyə bağlı)</small></label>
+                  <input id="register-whatsapp" type="tel" placeholder="+994 50 123 45 67" value={registerWhatsapp} onChange={(event) => setRegisterWhatsapp(event.target.value)} />
+                </div>
+                <div className="input-group">
+                  <label htmlFor="register-role">Hesab növü</label>
+                  <select id="register-role" aria-label="Hesab növü" value={role} onChange={(event) => setRole(event.target.value)}>
                     <option value="seeker">İş axtaran</option>
                     <option value="employer">İşəgötürən</option>
                   </select>
@@ -214,13 +238,15 @@ export default function AuthSection({
 
             {mode === "verifyOtp" ? (
               <form className="auth-form" onSubmit={handleVerifyOtp}>
-                <h3>OTP təsdiqi</h3>
+                <h3>E-poçtunuzu təsdiqləyin</h3><p className="auth-description"><strong>{otpEmail}</strong> ünvanına göndərilən kodu daxil edin. Məktub görünmürsə, spam qovluğunu yoxlayın.</p>
                 <div className="input-group">
-                  <input placeholder="OTP kodu" value={otp} onChange={(event) => setOtp(event.target.value)} required />
+                  <label htmlFor="register-otp">Təsdiq kodu</label><input id="register-otp" className="auth-otp-input" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6,8}" maxLength={8} placeholder="000000" value={otp} onChange={(event) => setOtp(event.target.value.replace(/\D/g, ""))} required />
                 </div>
                 <button type="submit" className="btn-primary" disabled={loading}>
                   {loading ? "Təsdiqlənir..." : "Təsdiqlə"}
                 </button>
+                <button type="button" className="btn-secondary" disabled={loading || remaining > 0} onClick={handleResendOtp}>{remaining > 0 ? `Yenidən göndər (${remaining} san.)` : "Kodu yenidən göndər"}</button>
+                <button type="button" className="auth-link-button auth-edit-email" disabled={loading} onClick={() => setMode("register")}>E-poçt ünvanını dəyiş</button>
               </form>
             ) : null}
 

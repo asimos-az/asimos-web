@@ -96,6 +96,8 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   const [mode, setMode] = useState("login");
   const [otpPayload, setOtpPayload] = useState(null);
+  const [registerWhatsapp, setRegisterWhatsapp] = useState("");
+  const [otpResendAt, setOtpResendAt] = useState(0);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -817,7 +819,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     setOk("");
 
     try {
-      const res = await api.login({ email, password });
+      const res = await api.login({ email: email.trim().toLowerCase(), password });
       const nextUser = { ...(res.user || {}), role: normalizeRole(res?.user?.role) || role };
 
       setUser(nextUser);
@@ -886,6 +888,9 @@ export default function HomePageClient({ initialSection = "home" }) {
 
     try {
       if (password !== confirmPassword) throw new Error("Şifrələr eyni deyil");
+      if (password.length < 8) throw new Error("Şifrə ən azı 8 simvol olmalıdır");
+      if (!/^(?:\+994|994|0)?[1-9]\d{8}$/.test(phone.replace(/[\s()-]/g, ""))) throw new Error("Düzgün əlaqə nömrəsi daxil edin");
+      if (registerWhatsapp.trim() && !/^(?:\+994|994|0)?[1-9]\d{8}$/.test(registerWhatsapp.replace(/[\s()-]/g, ""))) throw new Error("Düzgün WhatsApp nömrəsi daxil edin");
 
       const safeRegisterLogo = safeImageUrl(registerLogoPreview);
 
@@ -898,14 +903,17 @@ export default function HomePageClient({ initialSection = "home" }) {
         profileLogoUrl: role === "employer" ? safeRegisterLogo : undefined,
 
         category: role === "employer" ? registerCategory || undefined : undefined,
-        email,
+        email: email.trim().toLowerCase(),
         password,
         phone,
+        whatsapp: registerWhatsapp.trim() || null,
       };
 
       const res = await api.register(payload);
       if (res?.needsOtp) {
         setOtpPayload(payload);
+        setOtp("");
+        setOtpResendAt(Date.now() + 60000);
         setMode("verifyOtp");
         setOk("OTP kodu e-poçt ünvanınıza göndərildi");
       } else if (res?.token) {
@@ -918,6 +926,17 @@ export default function HomePageClient({ initialSection = "home" }) {
     }
   }
 
+  async function handleResendOtp() {
+    if (loading || Date.now() < otpResendAt) return;
+    setLoading(true); setError(""); setOk("");
+    try {
+      await api.resendOtp({ email: otpPayload?.email || email.trim().toLowerCase() });
+      setOtpResendAt(Date.now() + 60000); setOtp("");
+      setOk("Yeni kod göndərildi. Spam qovluğunu da yoxlayın.");
+    } catch (err) { setError(err.message || "Kod göndərilmədi"); }
+    finally { setLoading(false); }
+  }
+
   async function handleVerifyOtp(e) {
     e.preventDefault();
     setLoading(true);
@@ -926,12 +945,13 @@ export default function HomePageClient({ initialSection = "home" }) {
 
     try {
       const base = otpPayload || {
-        email,
+        email: email.trim().toLowerCase(),
         password,
         role,
         fullName,
         companyName,
         phone,
+        whatsapp: registerWhatsapp.trim() || null,
       };
 
       const res = await api.verifyOtp({
@@ -940,8 +960,10 @@ export default function HomePageClient({ initialSection = "home" }) {
         role: base.role,
         fullName: base.fullName,
         companyName: base.companyName,
+        category: base.category,
         logoUrl: base.logoUrl || base.profileLogoUrl || null,
         phone: base.phone,
+        whatsapp: base.whatsapp,
         code: otp,
       });
 
@@ -1596,7 +1618,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     }
   }
 
-  async function handleProfileSave(e, seekerProfile) {
+  async function handleProfileSave(e, seekerProfile, seekerWhatsapp) {
     e.preventDefault();
     setLoading(true);
     setError("");
@@ -1617,7 +1639,7 @@ export default function HomePageClient({ initialSection = "home" }) {
           : undefined,
 
         voen: roleName === "employer" ? voen || user?.voen || "" : undefined,
-        whatsapp: roleName === "employer" ? whatsapp || user?.whatsapp || "" : undefined,
+        whatsapp: roleName === "employer" ? whatsapp || user?.whatsapp || "" : seekerWhatsapp,
         contactEmail: roleName === "employer" ? contactEmail || user?.email || "" : undefined,
         atsLink: roleName === "employer" ? link || user?.atsLink || user?.ats_link || "" : undefined,
         seekerProfile: roleName === "seeker" ? seekerProfile : undefined,
@@ -1931,6 +1953,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,
+    registerWhatsapp, setRegisterWhatsapp, otpResendAt, handleResendOtp, otpPayload,
     mode, setMode, email, setEmail, password, setPassword, showPassword, setShowPassword, confirmPassword, setConfirmPassword, showConfirmPassword, setShowConfirmPassword, fullName, setFullName, companyName, setCompanyName, registerLogoPreview, setRegisterLogoPreview, handleRegisterLogoFileChange, phone, setPhone, role, setRole, registerCategory, setRegisterCategory, categories, otp, setOtp, forgotEmail, setForgotEmail, resetCode, setResetCode, resetPassword, setResetPassword, showResetPassword, setShowResetPassword, handleLogin, handleRegister, handleVerifyOtp, handleForgotPassword, handleResetPassword, setActiveSection, roleSwitchConfirmOpen, confirmRoleSwitchRequest,
   };
 
