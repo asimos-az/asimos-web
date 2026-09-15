@@ -79,7 +79,9 @@ export default function AuthSection({
     const timer = setInterval(() => setNow(Date.now()), 1000);
     return () => clearInterval(timer);
   }, [mode, otpResendAt]);
-  const remaining = Math.max(0, Math.ceil((otpResendAt - now) / 1000));
+  // The form may have been open for minutes before switching to OTP mode.
+  // Use the current clock on that first render instead of the previous mode's tick.
+  const remaining = Math.max(0, Math.min(60, Math.ceil((otpResendAt - Math.max(now, Date.now())) / 1000)));
   return (
     <section className="container page-section auth-page">
       <div className="auth-container">
