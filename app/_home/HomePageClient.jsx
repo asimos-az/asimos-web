@@ -1,6 +1,7 @@
 "use client";
 
 import LocationPicker from "../components/LocationPicker";
+import { getCurrentLocation, locationErrorMessage } from "./utils/currentLocation.mjs";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
@@ -93,6 +94,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   const [ok, setOk] = useState("");
   const [locationPromptOpen, setLocationPromptOpen] = useState(false);
   const [deviceLocation, setDeviceLocation] = useState(null);
+  const locationRequestId = useRef(0);
 
   const [mode, setMode] = useState("login");
   const [otpPayload, setOtpPayload] = useState(null);
@@ -233,8 +235,9 @@ export default function HomePageClient({ initialSection = "home" }) {
   const supportCategories = roleName === "employer" ? employerSupportCategories : seekerSupportCategories;
   const activeTicket = tickets.find((ticket) => ticket.id === activeTicketId) || null;
   // Cihazdan son alınmış lokasiya profildə saxlanmış köhnə lokasiyadan daha aktualdır.
-  const effectiveLocation = deviceLocation || user?.location || null;
-  const homeJobs = useMemo(() => jobs.filter(isPublicHomeJob), [jobs]);
+  const effectiveLocation = deviceLocation;
+  const jobsRequestId = useRef(0);
+  const homeJobs = useMemo(() => effectiveLocation ? jobs.filter(isPublicHomeJob).filter((job) => typeof job.distanceM === "number" && job.distanceM <= Number(homeRadiusM)).sort((a, b) => a.distanceM - b.distanceM) : [], [jobs, effectiveLocation, homeRadiusM]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
 
   const unreadNotifications = useMemo(
@@ -357,21 +360,6 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, [activeSection, editingJobId, effectiveLocation?.lat, effectiveLocation?.lng, effectiveLocation?.address]);
 
   useEffect(() => {
-    const savedDeviceLocation = (() => {
-      try {
-        return JSON.parse(window.localStorage.getItem("asimos_device_location") || "null");
-      } catch {
-        return null;
-      }
-    })();
-
-    if (savedDeviceLocation?.lat && savedDeviceLocation?.lng) {
-      setDeviceLocation(savedDeviceLocation);
-      setLat(String(savedDeviceLocation.lat));
-      setLng(String(savedDeviceLocation.lng));
-      setLocationText(savedDeviceLocation.address || "Cari məkan");
-    }
-
     const saved = loadAuth();
     if (saved?.token) {
       setToken(saved.token);
@@ -415,10 +403,24 @@ export default function HomePageClient({ initialSection = "home" }) {
 
     setBooting(false);
 
-    const hasAnyLocation = hasSavedLocation(saved?.user) || Boolean(savedDeviceLocation?.lat && savedDeviceLocation?.lng);
-    if (!hasAnyLocation && typeof navigator !== "undefined" && navigator.geolocation) {
-      window.setTimeout(() => setLocationPromptOpen(true), 500);
-    }
+
+  }, []);
+
+
+  useEffect(() => {
+    const refresh = () => {
+      if (document.visibilityState === "hidden") {
+        locationRequestId.current += 1;
+        return;
+      }
+      void requestLocationActivation();
+    };
+    refresh();
+    document.addEventListener("visibilitychange", refresh);
+    return () => {
+      locationRequestId.current += 1;
+      document.removeEventListener("visibilitychange", refresh);
+    };
   }, []);
 
 
@@ -509,6 +511,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, []);
 
   async function loadBaseData() {
+    const requestId = ++jobsRequestId.current;
     const [categoryRes, jobsRes, termsRes, filterOptionsRes] = await Promise.all([
       api.listCategories().catch(() => ({ items: [] })),
       api
@@ -539,7 +542,7 @@ export default function HomePageClient({ initialSection = "home" }) {
         salaryRanges: Array.isArray(filterOptionsRes.salaryRanges) && filterOptionsRes.salaryRanges.length ? filterOptionsRes.salaryRanges : salaryRangeOptions,
       });
     }
-    setJobs(normalizeList(jobsRes));
+    if (requestId === jobsRequestId.current) setJobs(normalizeList(jobsRes));
     setTerms(termsRes?.content || termsRes?.body || "Qaydalar məlumatı mövcud deyil.");
   }
 
@@ -607,6 +610,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   }, [booting, user, effectiveLocation?.lat, effectiveLocation?.lng]);
 
   async function refreshJobs(nextFilters = appliedFilters) {
+    const requestId = ++jobsRequestId.current;
     const filters = {
       search: nextFilters?.search ?? appliedFilters.search,
       category: nextFilters?.category ?? appliedFilters.category,
@@ -633,7 +637,7 @@ export default function HomePageClient({ initialSection = "home" }) {
       limit: 1000,
     });
     const nextJobs = normalizeList(res);
-    setJobs(nextJobs);
+    if (requestId === jobsRequestId.current) setJobs(nextJobs);
     return nextJobs;
   }
 
@@ -722,7 +726,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     try {
       const res = await fetch(
         `https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${encodeURIComponent(String(latValue))}&lon=${encodeURIComponent(String(lngValue))}&accept-language=az`,
-        { headers: { Accept: "application/json" } }
+        { headers: { Accept: "application/json" }, signal: AbortSignal.timeout(8000) }
       );
 
       if (!res.ok) throw new Error("Lokasiya ünvanı tapılmadı");
@@ -735,81 +739,44 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   function maybeOpenLocationPrompt(nextUser = user) {
     if (typeof window === "undefined" || !navigator.geolocation) return;
-    if (hasSavedLocation(nextUser) || deviceLocation) return;
+    if (deviceLocation) return;
     setLocationPromptOpen(true);
   }
 
-  async function requestLocationActivation(nextUser, authTokenValue = token, refreshTokenValue = refreshToken) {
-    if (typeof window === "undefined" || !navigator.geolocation) {
-      setError("Bu cihazda lokasiya xidməti dəstəklənmir");
+  async function requestLocationActivation() {
+    const requestId = ++locationRequestId.current;
+    setLocationLoading(true);
+    setError("");
+    setOk("");
+    setDeviceLocation(null);
+    setJobs([]);
+    jobsRequestId.current += 1;
+    try {
+      if (!window.isSecureContext) throw new Error("Lokasiya üçün saytı HTTPS və ya localhost ünvanından açın.");
+      const { coords } = await getCurrentLocation(navigator.geolocation);
+      if (requestId !== locationRequestId.current) return false;
+      const location = { lat: coords.latitude, lng: coords.longitude, address: "Cari məkan" };
+      setDeviceLocation(location);
+      setLat(String(location.lat));
+      setLng(String(location.lng));
+      setLocationText(location.address);
+      setLocationPromptOpen(false);
+      setLocationLoading(false);
+      const address = await reverseGeocode(location.lat, location.lng);
+      if (requestId !== locationRequestId.current) return false;
+      setDeviceLocation({ ...location, address });
+      setLocationText(address);
+      return true;
+    } catch (error) {
+      if (requestId === locationRequestId.current) setError(locationErrorMessage(error));
       return false;
+    } finally {
+      if (requestId === locationRequestId.current) setLocationLoading(false);
     }
-
-    return new Promise((resolve) => {
-      navigator.geolocation.getCurrentPosition(
-        async (position) => {
-          const nextLat = position.coords.latitude;
-          const nextLng = position.coords.longitude;
-          const address = await reverseGeocode(nextLat, nextLng);
-          const userWithLocation = {
-            ...(nextUser || {}),
-            location: {
-              address,
-              lat: nextLat,
-              lng: nextLng,
-            },
-          };
-
-          setLat(String(nextLat));
-          setLng(String(nextLng));
-          setLocationText(address);
-          setDeviceLocation(userWithLocation.location);
-          window.localStorage.setItem("asimos_device_location", JSON.stringify(userWithLocation.location));
-          if (nextUser) {
-            setUser(userWithLocation);
-            saveAuth({
-              token: authTokenValue || null,
-              refreshToken: refreshTokenValue || null,
-              user: userWithLocation,
-            });
-          }
-          setLocationPromptOpen(false);
-
-          if (nextUser) {
-            try {
-              await api.updateMyLocation(userWithLocation.location);
-              setOk("Lokasiya uğurla aktivləşdirildi");
-            } catch (locationError) {
-              setError(locationError.message || "Lokasiya yenilənmədi");
-            }
-          } else {
-            setOk("Cihaz lokasiyası aktivləşdirildi");
-          }
-
-          resolve(true);
-        },
-        () => {
-          setOk("Yaxınlıqdakı elanları görmək üçün lokasiya icazəsini aktivləşdirə bilərsiniz");
-          resolve(false);
-        },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        }
-      );
-    });
   }
 
   async function handleLocationActivation() {
-    setLocationLoading(true);
-    setError("");
-
-    try {
-      await requestLocationActivation(user, token, refreshToken);
-    } finally {
-      setLocationLoading(false);
-    }
+    await requestLocationActivation();
   }
 
   async function handleLogin(e) {
@@ -1465,7 +1432,7 @@ export default function HomePageClient({ initialSection = "home" }) {
       await api.createAlert({
         category: alertCategory || undefined,
         radius_m: Number(alertRadius || 0),
-        q: alertKeywords || undefined,
+        query: alertKeywords || undefined,
       });
       setOk("İş bildirişi yaradıldı");
 
@@ -1645,6 +1612,19 @@ export default function HomePageClient({ initialSection = "home" }) {
         seekerProfile: roleName === "seeker" ? seekerProfile : undefined,
       };
       const response = await api.updateProfile(payload);
+      if (roleName === "seeker") {
+        const alertProfile = seekerProfile || {};
+        const hasAlertCriteria = alertProfile.category || alertProfile.desiredRoles?.length || alertProfile.salaryMin || alertProfile.salaryMax || (Number(lat) && Number(lng));
+        if (hasAlertCriteria) await api.createAlert({
+            replace: true,
+            query: Array.isArray(alertProfile.desiredRoles) ? alertProfile.desiredRoles.join(", ") : undefined,
+            category: alertProfile.category || undefined,
+            min_wage: Number(alertProfile.salaryMin) || undefined,
+            max_wage: Number(alertProfile.salaryMax) || undefined,
+            location: Number.isFinite(Number(lat)) && Number.isFinite(Number(lng)) ? { lat: Number(lat), lng: Number(lng) } : undefined,
+            radius_m: (Number(alertProfile.radiusKm) || 3) * 1000,
+          });
+      }
       const nextUser = response?.user || {
         ...(user || {}),
         fullName: editingName,
