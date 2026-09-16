@@ -303,25 +303,33 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           chunkedLoading: true,
           chunkDelay: 35,
           chunkInterval: 170,
-          maxClusterRadius: 48,
+          // Keep nearby pins grouped at street zoom levels too. Otherwise a
+          // dense city turns into an unreadable carpet of overlapping markers.
+          maxClusterRadius: 72,
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 16,
+          disableClusteringAtZoom: 20,
+          iconCreateFunction: (cluster) => L.divIcon({
+            className: "jobs-map-cluster-wrap",
+            html: `<div class="jobs-map-cluster">${cluster.getChildCount()}</div>`,
+            iconSize: [46, 46],
+            iconAnchor: [23, 23],
+          }),
         });
 
         const seekersLayer = L.markerClusterGroup({
           chunkedLoading: true,
-          maxClusterRadius: 44,
+          maxClusterRadius: 72,
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 15,
+          disableClusteringAtZoom: 20,
           iconCreateFunction: (cluster) => L.divIcon({
             className: "jobs-map-seeker-cluster-wrap",
             html: `<div class="jobs-map-seeker-cluster">${cluster.getChildCount()}</div>`,
-            iconSize: [42, 42],
-            iconAnchor: [21, 21],
+            iconSize: [46, 46],
+            iconAnchor: [23, 23],
           }),
         });
 

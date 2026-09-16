@@ -136,18 +136,30 @@
   background: transparent;
   border: 0;
 }
+.jobs-map-cluster-wrap {
+  background: transparent;
+  border: 0;
+}
+.jobs-map-cluster,
 .jobs-map-seeker-cluster {
-  width: 42px;
-  height: 42px;
+  width: 46px;
+  height: 46px;
   display: grid;
   place-items: center;
   border: 3px solid #fff;
   border-radius: 50%;
-  background: #315bd6;
+  background: #078f70;
   color: #fff;
-  box-shadow: 0 3px 12px rgba(28, 58, 132, .36);
-  font-size: 14px;
+  box-shadow: 0 3px 14px rgba(17, 57, 72, .3);
+  font-size: 13px;
   font-weight: 850;
+  line-height: 1;
+  transition: transform 150ms ease, box-shadow 150ms ease;
+}
+.jobs-map-cluster:hover,
+.jobs-map-seeker-cluster:hover {
+  transform: scale(1.08);
+  box-shadow: 0 5px 18px rgba(17, 57, 72, .4);
 }
 
 .jobs-map-marker-wrap,
