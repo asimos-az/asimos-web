@@ -12,6 +12,9 @@ import {
   Chip,
   Container,
   Divider,
+  Dialog,
+  DialogContent,
+  DialogTitle,
   Drawer,
   FormControl,
   IconButton,
@@ -101,6 +104,7 @@ type HomeContext = {
   city: string;
   setCity: (value: string) => void;
   cityOptions: string[];
+  handleCitySelection: (value: string) => void | Promise<void>;
   category: string;
   setCategory: (value: string | ((current: string) => string)) => void;
   homeCategoryOptions: string[];
@@ -221,6 +225,9 @@ export function AppHeader({ ctx }: { ctx: HomeContext }) {
 }
 
 function Hero({ ctx }: { ctx: HomeContext }) {
+  const [cityPickerOpen, setCityPickerOpen] = useState(false);
+  const [cityQuery, setCityQuery] = useState("");
+  const filteredCities = ctx.cityOptions.filter((city) => city.toLocaleLowerCase("az").includes(cityQuery.trim().toLocaleLowerCase("az")));
   return (
     <Box component="section" className={styles.hero}>
       <Container maxWidth="xl" className={styles.heroGrid}>
@@ -231,17 +238,26 @@ function Hero({ ctx }: { ctx: HomeContext }) {
             <Button variant="contained" startIcon={<MyLocationRounded />} onClick={ctx.handleLocationActivation} disabled={ctx.locationLoading}>
               {ctx.locationLoading ? "Lokasiya alınır..." : "Yaxınlıqdakı işləri göstər"}
             </Button>
-            <Button variant="outlined" onClick={() => ctx.setCity("Bakı")}>Şəhəri özüm seçim</Button>
+            <Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => setCityPickerOpen(true)}>Şəhəri özüm seçim</Button>
           </Stack>
           <Stack direction="row" gap={1} alignItems="center" mt={2} color="text.secondary">
             <LockRounded sx={{ fontSize: 16 }} /><Typography variant="caption">Dəqiq ünvanınız işəgötürənlərlə paylaşılmır.</Typography>
           </Stack>
         </Stack>
-        <Box className={styles.skyline} aria-hidden="true">
-          <Box className={styles.skylineLines} />
-          <LocationOnRounded className={styles.heroPin} />
+        <Box className={styles.skyline} aria-label="Bakı şəhərinin sahil mənzərəsi">
+          <Image src="/baku-nearby-jobs.png" alt="Bakı sahili və vakansiya lokasiyası" fill priority sizes="(max-width: 800px) 100vw, 52vw" className={styles.heroImage} />
         </Box>
       </Container>
+      <Dialog open={cityPickerOpen} onClose={() => setCityPickerOpen(false)} fullWidth maxWidth="xs" aria-labelledby="city-picker-title">
+        <DialogTitle id="city-picker-title">Şəhər seçin</DialogTitle>
+        <DialogContent>
+          <TextField autoFocus fullWidth value={cityQuery} onChange={(event) => setCityQuery(event.target.value)} placeholder="Şəhər axtar..." inputProps={{ "aria-label": "Şəhər axtar" }} sx={{ mt: 1, mb: 2 }} />
+          <Box className={styles.cityPickerList}>
+            {filteredCities.map((city) => <Button key={city} fullWidth variant={ctx.city === city ? "contained" : "outlined"} startIcon={<PlaceOutlined />} onClick={() => { void ctx.handleCitySelection(city); setCityPickerOpen(false); setCityQuery(""); }}>{city}</Button>)}
+            {!filteredCities.length && <Typography color="text.secondary" textAlign="center" py={2}>Bu adla şəhər tapılmadı.</Typography>}
+          </Box>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 }
@@ -304,7 +320,7 @@ function ProximityMap({ ctx }: { ctx: HomeContext }) {
     <Container maxWidth="xl" sx={{ mt: 2.5 }}>
       <Card className={styles.proximityCard}>
         <Stack className={styles.proximityCopy}>
-          <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography data-no-translate variant="h5" component="h2">{ctx.effectiveLocation ? <>{ctx.effectiveLocation.address} {radius / 1000} km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</> : ctx.locationLoading ? "Cari lokasiyanız müəyyən edilir..." : "Yaxın elanları görmək üçün cari lokasiyanızı aktivləşdirin."}</Typography></Stack>
+          <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography data-no-translate variant="h5" component="h2">{ctx.city ? <>{ctx.city} şəhərində <strong>{count} vakansiya</strong> tapdıq.</> : ctx.effectiveLocation ? <>{ctx.effectiveLocation.address} {radius / 1000} km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</> : ctx.locationLoading ? "Cari lokasiyanız müəyyən edilir..." : "Yaxın elanları görmək üçün lokasiyanızı aktivləşdirin və ya şəhər seçin."}</Typography></Stack>
           <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={openNearbyJobs}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => document.getElementById("proximity-live-map")?.scrollIntoView({ behavior: "smooth", block: "center" })}>Xəritədə göstər</Button></Stack>
           <Button onClick={ctx.handleLocationActivation} disabled={ctx.locationLoading}>Lokasiyamı yenilə</Button><Typography variant="caption" fontWeight={800}>Radius</Typography>
           <Stack direction="row" gap={1}>{radiusOptions.map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={radius === item ? "primary" : "default"} variant={radius === item ? "filled" : "outlined"} aria-label={`${item / 1000} kilometr radius seç`} />)}</Stack>

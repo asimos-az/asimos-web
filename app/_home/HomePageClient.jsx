@@ -21,6 +21,7 @@ import { getRouteForSection, getSectionForPath } from "./sectionRoutes";
 import {
   SOCKET_URL,
   cityOptions,
+  cityCoordinates,
   employerNav,
   employerSupportCategories,
   guestNav,
@@ -238,7 +239,11 @@ export default function HomePageClient({ initialSection = "home" }) {
   // Cihazdan son alınmış lokasiya profildə saxlanmış köhnə lokasiyadan daha aktualdır.
   const effectiveLocation = deviceLocation;
   const jobsRequestId = useRef(0);
-  const homeJobs = useMemo(() => effectiveLocation ? jobs.filter(isPublicHomeJob).filter((job) => typeof job.distanceM === "number" && job.distanceM <= Number(homeRadiusM)).sort((a, b) => a.distanceM - b.distanceM) : [], [jobs, effectiveLocation, homeRadiusM]);
+  const selectedCityLocation = cityCoordinates[city] || null;
+  const homeJobs = useMemo(() => {
+    if (city) return jobs.filter(isPublicHomeJob);
+    return effectiveLocation ? jobs.filter(isPublicHomeJob).filter((job) => typeof job.distanceM === "number" && job.distanceM <= Number(homeRadiusM)).sort((a, b) => a.distanceM - b.distanceM) : [];
+  }, [jobs, effectiveLocation, homeRadiusM, city]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
 
   const unreadNotifications = useMemo(
@@ -518,9 +523,9 @@ export default function HomePageClient({ initialSection = "home" }) {
       api
         .listJobsWithSearch({
           q: appliedFilters.search || undefined,
-          lat: effectiveLocation?.lat,
-          lng: effectiveLocation?.lng,
-          radius_m: effectiveLocation && Number(appliedFilters.radiusM || 0) > 0 ? Number(appliedFilters.radiusM) : undefined,
+          lat: appliedFilters.city ? undefined : effectiveLocation?.lat,
+          lng: appliedFilters.city ? undefined : effectiveLocation?.lng,
+          radius_m: !appliedFilters.city && effectiveLocation && Number(appliedFilters.radiusM || 0) > 0 ? Number(appliedFilters.radiusM) : undefined,
           daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: appliedFilters.jobType || undefined,
           jobLevel: appliedFilters.jobLevel || undefined,
@@ -637,9 +642,9 @@ export default function HomePageClient({ initialSection = "home" }) {
 
     const res = await api.listJobsWithSearch({
       q: filters.search || undefined,
-      lat: effectiveLocation?.lat,
-      lng: effectiveLocation?.lng,
-      radius_m: effectiveLocation && Number(filters.radiusM || 0) > 0 ? Number(filters.radiusM) : undefined,
+      lat: filters.city ? undefined : effectiveLocation?.lat,
+      lng: filters.city ? undefined : effectiveLocation?.lng,
+      radius_m: !filters.city && effectiveLocation && Number(filters.radiusM || 0) > 0 ? Number(filters.radiusM) : undefined,
       daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: filters.jobType || undefined,
       jobLevel: filters.jobLevel || undefined,
@@ -730,6 +735,21 @@ export default function HomePageClient({ initialSection = "home" }) {
       setActiveSection("jobs");
     } catch (e) {
       setError(e.message || "Axtarış zamanı xəta baş verdi");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function handleCitySelection(value) {
+    setCity(value);
+    setError("");
+    const nextFilters = { ...appliedFilters, city: value };
+    setAppliedFilters(nextFilters);
+    try {
+      setLoading(true);
+      await refreshJobs(nextFilters);
+    } catch (selectionError) {
+      setError(selectionError.message || "Seçilmiş şəhər üzrə vakansiyalar yüklənmədi");
     } finally {
       setLoading(false);
     }
@@ -1939,10 +1959,10 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   const sectionCtx = {
     styles,
-    activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
+    activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, handleCitySelection, loading, handleHeroSearchSubmit,
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
-    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, seekersOnMap, focusedMapJobId, setFocusedMapJobId, effectiveLocation, homeRadiusM, handleHomeRadiusChange, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
+    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, seekersOnMap, focusedMapJobId, setFocusedMapJobId, effectiveLocation: city ? selectedCityLocation : effectiveLocation, homeRadiusM, handleHomeRadiusChange, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,

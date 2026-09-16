@@ -16,6 +16,12 @@ export const employerSupportCategories = ["Elan yükləyə bilmirəm", "Namizəd
 export const seekerSupportCategories = ["İşə müraciət edə bilmirəm", "Profilimi tamamlaya bilmirəm", "Hesab ilə bağlı problem", "Təklif və İradlar", "Digər"];
 
 export const cityOptions = ["Bakı", "Sumqayıt", "Gəncə", "Mingəçevir", "Şəki", "Lənkəran", "Şirvan", "Naxçıvan", "Quba", "Xaçmaz", "Masallı", "Salyan"];
+export const cityCoordinates = {
+  "Bakı": { lat: 40.4093, lng: 49.8671 }, "Sumqayıt": { lat: 40.5897, lng: 49.6686 }, "Gəncə": { lat: 40.6828, lng: 46.3606 },
+  "Mingəçevir": { lat: 40.7703, lng: 47.0496 }, "Şəki": { lat: 41.1919, lng: 47.1706 }, "Lənkəran": { lat: 38.7543, lng: 48.8506 },
+  "Şirvan": { lat: 39.9316, lng: 48.9202 }, "Naxçıvan": { lat: 39.2089, lng: 45.4122 }, "Quba": { lat: 41.3611, lng: 48.5134 },
+  "Xaçmaz": { lat: 41.4643, lng: 48.8057 }, "Masallı": { lat: 39.0341, lng: 48.6654 }, "Salyan": { lat: 39.5962, lng: 48.9848 },
+};
 
 export const vacancyTypeOptions = [
   { label: "Növbə əsasında", value: "shift" },
