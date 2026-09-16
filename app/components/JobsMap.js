@@ -359,6 +359,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
     const jobsLayer = layersRef.current.jobs;
     const seekersLayer = layersRef.current.seekers;
     const contextLayer = layersRef.current.context;
+    let focusRetryTimer = null;
 
     jobsLayer.clearLayers();
     seekersLayer.clearLayers();
@@ -427,9 +428,23 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
     if (focusedMarker) {
       const latLng = focusedMarker.getLatLng();
       mapRef.current.setView(latLng, 15, { animate: true });
-      jobsLayer.zoomToShowLayer(focusedMarker, () => focusedMarker.openPopup());
       setJobsRendered(true);
-      return;
+      let attempts = 0;
+      const revealFocusedMarker = () => {
+        if (!mapRef.current) return;
+        if (!jobsLayer.hasLayer(focusedMarker)) {
+          if (attempts++ < 40) focusRetryTimer = window.setTimeout(revealFocusedMarker, 50);
+          return;
+        }
+        try {
+          jobsLayer.zoomToShowLayer(focusedMarker, () => focusedMarker.openPopup());
+        } catch (error) {
+          console.warn("Selected map marker could not be expanded from its cluster", error);
+          mapRef.current?.setView(latLng, 15);
+        }
+      };
+      revealFocusedMarker();
+      return () => { if (focusRetryTimer) window.clearTimeout(focusRetryTimer); };
     }
 
     if (bounds.length === 1) {
@@ -442,6 +457,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
 
     setJobsRendered(true);
     setTimeout(() => mapRef.current?.invalidateSize(), 120);
+    return () => { if (focusRetryTimer) window.clearTimeout(focusRetryTimer); };
   }, [jobsWithCoordinates, seekersWithCoordinates, focusedJobId, mapReady, radiusM, userLocation?.lat, userLocation?.lng]);
 
   return (
