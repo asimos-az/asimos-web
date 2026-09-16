@@ -132,6 +132,24 @@
   background: #315bd6;
 }
 
+.jobs-map-seeker-cluster-wrap {
+  background: transparent;
+  border: 0;
+}
+.jobs-map-seeker-cluster {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #315bd6;
+  color: #fff;
+  box-shadow: 0 3px 12px rgba(28, 58, 132, .36);
+  font-size: 14px;
+  font-weight: 850;
+}
+
 .jobs-map-marker-wrap,
 .jobs-map-user-marker-wrap,
 .jobs-map-seeker-marker-wrap {

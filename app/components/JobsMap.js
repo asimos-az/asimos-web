@@ -310,10 +310,26 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           disableClusteringAtZoom: 16,
         });
 
+        const seekersLayer = L.markerClusterGroup({
+          chunkedLoading: true,
+          maxClusterRadius: 44,
+          removeOutsideVisibleBounds: true,
+          showCoverageOnHover: false,
+          spiderfyOnMaxZoom: true,
+          disableClusteringAtZoom: 15,
+          iconCreateFunction: (cluster) => L.divIcon({
+            className: "jobs-map-seeker-cluster-wrap",
+            html: `<div class="jobs-map-seeker-cluster">${cluster.getChildCount()}</div>`,
+            iconSize: [42, 42],
+            iconAnchor: [21, 21],
+          }),
+        });
+
         jobsLayer.addTo(map);
+        seekersLayer.addTo(map);
 
         const contextLayer = L.layerGroup().addTo(map);
-        layersRef.current = { jobs: jobsLayer, context: contextLayer };
+        layersRef.current = { jobs: jobsLayer, seekers: seekersLayer, context: contextLayer };
         mapRef.current = map;
         setMapReady(true);
 
@@ -341,9 +357,11 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
 
     const L = window.L;
     const jobsLayer = layersRef.current.jobs;
+    const seekersLayer = layersRef.current.seekers;
     const contextLayer = layersRef.current.context;
 
     jobsLayer.clearLayers();
+    seekersLayer.clearLayers();
     contextLayer.clearLayers();
     setJobsRendered(false);
 
@@ -368,7 +386,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
     seekersWithCoordinates.forEach((seeker) => {
       L.marker([seeker.lat, seeker.lng], { icon: createSeekerMarkerIcon(L), riseOnHover: true })
         .bindPopup(buildSeekerPopup(seeker), { maxWidth: 300 })
-        .addTo(contextLayer);
+        .addTo(seekersLayer);
       bounds.push([seeker.lat, seeker.lng]);
     });
 
@@ -433,7 +451,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           <div className="jobs-map-card-icon" aria-hidden="true">🗺️</div>
           <div>
             <h2>📍 {showSeekers ? "Vakansiyalar və iş axtaranlar" : "Kateqoriya üzrə elan xəritəsi"}</h2>
-            <p>{showSeekers ? seekersWithCoordinates.length ? "Yalnız xəritədə görünməyə razılıq verən iş axtaranların təxmini lokasiyaları göstərilir." : "Hazırda xəritədə görünməyə razılıq verən iş axtaran yoxdur." : "Yaxınlıqdakı qaynar iş məkanları"}</p>
+            <p>{showSeekers ? seekersWithCoordinates.length ? "İş axtaranların təxmini lokasiyaları göstərilir; şəxsi əlaqə məlumatları gizlidir." : "Lokasiyası qeyd edilmiş iş axtaran tapılmadı." : "Yaxınlıqdakı qaynar iş məkanları"}</p>
           </div>
         </header>
 
