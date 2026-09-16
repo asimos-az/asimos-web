@@ -20,7 +20,7 @@ import { AppHeader } from "./components/redesign/HomepageRedesign";
 import { getRouteForSection, getSectionForPath } from "./sectionRoutes";
 import {
   SOCKET_URL,
-  cityOptions,
+  cityOptions as defaultCityOptions,
   cityCoordinates,
   employerNav,
   employerSupportCategories,
@@ -143,6 +143,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   const [focusedMapJobId, setFocusedMapJobId] = useState(null);
   const [category, setCategory] = useState("");
   const [city, setCity] = useState("");
+  const [cityOptions, setCityOptions] = useState(defaultCityOptions);
   const [jobType, setJobType] = useState("");
   const [jobLevel, setJobLevel] = useState("");
   const [activeHomeFilterTab, setActiveHomeFilterTab] = useState("type");
@@ -518,7 +519,7 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   async function loadBaseData() {
     const requestId = ++jobsRequestId.current;
-    const [categoryRes, jobsRes, termsRes, filterOptionsRes] = await Promise.all([
+    const [categoryRes, jobsRes, termsRes, filterOptionsRes, citiesRes] = await Promise.all([
       api.listCategories().catch(() => ({ items: [] })),
       api
         .listJobsWithSearch({
@@ -538,9 +539,11 @@ export default function HomePageClient({ initialSection = "home" }) {
         .catch(() => ({ items: [] })),
       api.getContent("terms").catch(() => null),
       api.getJobFilterOptions().catch(() => null),
+      api.getCityDirectory().catch(() => ({ items: defaultCityOptions })),
     ]);
 
     setCategories(flattenCategories(categoryRes?.items || categoryRes));
+    setCityOptions(Array.isArray(citiesRes?.items) && citiesRes.items.length ? citiesRes.items : defaultCityOptions);
     if (filterOptionsRes) {
       setJobFilterOptions({
         vacancyTypes: Array.isArray(filterOptionsRes.vacancyTypes) && filterOptionsRes.vacancyTypes.length ? filterOptionsRes.vacancyTypes : vacancyTypeOptions,

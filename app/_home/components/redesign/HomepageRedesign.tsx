@@ -251,7 +251,7 @@ function Hero({ ctx }: { ctx: HomeContext }) {
       <Dialog open={cityPickerOpen} onClose={() => setCityPickerOpen(false)} fullWidth maxWidth="xs" aria-labelledby="city-picker-title">
         <DialogTitle id="city-picker-title">Şəhər seçin</DialogTitle>
         <DialogContent>
-          <TextField autoFocus fullWidth value={cityQuery} onChange={(event) => setCityQuery(event.target.value)} placeholder="Şəhər axtar..." inputProps={{ "aria-label": "Şəhər axtar" }} sx={{ mt: 1, mb: 2 }} />
+          <TextField autoFocus fullWidth size="small" value={cityQuery} onChange={(event) => setCityQuery(event.target.value)} placeholder="Şəhər axtar..." autoComplete="off" inputProps={{ "aria-label": "Şəhər axtar" }} sx={{ mt: 1, mb: 2, "& .MuiInputBase-root": { height: 52, fontSize: 16 }, "& input": { height: "auto", py: 1.5 } }} />
           <Box className={styles.cityPickerList}>
             {filteredCities.map((city) => <Button key={city} fullWidth variant={ctx.city === city ? "contained" : "outlined"} startIcon={<PlaceOutlined />} onClick={() => { void ctx.handleCitySelection(city); setCityPickerOpen(false); setCityQuery(""); }}>{city}</Button>)}
             {!filteredCities.length && <Typography color="text.secondary" textAlign="center" py={2}>Bu adla şəhər tapılmadı.</Typography>}

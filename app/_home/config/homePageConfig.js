@@ -15,7 +15,9 @@ export const employerNav = publicNav;
 export const employerSupportCategories = ["Elan yükləyə bilmirəm", "Namizədlərlə əlaqə problemi", "Ödəniş problemi", "Hesab ilə bağlı problem", "Təklif və İradlar", "Digər"];
 export const seekerSupportCategories = ["İşə müraciət edə bilmirəm", "Profilimi tamamlaya bilmirəm", "Hesab ilə bağlı problem", "Təklif və İradlar", "Digər"];
 
-export const cityOptions = ["Bakı", "Sumqayıt", "Gəncə", "Mingəçevir", "Şəki", "Lənkəran", "Şirvan", "Naxçıvan", "Quba", "Xaçmaz", "Masallı", "Salyan"];
+export const cityOptions = [
+  "Abşeron", "Ağcabədi", "Ağdam", "Ağdaş", "Ağdərə", "Ağstafa", "Ağsu", "Astara", "Babək", "Bakı", "Balakən", "Beyləqan", "Bərdə", "Biləsuvar", "Cəbrayıl", "Cəlilabad", "Culfa", "Daşkəsən", "Füzuli", "Gədəbəy", "Gəncə", "Goranboy", "Göyçay", "Göygöl", "Hacıqabul", "Xankəndi", "Xaçmaz", "Xızı", "Xocalı", "Xocavənd", "Xudat", "İmişli", "İsmayıllı", "Kəlbəcər", "Kəngərli", "Kürdəmir", "Laçın", "Lerik", "Lənkəran", "Masallı", "Mingəçevir", "Naftalan", "Naxçıvan", "Neftçala", "Oğuz", "Ordubad", "Qax", "Qazax", "Qəbələ", "Qobustan", "Quba", "Qubadlı", "Qusar", "Saatlı", "Sabirabad", "Sədərək", "Şabran", "Şahbuz", "Şamaxı", "Şəmkir", "Şəki", "Şərur", "Şirvan", "Siyəzən", "Sumqayıt", "Şuşa", "Tərtər", "Tovuz", "Ucar", "Yardımlı", "Yevlax", "Zaqatala", "Zəngilan", "Zərdab",
+];
 export const cityCoordinates = {
   "Bakı": { lat: 40.4093, lng: 49.8671 }, "Sumqayıt": { lat: 40.5897, lng: 49.6686 }, "Gəncə": { lat: 40.6828, lng: 46.3606 },
   "Mingəçevir": { lat: 40.7703, lng: 47.0496 }, "Şəki": { lat: 41.1919, lng: 47.1706 }, "Lənkəran": { lat: 38.7543, lng: 48.8506 },
