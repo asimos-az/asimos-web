@@ -160,10 +160,10 @@ export default function HomePageClient({ initialSection = "home" }) {
     jobLevel: "",
     minWage: "",
     maxWage: "",
-    radiusM: "1000",
+    radiusM: "30000",
   });
   const [radiusM, setRadiusM] = useState("0");
-  const [homeRadiusM, setHomeRadiusM] = useState("1000");
+  const [homeRadiusM, setHomeRadiusM] = useState("30000");
   const [myJobsStatus, setMyJobsStatus] = useState("open");
   const [jobsVisibleCount, setJobsVisibleCount] = useState(10);
   const [editingJobId, setEditingJobId] = useState(null);
@@ -242,7 +242,10 @@ export default function HomePageClient({ initialSection = "home" }) {
   const jobsRequestId = useRef(0);
   const selectedCityLocation = cityCoordinates[city] || null;
   const homeJobs = useMemo(() => {
-    if (city) return jobs.filter(isPublicHomeJob);
+    if (city) return jobs.filter(isPublicHomeJob).filter((job) => {
+      const distance = job.distanceM ?? job.distance_m;
+      return typeof distance !== "number" || distance <= Number(homeRadiusM);
+    });
     return effectiveLocation ? jobs.filter(isPublicHomeJob).filter((job) => typeof job.distanceM === "number" && job.distanceM <= Number(homeRadiusM)).sort((a, b) => a.distanceM - b.distanceM) : [];
   }, [jobs, effectiveLocation, homeRadiusM, city]);
   const homeMapJobs = useMemo(() => homeJobs.filter(hasJobCoordinates), [homeJobs]);
@@ -524,9 +527,9 @@ export default function HomePageClient({ initialSection = "home" }) {
       api
         .listJobsWithSearch({
           q: appliedFilters.search || undefined,
-          lat: appliedFilters.city ? undefined : effectiveLocation?.lat,
-          lng: appliedFilters.city ? undefined : effectiveLocation?.lng,
-          radius_m: !appliedFilters.city && effectiveLocation && Number(appliedFilters.radiusM || 0) > 0 ? Number(appliedFilters.radiusM) : undefined,
+          lat: (appliedFilters.city ? cityCoordinates[appliedFilters.city] : effectiveLocation)?.lat,
+          lng: (appliedFilters.city ? cityCoordinates[appliedFilters.city] : effectiveLocation)?.lng,
+          radius_m: (appliedFilters.city ? cityCoordinates[appliedFilters.city] : effectiveLocation) && Number(appliedFilters.radiusM || 0) > 0 ? Number(appliedFilters.radiusM) : undefined,
           daily: jobsMode === "daily" || dailyOnly || undefined,
           jobType: appliedFilters.jobType || undefined,
           jobLevel: appliedFilters.jobLevel || undefined,
@@ -645,9 +648,9 @@ export default function HomePageClient({ initialSection = "home" }) {
 
     const res = await api.listJobsWithSearch({
       q: filters.search || undefined,
-      lat: filters.city ? undefined : effectiveLocation?.lat,
-      lng: filters.city ? undefined : effectiveLocation?.lng,
-      radius_m: !filters.city && effectiveLocation && Number(filters.radiusM || 0) > 0 ? Number(filters.radiusM) : undefined,
+      lat: (filters.city ? cityCoordinates[filters.city] : effectiveLocation)?.lat,
+      lng: (filters.city ? cityCoordinates[filters.city] : effectiveLocation)?.lng,
+      radius_m: (filters.city ? cityCoordinates[filters.city] : effectiveLocation) && Number(filters.radiusM || 0) > 0 ? Number(filters.radiusM) : undefined,
       daily: jobsMode === "daily" || dailyOnly || undefined,
       jobType: filters.jobType || undefined,
       jobLevel: filters.jobLevel || undefined,

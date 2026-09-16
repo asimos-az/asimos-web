@@ -297,41 +297,7 @@ function SearchPanel({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function ProximityMap({ ctx }: { ctx: HomeContext }) {
-  const radius = Number(ctx.homeRadiusM) || 1000;
-  const radiusOptions = [1000, 3000, 5000, 10000];
-  const nearby = useMemo(
-    () => ctx.homeJobs.filter((job) => {
-      const distance = job.distanceM ?? job.distance_m;
-      return typeof distance !== "number" || distance <= radius;
-    }),
-    [ctx.homeJobs, radius],
-  );
-  const nearbyMapJobs = useMemo(
-    () => ctx.homeMapJobs.filter((job) => nearby.some((nearbyJob) => String(nearbyJob.id) === String(job.id))),
-    [ctx.homeMapJobs, nearby],
-  );
-  const count = nearby.length;
-  const openNearbyJobs = () => {
-    ctx.setJobsMode("all");
-    ctx.setActiveSection("jobs");
-  };
-  return (
-    <Container maxWidth="xl" sx={{ mt: 2.5 }}>
-      <Card className={styles.proximityCard}>
-        <Stack className={styles.proximityCopy}>
-          <Stack direction="row" gap={1.2} alignItems="flex-start"><LocationOnRounded color="primary" /><Typography data-no-translate variant="h5" component="h2">{ctx.city ? <>{ctx.city} şəhərində <strong>{count} vakansiya</strong> tapdıq.</> : ctx.effectiveLocation ? <>{ctx.effectiveLocation.address} {radius / 1000} km yaxınlığında <strong>{count} vakansiya</strong> tapdıq.</> : ctx.locationLoading ? "Cari lokasiyanız müəyyən edilir..." : "Yaxın elanları görmək üçün lokasiyanızı aktivləşdirin və ya şəhər seçin."}</Typography></Stack>
-          <Stack direction="row" gap={1} flexWrap="wrap"><Button variant="contained" onClick={openNearbyJobs}>Elanlara bax</Button><Button variant="outlined" startIcon={<PlaceOutlined />} onClick={() => document.getElementById("proximity-live-map")?.scrollIntoView({ behavior: "smooth", block: "center" })}>Xəritədə göstər</Button></Stack>
-          <Button onClick={ctx.handleLocationActivation} disabled={ctx.locationLoading}>Lokasiyamı yenilə</Button><Typography variant="caption" fontWeight={800}>Radius</Typography>
-          <Stack direction="row" gap={1}>{radiusOptions.map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={radius === item ? "primary" : "default"} variant={radius === item ? "filled" : "outlined"} aria-label={`${item / 1000} kilometr radius seç`} />)}</Stack>
-        </Stack>
-        <Box id="proximity-live-map" className={styles.realMap}><ctx.JobsMap jobs={nearbyMapJobs} focusedJobId={ctx.focusedMapJobId} userLocation={ctx.effectiveLocation} radiusM={radius} seekers={ctx.roleName === "employer" ? ctx.seekersOnMap : []} showSeekers={ctx.roleName === "employer"} /></Box>
-      </Card>
-    </Container>
-  );
-}
-
-function JobCard({ job, ctx }: { job: Job; ctx: HomeContext }) {
+function JobCard({ job, ctx, onShowMap }: { job: Job; ctx: HomeContext; onShowMap: (job: Job) => void }) {
   const distance = job.distanceM ?? job.distance_m;
   return (
     <Card className={styles.jobCard} onMouseEnter={() => ctx.prefetchJobDetail(job.id)} onClick={() => ctx.openJobDetail(job.id)} tabIndex={0} role="article" onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}>
@@ -347,12 +313,14 @@ function JobCard({ job, ctx }: { job: Job; ctx: HomeContext }) {
       <Stack direction="row" gap={0.5} alignItems="center" color="text.secondary"><PlaceOutlined sx={{ fontSize: 15 }} /><Typography variant="caption">{address(job)}{distance ? ` • ${distance < 1000 ? `${Math.round(distance)} m` : `${(distance / 1000).toFixed(1)} km`} uzaqlıqda` : ""}</Typography></Stack>
       <Stack direction="row" gap={0.7} flexWrap="wrap"><Chip label={job.jobType || job.job_type || job.workType || "Tam iş günü"} size="small" />{job.isSponsored || job.sponsored ? <Chip label="Sponsorlu" color="warning" size="small" /> : null}</Stack>
       <Typography variant="caption" color="text.secondary">{timeAgo(job.createdAt || job.created_at)}</Typography>
+      <Button size="small" variant="outlined" startIcon={<PlaceOutlined />} onClick={(event) => { event.stopPropagation(); onShowMap(job); }}>Xəritədə bax</Button>
     </Card>
   );
 }
 
 function JobsArea({ ctx }: { ctx: HomeContext }) {
-  const jobs = ctx.homeJobs.slice(0, 4);
+  const [mapJobId, setMapJobId] = useState<string | number | null>(null);
+  const jobs = ctx.homeJobs.slice(0, 20);
   const todayJobs = ctx.homeJobs.filter((job) => {
     const value = job.createdAt || job.created_at;
     if (!value) return false;
@@ -366,14 +334,34 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
     return experience === "0" || experience.includes("tələb olunmur") || experience.includes("təcrübəsiz");
   });
   const openAll = () => { ctx.setJobsMode("all"); ctx.setFocusedMapJobId(null); ctx.setActiveSection("jobs"); };
+  const mapJob = mapJobId === null ? null : ctx.homeJobs.find((job) => String(job.id) === String(mapJobId));
   return (
     <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 5 } }}>
-      <SectionTitle action="Hamısına bax" onAction={openAll}>Sizə ən yaxın vakansiyalar</SectionTitle>
+      <Box className={styles.jobsResultsHeader}>
+        <Box><Typography component="h2" variant="h4" fontWeight={800}>Sizə ən yaxın vakansiyalar</Typography><Typography variant="body2" color="text.secondary">{ctx.city || ctx.effectiveLocation?.address || "Yaxınlığınız"} · {ctx.homeJobs.length} elan</Typography></Box>
+        <Stack direction="row" gap={0.75} className={styles.radiusChips} aria-label="Axtarış radiusu">
+          {[1000, 3000, 5000, 10000, 30000].map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={Number(ctx.homeRadiusM) === item ? "primary" : "default"} variant={Number(ctx.homeRadiusM) === item ? "filled" : "outlined"} />)}
+        </Stack>
+      </Box>
+      <Stack direction="row" justifyContent="flex-end" mb={1}><Button onClick={openAll}>Bütün vakansiyalara bax <ArrowForwardRounded sx={{ ml: 0.5 }} /></Button></Stack>
       {ctx.error ? <Alert severity="error" sx={{ mb: 2 }}>{ctx.error}</Alert> : null}
       {ctx.ok ? <Alert severity="success" sx={{ mb: 2 }}>{ctx.ok}</Alert> : null}
       <Box className={styles.jobsGrid}>
-        {jobs.length ? jobs.map((job) => <JobCard key={job.id} job={job} ctx={ctx} />) : Array.from({ length: 4 }, (_, index) => <Card key={index} className={styles.emptyCard}><BusinessCenterRounded color="disabled" /><Typography data-no-translate fontWeight={700}>{ctx.locationLoading ? "Lokasiya müəyyən edilir..." : "Yaxınlıqda uyğun vakansiya tapılmadı"}</Typography><Typography variant="body2" color="text.secondary">Lokasiyanı yoxlayın və ya axtarış radiusunu artırın.</Typography></Card>)}
+        {jobs.length ? jobs.map((job) => <JobCard key={job.id} job={job} ctx={ctx} onShowMap={(selected) => setMapJobId(selected.id)} />) : <Card className={styles.emptyCard}><BusinessCenterRounded color="disabled" /><Typography data-no-translate fontWeight={700}>{ctx.locationLoading ? "Lokasiya müəyyən edilir..." : "Bu radiusda vakansiya tapılmadı"}</Typography><Typography variant="body2" color="text.secondary">Radiusu artırın və ya şəhər seçin.</Typography></Card>}
       </Box>
+      <Dialog open={Boolean(mapJob)} onClose={() => setMapJobId(null)} fullWidth maxWidth="xl" PaperProps={{ className: styles.jobsMapDialog }} aria-labelledby="nearby-jobs-map-title">
+        <Box className={styles.jobsMapDialogHeader}><Box><Typography id="nearby-jobs-map-title" variant="h6" fontWeight={800}>Vakansiyaların xəritəsi</Typography><Typography variant="body2" color="text.secondary">{ctx.homeRadiusM ? `${Number(ctx.homeRadiusM) / 1000} km radiusda ${ctx.homeJobs.length} elan` : `${ctx.homeJobs.length} elan`}</Typography></Box><IconButton onClick={() => setMapJobId(null)} aria-label="Xəritəni bağla"><CloseRounded /></IconButton></Box>
+        <DialogContent className={styles.jobsMapDialogContent}>
+          <Box className={styles.jobsMapDialogMap}><ctx.JobsMap jobs={ctx.homeMapJobs} focusedJobId={mapJob?.id || null} userLocation={ctx.effectiveLocation} radiusM={Number(ctx.homeRadiusM) || 30000} /></Box>
+          <Stack className={styles.jobsMapDialogList} divider={<Divider flexItem />}>
+            {ctx.homeJobs.map((job) => <Box key={job.id} className={styles.mapJobRow}>
+              <Button className={styles.mapJobSelect} onClick={() => setMapJobId(job.id)} aria-pressed={String(mapJobId) === String(job.id)}><Box textAlign="left" minWidth={0}><Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography><Typography variant="body2" color="text.secondary" noWrap>{company(job)} · {address(job)}</Typography><Typography variant="caption" color="primary.main" fontWeight={800}>{salary(job)}</Typography></Box></Button>
+              <Button size="small" onClick={() => { setMapJobId(null); ctx.openJobDetail(job.id); }}>Elana bax</Button>
+            </Box>)}
+            {!ctx.homeJobs.length && <Typography color="text.secondary" p={2}>Bu radiusda göstəriləcək elan yoxdur.</Typography>}
+          </Stack>
+        </DialogContent>
+      </Dialog>
       <Box className={styles.collectionsGrid}>
         <MiniList title="Bu gün əlavə olunanlar" jobs={todayJobs} ctx={ctx} icon={QueryBuilderRounded} emptyText="Bu gün yeni vakansiya yerləşdirilməyib." />
         <MetroList jobs={ctx.homeJobs} ctx={ctx} />
@@ -420,5 +408,5 @@ function CareerAdvice() {
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;
-  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><ProximityMap ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta ctx={ctx} /><Stats ctx={ctx} /><CareerAdvice /></Box>;
+  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta ctx={ctx} /><Stats ctx={ctx} /><CareerAdvice /></Box>;
 }
