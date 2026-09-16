@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"app/_home/HomePageClient.jsx -> ../components/JobsMap":{"id":2813,"files":["static/css/21477d3ee1664d26.css","static/chunks/813.5a99cada3a4cbf2a.js"]}}';
+self.__REACT_LOADABLE_MANIFEST='{"app/_home/components/HomeJobsMap.jsx -> ../../components/JobsMap":{"id":2813,"files":["static/css/243a1e17c1cfb9e0.css","static/chunks/813.de948801f3e7c9bf.js"]}}';

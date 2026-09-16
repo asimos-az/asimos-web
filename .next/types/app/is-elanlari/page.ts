@@ -1,4 +1,4 @@
-// File: /Users/khayyammammadli/Desktop/remote-frelance/asimos-web/app/is-elanlari/page.jsx
+// File: /Users/test/Desktop/asimos/asimos-web/app/is-elanlari/page.jsx
 import * as entry from '../../../../app/is-elanlari/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 
