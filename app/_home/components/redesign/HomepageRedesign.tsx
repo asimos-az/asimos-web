@@ -5,7 +5,6 @@ import Link from "next/link";
 import Image from "next/image";
 import {
   Alert,
-  Avatar,
   Box,
   Button,
   Card,
@@ -31,7 +30,6 @@ import {
   BookmarkBorderRounded,
   BusinessCenterRounded,
   CampaignRounded,
-  ChevronRightRounded,
   CloseRounded,
   CodeRounded,
   HeadsetMicRounded,
@@ -56,6 +54,7 @@ import {
 import styles from "./HomepageRedesign.module.css";
 import { useI18n } from "../../../../lib/i18n";
 import { getNearestBakuPlace } from "../../../../lib/baku-nearby-places";
+import SharedJobCard from "../../../components/JobCard";
 
 type JobLocation = { address?: string; lat?: number | string; lng?: number | string };
 type SeekerMapCandidate = { id: string; lat: number; lng: number; profession: string; category: string; district: string; experience: string };
@@ -146,15 +145,6 @@ function compactNumber(value: number): string {
   return new Intl.NumberFormat("az-AZ").format(Math.max(0, Math.round(value)));
 }
 
-function timeAgo(value?: string): string {
-  if (!value) return "Yeni əlavə olunub";
-  const timestamp = new Date(value).getTime();
-  if (!Number.isFinite(timestamp)) return "Yeni əlavə olunub";
-  const hours = Math.max(1, Math.round((Date.now() - timestamp) / 3_600_000));
-  if (hours < 24) return `${hours} saat əvvəl`;
-  return `${Math.max(1, Math.round(hours / 24))} gün əvvəl`;
-}
-
 function salary(job: Job): string {
   const value = job.wage ?? job.salary;
   if (value === null || value === undefined || value === "") return "Maaş razılaşma ilə";
@@ -167,11 +157,6 @@ function address(job: Job): string {
 
 function company(job: Job): string {
   return job.companyName || job.company_name || "Təsdiqlənmiş şirkət";
-}
-
-function logo(job: Job): string | undefined {
-  const value = job.companyLogo || job.company_logo;
-  return value && /^https?:\/\//.test(value) ? value : undefined;
 }
 
 function SectionTitle({ children, action, onAction }: { children: ReactNode; action?: string; onAction?: () => void }) {
@@ -299,27 +284,6 @@ function SearchPanel({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function JobCard({ job, ctx, onShowMap }: { job: Job; ctx: HomeContext; onShowMap: (job: Job) => void }) {
-  const distance = job.distanceM ?? job.distance_m;
-  return (
-    <Card className={styles.jobCard} onMouseEnter={() => ctx.prefetchJobDetail(job.id)} onClick={() => ctx.openJobDetail(job.id)} tabIndex={0} role="article" onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}>
-      <Stack direction="row" justifyContent="space-between" alignItems="flex-start">
-        <Avatar src={logo(job)} variant="rounded" sx={{ width: 48, height: 48, bgcolor: "primary.light", color: "primary.dark", fontWeight: 800 }}>{company(job).slice(0, 1)}</Avatar>
-        <IconButton size="small" aria-label="Elanı seçimlərə əlavə et" onClick={(event) => { event.stopPropagation(); ctx.handleToggleFavorite(job, event); }} color={ctx.favoriteJobIds.has(String(job.id)) ? "primary" : "default"}><BookmarkBorderRounded /></IconButton>
-      </Stack>
-      <Box>
-        <Typography component="h3" fontWeight={800} className={styles.jobTitle}>{job.title || "Vakansiya"}</Typography>
-        <Typography variant="body2" color="text.secondary">{company(job)}</Typography>
-      </Box>
-      <Typography fontWeight={800}>{salary(job)}</Typography>
-      <Stack direction="row" gap={0.5} alignItems="center" color="text.secondary"><PlaceOutlined sx={{ fontSize: 15 }} /><Typography variant="caption">{address(job)}{distance ? ` • ${distance < 1000 ? `${Math.round(distance)} m` : `${(distance / 1000).toFixed(1)} km`} uzaqlıqda` : ""}</Typography></Stack>
-      <Stack direction="row" gap={0.7} flexWrap="wrap"><Chip label={job.jobType || job.job_type || job.workType || "Tam iş günü"} size="small" />{job.isSponsored || job.sponsored ? <Chip label="Sponsorlu" color="warning" size="small" /> : null}</Stack>
-      <Typography variant="caption" color="text.secondary">{timeAgo(job.createdAt || job.created_at)}</Typography>
-      <Button size="small" variant="outlined" startIcon={<PlaceOutlined />} onClick={(event) => { event.stopPropagation(); onShowMap(job); }}>Xəritədə bax</Button>
-    </Card>
-  );
-}
-
 function JobsArea({ ctx }: { ctx: HomeContext }) {
   const [mapJobId, setMapJobId] = useState<string | number | null>(null);
   const jobs = ctx.homeJobs.slice(0, 20);
@@ -328,11 +292,14 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
     .filter((item): item is { job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> } => Boolean(item.nearestPlace && item.nearestPlace.distanceM <= 5000))
     .sort((a, b) => a.nearestPlace.distanceM - b.nearestPlace.distanceM), [ctx.allJobs]);
   const openAll = () => { ctx.setJobsMode("all"); ctx.setFocusedMapJobId(null); ctx.setActiveSection("jobs"); };
-  const mapJob = mapJobId === null ? null : ctx.homeJobs.find((job) => String(job.id) === String(mapJobId));
+  const mapJob = mapJobId === null ? null : ctx.allJobs.find((job) => String(job.id) === String(mapJobId));
+  const modalMapJobs = mapJob && !ctx.homeMapJobs.some((job) => String(job.id) === String(mapJob.id))
+    ? [...ctx.homeMapJobs, mapJob]
+    : ctx.homeMapJobs;
   return (
     <Container maxWidth="xl" sx={{ mt: { xs: 4, md: 5 } }}>
       <Box className={styles.jobsResultsHeader}>
-        <Box><Typography component="h2" variant="h4" fontWeight={800}>Sizə ən yaxın vakansiyalar</Typography><Typography variant="body2" color="text.secondary">{ctx.city || ctx.effectiveLocation?.address || "Yaxınlığınız"} · {ctx.homeJobs.length} elan</Typography></Box>
+        <Box><Typography component="h2" variant="h4" fontWeight={800}>Sizə ən yaxın vakansiyalar</Typography><Typography variant="body2" color="text.secondary">{ctx.city || ctx.effectiveLocation?.address || "Yaxınlığınız"} · {jobs.length} göstərilir, cəmi {ctx.homeJobs.length} elan</Typography></Box>
         <Stack direction="row" gap={0.75} className={styles.radiusChips} aria-label="Axtarış radiusu">
           {[1000, 3000, 5000, 10000, 30000].map((item) => <Chip key={item} label={`${item / 1000} km`} clickable onClick={() => ctx.handleHomeRadiusChange(String(item))} color={Number(ctx.homeRadiusM) === item ? "primary" : "default"} variant={Number(ctx.homeRadiusM) === item ? "filled" : "outlined"} />)}
         </Stack>
@@ -341,12 +308,12 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
       {ctx.error ? <Alert severity="error" sx={{ mb: 2 }}>{ctx.error}</Alert> : null}
       {ctx.ok ? <Alert severity="success" sx={{ mb: 2 }}>{ctx.ok}</Alert> : null}
       <Box className={styles.jobsGrid}>
-        {jobs.length ? jobs.map((job) => <JobCard key={job.id} job={job} ctx={ctx} onShowMap={(selected) => setMapJobId(selected.id)} />) : <Card className={styles.emptyCard}><BusinessCenterRounded color="disabled" /><Typography data-no-translate fontWeight={700}>{ctx.locationLoading ? "Lokasiya müəyyən edilir..." : "Bu radiusda vakansiya tapılmadı"}</Typography><Typography variant="body2" color="text.secondary">Radiusu artırın və ya şəhər seçin.</Typography></Card>}
+        {jobs.length ? jobs.map((job) => <SharedJobCard key={job.id} job={job} onClick={() => ctx.openJobDetail(job.id)} onPrefetch={() => ctx.prefetchJobDetail(job.id)} isFavorite={ctx.favoriteJobIds.has(String(job.id))} onToggleFavorite={(event: MouseEvent<HTMLButtonElement>) => ctx.handleToggleFavorite(job, event)} onShowMap={() => setMapJobId(job.id)} />) : <Card className={styles.emptyCard}><BusinessCenterRounded color="disabled" /><Typography data-no-translate fontWeight={700}>{ctx.locationLoading ? "Lokasiya müəyyən edilir..." : "Bu radiusda vakansiya tapılmadı"}</Typography><Typography variant="body2" color="text.secondary">Radiusu artırın və ya şəhər seçin.</Typography></Card>}
       </Box>
       <Dialog open={Boolean(mapJob)} onClose={() => setMapJobId(null)} fullWidth maxWidth="xl" PaperProps={{ className: styles.jobsMapDialog }} aria-labelledby="nearby-jobs-map-title">
         <Box className={styles.jobsMapDialogHeader}><Box><Typography id="nearby-jobs-map-title" variant="h6" fontWeight={800}>Vakansiyaların xəritəsi</Typography><Typography variant="body2" color="text.secondary">{ctx.homeRadiusM ? `${Number(ctx.homeRadiusM) / 1000} km radiusda ${ctx.homeJobs.length} elan` : `${ctx.homeJobs.length} elan`}</Typography></Box><IconButton onClick={() => setMapJobId(null)} aria-label="Xəritəni bağla"><CloseRounded /></IconButton></Box>
         <DialogContent className={styles.jobsMapDialogContent}>
-          <Box className={styles.jobsMapDialogMap}><ctx.JobsMap jobs={ctx.homeMapJobs} focusedJobId={mapJob?.id || null} userLocation={ctx.effectiveLocation} radiusM={Number(ctx.homeRadiusM) || 30000} /></Box>
+          <Box className={styles.jobsMapDialogMap}><ctx.JobsMap jobs={modalMapJobs} focusedJobId={mapJob?.id || null} userLocation={ctx.effectiveLocation} radiusM={Number(ctx.homeRadiusM) || 30000} /></Box>
           <Stack className={styles.jobsMapDialogList} divider={<Divider flexItem />}>
             {ctx.homeJobs.map((job) => <Box key={job.id} className={styles.mapJobRow}>
               <Button className={styles.mapJobSelect} onClick={() => setMapJobId(job.id)} aria-pressed={String(mapJobId) === String(job.id)}><Box textAlign="left" minWidth={0}><Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography><Typography variant="body2" color="text.secondary" noWrap>{company(job)} · {address(job)}</Typography><Typography variant="caption" color="primary.main" fontWeight={800}>{salary(job)}</Typography></Box></Button>
@@ -357,7 +324,7 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
         </DialogContent>
       </Dialog>
       <Box className={styles.collectionsGrid}>
-        <MetroList jobs={nearbyCampusAndMetroJobs} ctx={ctx} />
+        <MetroList jobs={nearbyCampusAndMetroJobs} ctx={ctx} onShowMap={(job) => setMapJobId(job.id)} />
       </Box>
       <Box className={styles.workModeGrid}>
         <Card className={styles.modeBanner}><QueryBuilderRounded /><Box><Typography fontWeight={800}>Part-time və növbəli işlər</Typography><Typography variant="body2">{Math.max(0, Math.round(ctx.homeJobs.length * .23))} vakansiya</Typography></Box><ArrowForwardRounded /></Card>
@@ -367,26 +334,19 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function MetroList({ jobs, ctx }: { jobs: Array<{ job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> }>; ctx: HomeContext }) {
+function MetroList({ jobs, ctx, onShowMap }: { jobs: Array<{ job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> }>; ctx: HomeContext; onShowMap: (job: Job) => void }) {
+  const visibleJobs = jobs.slice(0, 8);
   return <Card className={`${styles.listCard} ${styles.nearbyPlacesCard}`}>
     <Box className={styles.collectionHeader}>
       <Box className={styles.collectionIcon}><PlaceOutlined /></Box>
       <Box flex={1}>
         <Typography component="h2" fontWeight={800}>Metro və universitetlərə yaxın işlər</Typography>
-        <Typography variant="caption" color="text.secondary">Xəritə koordinatları əsasında · metro və kampuslardan 5 km radiusda</Typography>
+      <Typography variant="caption" color="text.secondary">Vakansiya ünvanından ən yaxın metroya və ya universitetə olan məsafə · 5 km radius</Typography>
       </Box>
-      <Chip label={`${jobs.length} elan`} color="primary" variant="outlined" />
+      <Chip label={`${visibleJobs.length} göstərilir · ${jobs.length} elan`} color="primary" variant="outlined" />
     </Box>
-    {jobs.length ? <Box className={styles.nearbyPlacesGrid}>
-      {jobs.slice(0, 8).map(({ job, nearestPlace }) => <Stack key={job.id} direction="row" gap={1.5} alignItems="center" className={styles.nearbyPlaceJob} onClick={() => ctx.openJobDetail(job.id)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}>
-        <Avatar src={logo(job)} variant="rounded">{company(job).charAt(0)}</Avatar>
-        <Box flex={1} minWidth={0}>
-          <Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography>
-          <Typography variant="caption" color="text.secondary" noWrap>{company(job)} · {address(job)}</Typography>
-          <Typography className={styles.nearbyPlaceLabel} variant="caption" noWrap>{nearestPlace.type === "metro" ? "Metro" : "Universitet"}: {nearestPlace.name} · {(nearestPlace.distanceM / 1000).toFixed(1)} km</Typography>
-        </Box>
-        <ChevronRightRounded fontSize="small" />
-      </Stack>)}
+    {visibleJobs.length ? <Box className={styles.nearbyPlacesGrid}>
+      {visibleJobs.map(({ job, nearestPlace }) => <SharedJobCard key={job.id} job={{ ...job, distanceM: nearestPlace.distanceM }} nearbyLabel={`${nearestPlace.type === "metro" ? "Ən yaxın metro" : "Ən yaxın universitet"}: ${nearestPlace.name} · ${(nearestPlace.distanceM / 1000).toFixed(1)} km`} onClick={() => ctx.openJobDetail(job.id)} onPrefetch={() => ctx.prefetchJobDetail(job.id)} isFavorite={ctx.favoriteJobIds.has(String(job.id))} onToggleFavorite={(event: MouseEvent<HTMLButtonElement>) => ctx.handleToggleFavorite(job, event)} onShowMap={() => { ctx.setFocusedMapJobId(job.id); onShowMap(job); }} />)}
     </Box> : <Box className={styles.nearbyPlacesEmpty}><BusinessCenterRounded color="disabled" /><Typography fontWeight={700}>5 km radiusda uyğun elan yoxdur</Typography><Typography variant="body2" color="text.secondary">Yalnız xəritədə dəqiq lokasiyası olan elanlar göstərilir.</Typography></Box>}
   </Card>;
 }

@@ -328,3 +328,54 @@
     display: none;
   }
 }
+
+/* Shared job-card layout used by search, home, company and proximity results. */
+.job-card {
+  min-height: 0;
+  width: 100%;
+  padding: 24px;
+  border: 1px solid #dce8e6;
+  border-radius: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 0;
+  box-shadow: 0 8px 24px rgba(15, 23, 42, .045);
+  cursor: pointer;
+}
+.job-card-topline { display:flex; align-items:flex-start; gap:8px; min-height:78px; padding-right:42px; }
+.job-card-logo { width:72px; height:72px; border-radius:16px; background:#eaf8f3; color:#078f70; border:0; font-size:24px; }
+.job-card-logo img { object-fit:cover; padding:0; }
+.job-card-content { display:flex; flex-direction:column; align-items:stretch; gap:0; padding-top:12px; }
+.job-card-title-row { display:block; margin:0 0 16px; }
+.job-card-title { color:#172334; font-size:24px; line-height:1.25; font-weight:800; -webkit-line-clamp:2; }
+.job-card-company { margin:0 0 22px; color:#708197; font-size:17px; line-height:1.4; }
+.job-card-salary { margin:0 0 12px; color:#172334; font-size:20px; line-height:1.3; font-weight:800; }
+.job-card-salary span { font-weight:600; }
+.job-card-address { margin:0 0 16px; color:#708197; font-size:15px; line-height:1.5; }
+.job-card-address span { color:#078f70; font-size:20px; vertical-align:-1px; }
+.job-card-nearby { margin:-8px 0 16px; color:#078f70; font-size:14px; line-height:1.4; font-weight:650; }
+.job-card-meta { margin:0 0 22px; gap:8px; }
+.job-card-meta-item { width:max-content; min-height:34px; padding:7px 14px; font-size:14px; font-weight:600; }
+.job-card-meta-category { background:#f0f2f4; color:#435466; }
+.job-card-meta-wage { display:none; }
+.job-card-published { margin:0 0 20px; color:#708197; font-size:14px; }
+.job-card-remaining { align-self:flex-start; margin:0 0 14px; min-height:auto; padding:0; background:transparent; color:#708197; }
+.job-card-save { right:20px; top:20px; width:40px; height:40px; z-index:2; border:1px solid transparent; border-radius:10px; }
+.job-card-save.saved { background:#eaf8f3; color:#078f70; }
+.job-card-map-button { width:100%; min-height:48px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto; border:1px solid #9dd4c5; border-radius:12px; background:#fff; color:#078f70; font:inherit; font-weight:700; cursor:pointer; transition:background .15s,border-color .15s; }
+.job-card-map-button:hover { background:#f0faf6; border-color:#078f70; }
+.job-card-edit { top:24px; left:auto; right:68px; z-index:2; }
+.job-card-new-badge,.job-card-premium-badge { min-height:26px; align-self:flex-start; margin-top:4px; }
+.job-card.is-favorite { border-color:#a9ddcf; }
+@media(max-width:640px) {
+  .job-card { min-height:0; padding:20px; border-radius:16px; }
+  .job-card-topline { min-height:66px; }
+  .job-card-logo { width:60px; height:60px; border-radius:14px; }
+  .job-card-title { font-size:21px; }
+  .job-card-company { font-size:16px; margin-bottom:18px; }
+  .job-card-salary { font-size:18px; }
+  .job-card-address { font-size:14px; }
+  .job-card-meta { margin-bottom:18px; }
+  .job-card-save { right:14px; top:14px; }
+}

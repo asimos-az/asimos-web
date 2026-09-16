@@ -302,11 +302,15 @@ export default function JobCard({
   onClick,
   onPrefetch,
   showEdit = false,
-  onEdit,
+  onEdit = undefined,
+  isFavorite = false,
+  onToggleFavorite,
+  onShowMap,
+  nearbyLabel = "",
 }) {
   const { tv } = useI18n();
   const companyLabel = getCompanyLabel(job);
-  const distanceLabel = formatDistance(job?.distanceM);
+  const distanceLabel = formatDistance(job?.distanceM ?? job?.distance_m);
   const jobTypeLabel = tv(getJobTypeLabel(job));
   const typeLabel = tv(job?.category || jobTypeLabel);
   const wageLabel = tv(getWageLabel(job));
@@ -341,9 +345,20 @@ export default function JobCard({
   }, [job?.id, job?.publishedAt, job?.published_at, job?.createdAt, job?.created_at]);
 
   const hasValidLogo = Boolean(logoUrl && !logoFailed);
+  const locationLabel = job?.location?.address || job?.location_address || job?.address || job?.city || "Ünvan qeyd edilməyib";
+  const publishedAt = job?.publishedAt || job?.published_at || job?.createdAt || job?.created_at;
+  const elapsedDays = publishedAt && Number.isFinite(new Date(publishedAt).getTime())
+    ? Math.max(0, Math.floor((Date.now() - new Date(publishedAt).getTime()) / 86400000))
+    : null;
+  const publishedLabel = elapsedDays === null ? "Yeni əlavə olunub" : elapsedDays === 0 ? "Bu gün əlavə olunub" : `${elapsedDays} gün əvvəl`;
 
   const handleCardClick = (event) => {
     event.preventDefault();
+
+    if (onClick) {
+      onClick(event);
+      return;
+    }
 
     const jobPath = getJobPath(job);
 
@@ -353,8 +368,13 @@ export default function JobCard({
   };
 
   const handleCardKeyDown = (event) => {
-    if (event.key === "Enter" || event.key === " ") {
+    if (event.currentTarget === event.target && (event.key === "Enter" || event.key === " ")) {
       event.preventDefault();
+
+      if (onClick) {
+        onClick(event);
+        return;
+      }
 
       const jobPath = getJobPath(job);
 
@@ -380,9 +400,29 @@ export default function JobCard({
     }
   };
 
+  const handleActionClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (onToggleFavorite) onToggleFavorite(event);
+    else handleShareClick(event);
+  };
+
+  const handleMapClick = (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (onShowMap) {
+      onShowMap(job);
+      return;
+    }
+
+    if (typeof window !== "undefined") {
+      window.location.href = `/vakansiyalar?mapJobId=${encodeURIComponent(String(job?.id || job?._id || ""))}`;
+    }
+  };
+
   return (
     <article
-      className="job-card"
+      className={`job-card${isFavorite ? " is-favorite" : ""}`}
       onClick={handleCardClick}
       onMouseEnter={onPrefetch}
       onFocus={onPrefetch}
@@ -390,101 +430,42 @@ export default function JobCard({
       tabIndex={0}
       role="button"
     >
-      <div className="job-card-logo" aria-hidden="true">
-        {hasValidLogo ? (
-          <img
-            src={logoUrl}
-            alt=""
-            onError={() => setLogoFailed(true)}
-          />
-        ) : (
-          <span>{getInitials(companyLabel)}</span>
-        )}
+      <div className="job-card-topline">
+        <div className="job-card-logo" aria-hidden="true">
+          {hasValidLogo ? <img src={logoUrl} alt="" onError={() => setLogoFailed(true)} /> : <span>{getInitials(companyLabel)}</span>}
+        </div>
+        {isNewJob ? <span className="job-card-new-badge">Yeni</span> : null}
+        {premium ? <span className="job-card-premium-badge">★ Premium</span> : null}
       </div>
 
       <div className="job-card-content">
         <div className="job-card-title-row">
-          <h3 className="job-card-title">
-            {job?.title || "Adsız elan"}
-          </h3>
-
-          {isNewJob ? <span className="job-card-new-badge"><span aria-hidden="true">🆕</span> Yeni</span> : null}
-
-          {premium ? (
-            <span className="job-card-premium-badge">
-              <span aria-hidden="true">★</span> Premium
-            </span>
-          ) : null}
+          <h3 className="job-card-title">{job?.title || "Adsız elan"}</h3>
         </div>
 
-        <p className="job-card-company">
-          {companyLabel} <span>•</span> {jobTypeLabel}
-        </p>
-
+        <p className="job-card-company">{companyLabel}</p>
+        <p className="job-card-salary">{wageLabel}{/\d/.test(wageLabel) && !/AZN/i.test(wageLabel) ? <span> AZN</span> : null}</p>
+        <p className="job-card-address"><span aria-hidden="true">⌖</span> {locationLabel}{distanceLabel ? ` · ${distanceLabel} uzaqlıqda` : ""}</p>
+        {nearbyLabel ? <p className="job-card-nearby">{nearbyLabel}</p> : null}
         <div className="job-card-meta">
-          <span className="job-card-meta-item job-card-meta-category">
-            {typeLabel}
-          </span>
-
-          <span className="job-card-meta-item job-card-meta-wage">
-            {wageLabel}
-          </span>
-
-          {levelLabel ? (
-            <span className="job-card-meta-item job-card-meta-level">
-              {levelLabel}
-            </span>
-          ) : null}
-
-          {distanceLabel ? (
-            <span className="job-card-meta-item job-card-meta-distance">
-              <span aria-hidden="true">📍</span>
-              {distanceLabel}
-            </span>
-          ) : null}
+          <span className="job-card-meta-item job-card-meta-category">{jobTypeLabel || typeLabel}</span>
+          {levelLabel ? <span className="job-card-meta-item job-card-meta-level">{levelLabel}</span> : null}
         </div>
-      </div>
-
-      <div className="job-card-side">
-        {remainingLabel ? (
-          <span className="job-card-remaining">
-            ⏰ {remainingLabel}
-          </span>
-        ) : null}
+        <p className="job-card-published">{publishedLabel}</p>
       </div>
 
       <button
         type="button"
-        className={`job-card-save ${copied ? "copied" : ""}`}
-        aria-label={copied ? "Link kopyalandı" : "Elan linkini kopyala"}
-        title={copied ? "Link kopyalandı" : "Elan linkini kopyala"}
-        onClick={handleShareClick}
+        className={`job-card-save${isFavorite ? " saved" : ""}${copied ? " copied" : ""}`}
+        aria-label={onToggleFavorite ? (isFavorite ? "Seçilmişlərdən çıxar" : "Seçilmişlərə əlavə et") : copied ? "Link kopyalandı" : "Elan linkini kopyala"}
+        title={onToggleFavorite ? (isFavorite ? "Seçilmişlərdən çıxar" : "Seçilmişlərə əlavə et") : copied ? "Link kopyalandı" : "Elan linkini kopyala"}
+        onClick={handleActionClick}
       >
-        {copied ? (
-          <span className="job-card-share-check" aria-hidden="true">
-            ✓
-          </span>
-        ) : (
-          <svg
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="2"
-            aria-hidden="true"
-          >
-            <path
-              d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.03"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-            <path
-              d="M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.22-1.22"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
+        {onToggleFavorite ? <svg viewBox="0 0 24 24" fill={isFavorite ? "currentColor" : "none"} stroke="currentColor" strokeWidth="1.8" aria-hidden="true"><path d="M6 3.75h12v17l-6-3.8-6 3.8z" strokeLinejoin="round" /></svg> : copied ? <span aria-hidden="true">✓</span> : <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.07 0l2.12-2.12a5 5 0 0 0-7.07-7.07L10.9 5.03M14 11a5 5 0 0 0-7.07 0L4.81 13.12a5 5 0 0 0 7.07 7.07l1.22-1.22" strokeLinecap="round" strokeLinejoin="round" /></svg>}
       </button>
+
+      <button type="button" className="job-card-map-button" onClick={handleMapClick}><span aria-hidden="true">⌖</span> Xəritədə bax</button>
+      {remainingLabel ? <span className="job-card-remaining">{remainingLabel}</span> : null}
 
       {showEdit ? (
         <button
