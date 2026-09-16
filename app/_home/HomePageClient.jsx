@@ -121,6 +121,7 @@ export default function HomePageClient({ initialSection = "home" }) {
   const [resetPassword, setResetPassword] = useState("");
 
   const [jobs, setJobs] = useState([]);
+  const [seekersOnMap, setSeekersOnMap] = useState([]);
   const [sponsoredCard, setSponsoredCard] = useState(null);
   const [recommendedCard, setRecommendedCard] = useState(null);
   const [homeWidgets, setHomeWidgets] = useState(null);
@@ -608,6 +609,18 @@ export default function HomePageClient({ initialSection = "home" }) {
       alive = false;
     };
   }, [booting, user, effectiveLocation?.lat, effectiveLocation?.lng]);
+
+  useEffect(() => {
+    let alive = true;
+    if (booting || normalizeRole(user?.role) !== "employer") {
+      setSeekersOnMap([]);
+      return () => { alive = false; };
+    }
+    api.listSeekersForEmployerMap()
+      .then((data) => { if (alive) setSeekersOnMap(Array.isArray(data?.items) ? data.items : []); })
+      .catch(() => { if (alive) setSeekersOnMap([]); });
+    return () => { alive = false; };
+  }, [booting, user?.id, user?.role]);
 
   async function refreshJobs(nextFilters = appliedFilters) {
     const requestId = ++jobsRequestId.current;
@@ -1929,7 +1942,7 @@ export default function HomePageClient({ initialSection = "home" }) {
     activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, handleHeroSearchSubmit,
     homeFilterTabs, activeHomeFilterTab, setActiveHomeFilterTab, activeVacancyTypeOptions, jobType, setJobType, homeCategoryOptions, category, setCategory, activeJobLevelOptions, jobLevel, setJobLevel, activeSalaryRangeOptions, activeSalaryLabel, minWage, maxWage, setMinWage, setMaxWage, setAppliedFilters, refreshJobs,
     homeWidgets, locationPromptOpen, user, locationLoading, handleLocationActivation, setLocationPromptOpen, error, ok, supportModalOpen, closeSupportModal, supportMode, setSupportMode, setActiveTicketId, getTicketSubject, activeTicket, setTicketCategory, supportCategories, setTicketMessage, tickets, openTicketDetail, handleCreateTicket, ticketCategory, ticketMessage, getTicketMessages, ticketReply, setTicketReply, handleReply, handleDeleteTicket, handleEmployerFieldChangeRequest,
-    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, focusedMapJobId, setFocusedMapJobId, effectiveLocation, homeRadiusM, handleHomeRadiusChange, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
+    siteStats, homeJobs, hasHomeJobs, latestJobsCarouselRef, scrollLatestJobs, sponsoredCard, recommendedCard, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, hasHomeMapJobs, homeMapJobs, seekersOnMap, focusedMapJobId, setFocusedMapJobId, effectiveLocation, homeRadiusM, handleHomeRadiusChange, JobsMap: HomeJobsMap, AppLaunchPanel, LiveStatsPanel,
     shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, canCreateJob, editingJobId, title, setTitle, companyObject, setCompanyObject, vacancyStartDate, setVacancyStartDate, vacancyEndDate, setVacancyEndDate, contactVisibility, setContactVisibility, primaryContact, setPrimaryContact, wage, setWage, wageMode, setWageMode, wageMin, setWageMin, wageMax, setWageMax, activeCreateSalaryLabel, description, setDescription, contactPhone, setContactPhone, whatsapp, setWhatsapp, contactEmail, setContactEmail, link, setLink, voen, setVoen, durationPreset, setDurationPreset, customDurationDays, setCustomDurationDays, durationDays, setDurationDays, workType, setWorkType, scheduleStart, setScheduleStart, scheduleEnd, setScheduleEnd, publishMode, setPublishMode, publishAt, setPublishAt, locationText, setLocationText, lat, setLat, lng, setLng, radiusM, setRadiusM, activeCreateFilterTab, setActiveCreateFilterTab, handleCreateJob, resetJobForm, LocationPicker,
     alerts, alertCategory, setAlertCategory, alertRadius, setAlertRadius, alertKeywords, setAlertKeywords, handleCreateAlert, handleDeleteAlert, notifications, unread, handleMarkAllRead, handleOpenNotification, formatNotificationTime, getNotificationTone, getNotificationJobId, getNotificationCreatedAt,
     roleName, navTitle, editingName, setEditingName, editingPhone, setEditingPhone, profileLogoPreview, setProfileLogoPreview, handleProfileLogoFileChange, handleProfileSave, handleDeleteAccount, handleSignOut, openSupportModal, myJobs, activeUnreadCount, hasSavedLocation, getJobStatus, myJobsStatus, setMyJobsStatus, profileJobs, formatProfileJobDate, getProfileJobLogo, getProfileJobCompany, startEditJob, handlePublishJob, handleCloseJob, handleReopenJob, handleDeleteJob, favoriteJobs, roleSwitchStatus, handleRoleSwitch, nextRoleLabel, switchCompany, setSwitchCompany, switchVoen, setSwitchVoen, switchCategory, setSwitchCategory, setRoleSwitchConfirmOpen, terms,

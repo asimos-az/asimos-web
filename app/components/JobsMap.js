@@ -110,6 +110,21 @@ function getJobCoordinates(job) {
   };
 }
 
+function getSeekerCoordinates(seeker) {
+  const lat = Number(seeker?.lat);
+  const lng = Number(seeker?.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  return {
+    id: String(seeker?.id || `${lat}-${lng}`),
+    lat,
+    lng,
+    profession: String(seeker?.profession || "İş axtaran"),
+    category: String(seeker?.category || "Kateqoriya seçilməyib"),
+    district: String(seeker?.district || ""),
+    experience: String(seeker?.experience || ""),
+  };
+}
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replaceAll("&", "&amp;")
@@ -202,6 +217,20 @@ function createMarkerIcon(L, job, focused = false) {
   });
 }
 
+function createSeekerMarkerIcon(L) {
+  return L.divIcon({
+    className: "jobs-map-seeker-marker-wrap",
+    html: '<div class="jobs-map-seeker-marker" aria-label="İş axtaran"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a4.2 4.2 0 1 0 0-8.4 4.2 4.2 0 0 0 0 8.4Zm0 2c-4.7 0-8 2.4-8 5.2V22h16v-2.8c0-2.8-3.3-5.2-8-5.2Zm5.4 5.5H6.6v-.3c0-1.4 2.2-3.2 5.4-3.2s5.4 1.8 5.4 3.2v.3Z"/></svg></div>',
+    iconSize: [40, 40],
+    iconAnchor: [20, 20],
+    popupAnchor: [0, -20],
+  });
+}
+
+function buildSeekerPopup(seeker) {
+  return `<div class="jobs-map-popup jobs-map-popup--seeker"><div class="jobs-map-popup__title">İş axtaran</div><div class="jobs-map-popup__meta"><strong>Peşə:</strong> ${escapeHtml(seeker.profession)}</div><div class="jobs-map-popup__meta"><strong>Kateqoriya:</strong> ${escapeHtml(seeker.category)}</div>${seeker.district ? `<div class="jobs-map-popup__meta"><strong>Ərazi:</strong> ${escapeHtml(seeker.district)}</div>` : ""}${seeker.experience ? `<div class="jobs-map-popup__meta"><strong>Təcrübə:</strong> ${escapeHtml(seeker.experience)}</div>` : ""}<div class="jobs-map-popup__meta">Lokasiya təxminidir</div></div>`;
+}
+
 function buildJobPopup(job) {
   const detailHref = getJobDetailHref(job);
 
@@ -219,7 +248,7 @@ function buildJobPopup(job) {
   `;
 }
 
-export default function JobsMap({ jobs, focusedJobId = null, userLocation = null, radiusM = 0 }) {
+export default function JobsMap({ jobs, seekers = [], showSeekers = false, focusedJobId = null, userLocation = null, radiusM = 0 }) {
   const mapNodeRef = useRef(null);
   const mapRef = useRef(null);
   const layersRef = useRef(null);
@@ -230,6 +259,10 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
   const jobsWithCoordinates = useMemo(
     () => (Array.isArray(jobs) ? jobs.map(getJobCoordinates).filter(Boolean) : []),
     [jobs]
+  );
+  const seekersWithCoordinates = useMemo(
+    () => (Array.isArray(seekers) ? seekers.map(getSeekerCoordinates).filter(Boolean) : []),
+    [seekers]
   );
 
   useEffect(() => {
@@ -332,6 +365,13 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     jobsLayer.addLayers(markers);
 
+    seekersWithCoordinates.forEach((seeker) => {
+      L.marker([seeker.lat, seeker.lng], { icon: createSeekerMarkerIcon(L), riseOnHover: true })
+        .bindPopup(buildSeekerPopup(seeker), { maxWidth: 300 })
+        .addTo(contextLayer);
+      bounds.push([seeker.lat, seeker.lng]);
+    });
+
     const userLat = Number(userLocation?.lat);
     const userLng = Number(userLocation?.lng);
 
@@ -384,7 +424,7 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
     setJobsRendered(true);
     setTimeout(() => mapRef.current?.invalidateSize(), 120);
-  }, [jobsWithCoordinates, focusedJobId, mapReady, radiusM, userLocation?.lat, userLocation?.lng]);
+  }, [jobsWithCoordinates, seekersWithCoordinates, focusedJobId, mapReady, radiusM, userLocation?.lat, userLocation?.lng]);
 
   return (
     <section className="container page-section jobs-map-section" id="home-jobs-map-section">
@@ -392,8 +432,8 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
         <header className="jobs-map-card-head">
           <div className="jobs-map-card-icon" aria-hidden="true">🗺️</div>
           <div>
-            <h2>📍 Kateqoriya üzrə elan xəritəsi</h2>
-            <p>Yaxınlıqdakı qaynar iş məkanları</p>
+            <h2>📍 {showSeekers ? "Vakansiyalar və iş axtaranlar" : "Kateqoriya üzrə elan xəritəsi"}</h2>
+            <p>{showSeekers ? seekersWithCoordinates.length ? "Yalnız xəritədə görünməyə razılıq verən iş axtaranların təxmini lokasiyaları göstərilir." : "Hazırda xəritədə görünməyə razılıq verən iş axtaran yoxdur." : "Yaxınlıqdakı qaynar iş məkanları"}</p>
           </div>
         </header>
 
@@ -405,9 +445,10 @@ export default function JobsMap({ jobs, focusedJobId = null, userLocation = null
 
         <div ref={mapNodeRef} className="jobs-map-canvas" />
 
-        {jobsWithCoordinates.length ? (
+        {jobsWithCoordinates.length || seekersWithCoordinates.length ? (
           <div className="jobs-map-legend" aria-label="Xəritə izahı">
-            <span><i className="jobs-map-legend-dot jobs" /> {jobsWithCoordinates.length} elan</span>
+            {jobsWithCoordinates.length ? <span><i className="jobs-map-legend-dot jobs" /> {jobsWithCoordinates.length} elan</span> : null}
+            {showSeekers ? <span><i className="jobs-map-legend-dot seekers" /> {seekersWithCoordinates.length} iş axtaran</span> : null}
             {!jobsRendered ? <span>Markerlar yüklənir...</span> : null}
             <span>Cluster group aktivdir</span>
           </div>

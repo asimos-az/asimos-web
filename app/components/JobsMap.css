@@ -128,10 +128,36 @@
   background: #1fa276;
 }
 
+.jobs-map-legend-dot.seekers {
+  background: #315bd6;
+}
+
 .jobs-map-marker-wrap,
-.jobs-map-user-marker-wrap {
+.jobs-map-user-marker-wrap,
+.jobs-map-seeker-marker-wrap {
   background: transparent;
   border: 0;
+}
+
+.jobs-map-seeker-marker {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border: 3px solid #fff;
+  border-radius: 50%;
+  background: #315bd6;
+  box-shadow: 0 3px 12px rgba(28, 58, 132, .36);
+}
+
+.jobs-map-seeker-marker svg {
+  width: 23px;
+  height: 23px;
+  fill: #fff;
+}
+
+.jobs-map-popup--seeker .jobs-map-popup__title {
+  color: #315bd6;
 }
 
 .jobs-map-marker {
