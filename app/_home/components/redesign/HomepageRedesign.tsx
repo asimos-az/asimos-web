@@ -55,6 +55,7 @@ import {
 } from "@mui/icons-material";
 import styles from "./HomepageRedesign.module.css";
 import { useI18n } from "../../../../lib/i18n";
+import { getNearestBakuPlace } from "../../../../lib/baku-nearby-places";
 
 type JobLocation = { address?: string; lat?: number | string; lng?: number | string };
 type SeekerMapCandidate = { id: string; lat: number; lng: number; profession: string; category: string; district: string; experience: string };
@@ -111,6 +112,7 @@ type HomeContext = {
   loading: boolean;
   handleHeroSearchSubmit: (event: FormEvent<HTMLFormElement>) => void | Promise<void>;
   homeJobs: Job[];
+  allJobs: Job[];
   hasHomeJobs: boolean;
   favoriteJobIds: Set<string>;
   handleToggleFavorite: (job: Job, event: MouseEvent<HTMLButtonElement>) => void;
@@ -321,18 +323,10 @@ function JobCard({ job, ctx, onShowMap }: { job: Job; ctx: HomeContext; onShowMa
 function JobsArea({ ctx }: { ctx: HomeContext }) {
   const [mapJobId, setMapJobId] = useState<string | number | null>(null);
   const jobs = ctx.homeJobs.slice(0, 20);
-  const todayJobs = ctx.homeJobs.filter((job) => {
-    const value = job.createdAt || job.created_at;
-    if (!value) return false;
-    const created = new Date(value);
-    const today = new Date();
-    return created.getFullYear() === today.getFullYear() && created.getMonth() === today.getMonth() && created.getDate() === today.getDate();
-  });
-  const entryLevelJobs = ctx.homeJobs.filter((job) => {
-    if (job.experienceRequired === false || job.experience_required === false) return true;
-    const experience = String(job.experience ?? "").toLocaleLowerCase("az-AZ");
-    return experience === "0" || experience.includes("tələb olunmur") || experience.includes("təcrübəsiz");
-  });
+  const nearbyCampusAndMetroJobs = useMemo(() => ctx.allJobs
+    .map((job) => ({ job, nearestPlace: getNearestBakuPlace(job) }))
+    .filter((item): item is { job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> } => Boolean(item.nearestPlace && item.nearestPlace.distanceM <= 5000))
+    .sort((a, b) => a.nearestPlace.distanceM - b.nearestPlace.distanceM), [ctx.allJobs]);
   const openAll = () => { ctx.setJobsMode("all"); ctx.setFocusedMapJobId(null); ctx.setActiveSection("jobs"); };
   const mapJob = mapJobId === null ? null : ctx.homeJobs.find((job) => String(job.id) === String(mapJobId));
   return (
@@ -363,9 +357,7 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
         </DialogContent>
       </Dialog>
       <Box className={styles.collectionsGrid}>
-        <MiniList title="Bu gün əlavə olunanlar" jobs={todayJobs} ctx={ctx} icon={QueryBuilderRounded} emptyText="Bu gün yeni vakansiya yerləşdirilməyib." />
-        <MetroList jobs={ctx.homeJobs} ctx={ctx} />
-        <MiniList title="Təcrübə tələb etməyən işlər" jobs={entryLevelJobs} ctx={ctx} icon={VerifiedUserRounded} emptyText="Hazırda təcrübəsiz namizədlər üçün elan yoxdur." />
+        <MetroList jobs={nearbyCampusAndMetroJobs} ctx={ctx} />
       </Box>
       <Box className={styles.workModeGrid}>
         <Card className={styles.modeBanner}><QueryBuilderRounded /><Box><Typography fontWeight={800}>Part-time və növbəli işlər</Typography><Typography variant="body2">{Math.max(0, Math.round(ctx.homeJobs.length * .23))} vakansiya</Typography></Box><ArrowForwardRounded /></Card>
@@ -375,14 +367,28 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
   );
 }
 
-function MiniList({ title, jobs, ctx, icon: Icon, emptyText }: { title: string; jobs: Job[]; ctx: HomeContext; icon: ComponentType; emptyText: string }) {
-  const openAll = () => { ctx.setJobsMode("all"); ctx.setActiveSection("jobs"); };
-  return <Card className={styles.listCard}><Box className={styles.collectionHeader}><Box className={styles.collectionIcon}><Icon /></Box><Box flex={1}><Typography component="h2" fontWeight={800}>{title}</Typography><Typography variant="caption" color="text.secondary">{jobs.length ? `${jobs.length} uyğun vakansiya` : "Yeni imkanları izləyin"}</Typography></Box><IconButton aria-label={`${title} bölməsində bütün elanlara bax`} onClick={openAll}><ArrowForwardRounded /></IconButton></Box>{jobs.length ? <Stack divider={<Divider flexItem />} className={styles.miniList}>{jobs.slice(0, 4).map((job) => <Stack key={job.id} direction="row" gap={1.2} alignItems="center" className={styles.miniJob} onClick={() => ctx.openJobDetail(job.id)} tabIndex={0} role="button" onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}><Avatar src={logo(job)} variant="rounded">{company(job).charAt(0)}</Avatar><Box flex={1} minWidth={0}><Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography><Typography variant="caption" color="text.secondary" noWrap>{company(job)} • {address(job)}</Typography></Box><ChevronRightRounded fontSize="small" /></Stack>)}</Stack> : <Box className={styles.collectionEmpty}><Box className={styles.emptyIllustration}><BusinessCenterRounded /></Box><Typography fontWeight={800}>Hələ uyğun elan yoxdur</Typography><Typography variant="body2" color="text.secondary">{emptyText}</Typography><Button size="small" variant="outlined" onClick={openAll}>Bütün vakansiyalara bax</Button></Box>}</Card>;
-}
-
-function MetroList({ jobs, ctx }: { jobs: Job[]; ctx: HomeContext }) {
-  const metros = ["28 May", "Gənclik", "Nəriman Nərimanov", "Elmlər Akademiyası"];
-  return <Card className={`${styles.listCard} ${styles.metroCard}`}><Box className={styles.collectionHeader}><Box className={styles.collectionIcon}><PlaceOutlined /></Box><Box><Typography component="h2" fontWeight={800}>Metroya yaxın işlər</Typography><Typography variant="caption" color="text.secondary">Stansiyaya görə sürətli seçim</Typography></Box></Box><Stack className={styles.metroList}>{metros.map((metro) => { const count = jobs.filter((job) => address(job).toLocaleLowerCase("az-AZ").includes(metro.toLocaleLowerCase("az-AZ"))).length; return <Button key={metro} className={styles.metroButton} onClick={() => { ctx.setSearch(metro); ctx.setActiveSection("jobs"); }}><Box className={styles.metroMark}>M</Box><Box textAlign="left" flex={1}><Typography fontWeight={800}>{metro}</Typography><Typography variant="caption" color="text.secondary">{count} vakansiya</Typography></Box><ChevronRightRounded /></Button>; })}</Stack></Card>;
+function MetroList({ jobs, ctx }: { jobs: Array<{ job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> }>; ctx: HomeContext }) {
+  return <Card className={`${styles.listCard} ${styles.nearbyPlacesCard}`}>
+    <Box className={styles.collectionHeader}>
+      <Box className={styles.collectionIcon}><PlaceOutlined /></Box>
+      <Box flex={1}>
+        <Typography component="h2" fontWeight={800}>Metro və universitetlərə yaxın işlər</Typography>
+        <Typography variant="caption" color="text.secondary">Xəritə koordinatları əsasında · metro və kampuslardan 5 km radiusda</Typography>
+      </Box>
+      <Chip label={`${jobs.length} elan`} color="primary" variant="outlined" />
+    </Box>
+    {jobs.length ? <Box className={styles.nearbyPlacesGrid}>
+      {jobs.slice(0, 8).map(({ job, nearestPlace }) => <Stack key={job.id} direction="row" gap={1.5} alignItems="center" className={styles.nearbyPlaceJob} onClick={() => ctx.openJobDetail(job.id)} role="button" tabIndex={0} onKeyDown={(event) => { if (event.key === "Enter") ctx.openJobDetail(job.id); }}>
+        <Avatar src={logo(job)} variant="rounded">{company(job).charAt(0)}</Avatar>
+        <Box flex={1} minWidth={0}>
+          <Typography fontWeight={800} noWrap>{job.title || "Vakansiya"}</Typography>
+          <Typography variant="caption" color="text.secondary" noWrap>{company(job)} · {address(job)}</Typography>
+          <Typography className={styles.nearbyPlaceLabel} variant="caption" noWrap>{nearestPlace.type === "metro" ? "Metro" : "Universitet"}: {nearestPlace.name} · {(nearestPlace.distanceM / 1000).toFixed(1)} km</Typography>
+        </Box>
+        <ChevronRightRounded fontSize="small" />
+      </Stack>)}
+    </Box> : <Box className={styles.nearbyPlacesEmpty}><BusinessCenterRounded color="disabled" /><Typography fontWeight={700}>5 km radiusda uyğun elan yoxdur</Typography><Typography variant="body2" color="text.secondary">Yalnız xəritədə dəqiq lokasiyası olan elanlar göstərilir.</Typography></Box>}
+  </Card>;
 }
 
 function HowItWorks() {
