@@ -355,7 +355,7 @@ function MetroList({ jobs, ctx, onShowMap }: { jobs: Array<{ job: Job; nearestPl
 }
 
 function HowItWorks() {
-  const steps = [[LocationOnRounded, "Lokasiyanı seç", "Şəhərini və ya mövqeyini seçərək başla."], [MyLocationRounded, "Radiusu müəyyən et", "İstədiyin məsafə radiusunu seç və filtrlə."], [SearchRounded, "Yaxın vakansiyaları gör", "Sənə ən yaxın işləri məsafəyə görə kəşf et."], [NearMeRounded, "1 kliklə müraciət et", "Uyğun işi seç və bir kliklə müraciətini göndər."] ] as const;
+  const steps = [[LocationOnRounded, "Lokasiyanı seç", "Şəhərini və ya mövqeyini seçərək başla."], [MyLocationRounded, "Radiusu müəyyən et", "İstədiyin məsafə radiusunu seç və filtrlə."], [SearchRounded, "Yaxın vakansiyaları gör", "Sənə ən yaxın işləri məsafəyə görə kəşf et."]] as const;
   return <Container maxWidth="xl" className={styles.how}><Typography component="h2" variant="h4" textAlign="center">Asimos necə işləyir?</Typography><Box className={styles.steps}>{steps.map(([Icon, title, text], index) => <Box key={title} className={styles.step}><Box className={styles.stepIcon}><Icon /></Box>{index < steps.length - 1 ? <Box className={styles.stepLine} /> : null}<Typography component="h3" fontWeight={800}>{title}</Typography><Typography variant="body2" color="text.secondary">{text}</Typography></Box>)}</Box></Container>;
 }
 
