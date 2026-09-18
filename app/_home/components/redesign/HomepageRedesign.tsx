@@ -359,9 +359,9 @@ function HowItWorks() {
   return <Container maxWidth="xl" className={styles.how}><Typography component="h2" variant="h4" textAlign="center">Asimos necə işləyir?</Typography><Box className={styles.steps}>{steps.map(([Icon, title, text], index) => <Box key={title} className={styles.step}><Box className={styles.stepIcon}><Icon /></Box>{index < steps.length - 1 ? <Box className={styles.stepLine} /> : null}<Typography component="h3" fontWeight={800}>{title}</Typography><Typography variant="body2" color="text.secondary">{text}</Typography></Box>)}</Box></Container>;
 }
 
-function TrustAndCta({ ctx }: { ctx: HomeContext }) {
+function TrustAndCta() {
   const trust = [[VerifiedUserRounded, "Təsdiqlənmiş şirkətlər", "Bütün şirkətlərimiz daim yoxlanılır və təsdiqlənir."], [LockRounded, "Məlumatların gizliliyi", "Məlumatların qorunması bizim üçün prioritet məsələdir."], [CampaignRounded, "Şübhəli elanı şikayət et", "Şübhəli elanları bizə bildirin, araşdıraq və tədbir görək."], [HeadsetMicRounded, "Dəstək mərkəzi", "Hər zaman sual və problemləriniz üçün yanınızdayıq."]];
-  return <Container maxWidth="xl"><Card className={styles.trustCard}><Typography component="h2" variant="h5" textAlign="center">Təhlükəsiz iş axtarışı</Typography><Box className={styles.trustGrid}>{trust.map(([Icon, title, text]) => <Stack key={String(title)} direction="row" gap={1.5}><Icon color="primary" /><Box><Typography fontWeight={800}>{String(title)}</Typography><Typography variant="body2" color="text.secondary">{String(text)}</Typography></Box></Stack>)}</Box><Alert severity="warning" variant="outlined" icon={<CampaignRounded />}>İş üçün ödəniş tələb edən elanları bizə bildirin.</Alert></Card><Card className={styles.employerCta}><Box><Typography variant="h4" component="h2">Doğru namizədlərə daha yaxın olun</Typography><Typography color="text.secondary">Lokasiyaya əsaslanan vakansiyalarınızla yaxın ərazidə olan minlərlə namizədə çatın.</Typography><Stack direction={{ xs: "column", sm: "row" }} gap={1.5} mt={2.5}><Button variant="contained" onClick={() => ctx.setActiveSection(ctx.canCreateJob ? "create" : "auth")}>Vakansiyanı dərc et</Button><Button variant="outlined" onClick={() => ctx.setActiveSection("profile")}>Şirkət profili yarat</Button></Stack></Box><Box className={styles.ctaArt} aria-hidden="true"><ApartmentRounded /><LocationOnRounded /><BusinessCenterRounded /></Box></Card></Container>;
+  return <Container maxWidth="xl"><Card className={styles.trustCard}><Typography component="h2" variant="h5" textAlign="center">Təhlükəsiz iş axtarışı</Typography><Box className={styles.trustGrid}>{trust.map(([Icon, title, text]) => <Stack key={String(title)} direction="row" gap={1.5}><Icon color="primary" /><Box><Typography fontWeight={800}>{String(title)}</Typography><Typography variant="body2" color="text.secondary">{String(text)}</Typography></Box></Stack>)}</Box><Alert severity="warning" variant="outlined" icon={<CampaignRounded />}>İş üçün ödəniş tələb edən elanları bizə bildirin.</Alert></Card></Container>;
 }
 
 function Stats({ ctx }: { ctx: HomeContext }) {
@@ -377,5 +377,5 @@ function CareerAdvice() {
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;
-  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta ctx={ctx} /><Stats ctx={ctx} /><CareerAdvice /></Box>;
+  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta /><Stats ctx={ctx} /><CareerAdvice /></Box>;
 }
