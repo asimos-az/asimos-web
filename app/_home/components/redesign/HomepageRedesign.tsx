@@ -335,7 +335,7 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
 }
 
 function MetroList({ jobs, ctx, onShowMap }: { jobs: Array<{ job: Job; nearestPlace: NonNullable<ReturnType<typeof getNearestBakuPlace>> }>; ctx: HomeContext; onShowMap: (job: Job) => void }) {
-  const visibleJobs = jobs.slice(0, 8);
+  const visibleJobs = jobs.slice(0, 16);
   return <Card className={`${styles.listCard} ${styles.nearbyPlacesCard}`}>
     <Box className={styles.collectionHeader}>
       <Box className={styles.collectionIcon}><PlaceOutlined /></Box>

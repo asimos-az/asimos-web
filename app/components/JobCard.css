@@ -360,7 +360,7 @@
 .job-card-meta-category { background:#f0f2f4; color:#435466; }
 .job-card-meta-wage { display:none; }
 .job-card-published { margin:0 0 20px; color:#708197; font-size:14px; }
-.job-card-remaining { align-self:flex-start; margin:0 0 14px; min-height:auto; padding:0; background:transparent; color:#708197; }
+.job-card-remaining { align-self:flex-start; margin:12px 0 0; min-height:auto; padding:0; background:transparent; color:#708197; }
 .job-card-save { right:20px; top:20px; width:40px; height:40px; z-index:2; border:1px solid transparent; border-radius:10px; }
 .job-card-save.saved { background:#eaf8f3; color:#078f70; }
 .job-card-map-button { width:100%; min-height:48px; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:auto; border:1px solid #9dd4c5; border-radius:12px; background:#fff; color:#078f70; font:inherit; font-weight:700; cursor:pointer; transition:background .15s,border-color .15s; }
