@@ -91,12 +91,14 @@ type Job = {
 type SiteStats = {
   activeJobs?: number;
   active_jobs?: number;
+  employers?: number;
   companies?: number;
   verifiedCompanies?: number;
   verified_companies?: number;
   users?: number;
   totalUsers?: number;
   total_users?: number;
+  seekers?: number;
   cities?: number;
 };
 
@@ -329,10 +331,6 @@ function JobsArea({ ctx }: { ctx: HomeContext }) {
       <Box className={styles.collectionsGrid}>
         <MetroList jobs={nearbyCampusAndMetroJobs} ctx={ctx} onShowMap={(job) => setMapJobId(job.id)} />
       </Box>
-      <Box className={styles.workModeGrid}>
-        <Card className={styles.modeBanner}><QueryBuilderRounded /><Box><Typography fontWeight={800}>Part-time və növbəli işlər</Typography><Typography variant="body2">{Math.max(0, Math.round(ctx.homeJobs.length * .23))} vakansiya</Typography></Box><ArrowForwardRounded /></Card>
-        <Card className={`${styles.modeBanner} ${styles.remoteBanner}`}><LaptopMacRounded /><Box><Typography fontWeight={800}>Uzaqdan işlər</Typography><Typography variant="body2">{Math.max(0, Math.round(ctx.homeJobs.length * .33))} vakansiya</Typography></Box><ArrowForwardRounded /></Card>
-      </Box>
     </Container>
   );
 }
@@ -364,10 +362,9 @@ function TrustAndCta() {
   return <Container maxWidth="xl"><Card className={styles.trustCard}><Typography component="h2" variant="h5" textAlign="center">Təhlükəsiz iş axtarışı</Typography><Box className={styles.trustGrid}>{trust.map(([Icon, title, text]) => <Stack key={String(title)} direction="row" gap={1.5}><Icon color="primary" /><Box><Typography fontWeight={800}>{String(title)}</Typography><Typography variant="body2" color="text.secondary">{String(text)}</Typography></Box></Stack>)}</Box><Alert severity="warning" variant="outlined" icon={<CampaignRounded />}>İş üçün ödəniş tələb edən elanları bizə bildirin.</Alert></Card></Container>;
 }
 
-function Stats({ ctx }: { ctx: HomeContext }) {
-  const stats = ctx.siteStats || {};
-  const values = [[BusinessCenterRounded, stats.activeJobs ?? stats.active_jobs ?? ctx.homeJobs.length, "aktiv vakansiya"], [ApartmentRounded, stats.companies ?? stats.verifiedCompanies ?? stats.verified_companies ?? 0, "təsdiqlənmiş şirkət"], [LocationOnRounded, stats.cities ?? 25, "şəhər və rayon"], [SupportAgentRounded, stats.users ?? stats.totalUsers ?? stats.total_users ?? 0, "uğurlu müraciət"]] as const;
-  return <Container maxWidth="xl"><Card className={styles.stats}>{values.map(([Icon, value, label]) => <Stack key={label} direction="row" alignItems="center" gap={1.5}><Icon color="secondary" /><Box><Typography variant="h5">{compactNumber(Number(value))}+</Typography><Typography variant="body2" color="text.secondary">{label}</Typography></Box></Stack>)}</Card></Container>;
+function Stats({ stats }: { stats: SiteStats | null }) {
+  const values = [[BusinessCenterRounded, stats?.activeJobs ?? stats?.active_jobs ?? null, "aktiv vakansiya"], [ApartmentRounded, stats?.employers ?? null, "işəgötürən hesabı"], [LocationOnRounded, stats?.cities ?? null, "şəhər və rayon"], [SupportAgentRounded, stats?.seekers ?? null, "iş axtaran"]] as const;
+  return <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 5 } }}><Card className={styles.stats}>{values.map(([Icon, value, label]) => <Stack key={label} direction="row" alignItems="center" gap={1.5}><Icon color="secondary" /><Box><Typography variant="h5">{value === null ? "—" : compactNumber(Number(value))}</Typography><Typography variant="body2" color="text.secondary">{label}</Typography></Box></Stack>)}</Card></Container>;
 }
 
 function CareerAdvice() {
@@ -377,5 +374,5 @@ function CareerAdvice() {
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;
-  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta /><Stats ctx={ctx} /><CareerAdvice /></Box>;
+  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta /><Stats stats={ctx.siteStats} /><CareerAdvice /></Box>;
 }
