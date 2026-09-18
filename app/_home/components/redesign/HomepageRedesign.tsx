@@ -70,6 +70,9 @@ type Job = {
   salary?: string | number;
   address?: string;
   city?: string;
+  workplace?: string;
+  workplace_name?: string;
+  location_address?: string;
   location?: JobLocation;
   jobType?: string;
   job_type?: string;
@@ -346,7 +349,7 @@ function MetroList({ jobs, ctx, onShowMap }: { jobs: Array<{ job: Job; nearestPl
       <Chip label={`${visibleJobs.length} göstərilir · ${jobs.length} elan`} color="primary" variant="outlined" />
     </Box>
     {visibleJobs.length ? <Box className={styles.nearbyPlacesGrid}>
-      {visibleJobs.map(({ job, nearestPlace }) => <SharedJobCard key={job.id} job={{ ...job, distanceM: nearestPlace.distanceM }} nearbyLabel={`${nearestPlace.type === "metro" ? "Ən yaxın metro" : "Ən yaxın universitet"}: ${nearestPlace.name} · ${(nearestPlace.distanceM / 1000).toFixed(1)} km`} onClick={() => ctx.openJobDetail(job.id)} onPrefetch={() => ctx.prefetchJobDetail(job.id)} isFavorite={ctx.favoriteJobIds.has(String(job.id))} onToggleFavorite={(event: MouseEvent<HTMLButtonElement>) => ctx.handleToggleFavorite(job, event)} onShowMap={() => { ctx.setFocusedMapJobId(job.id); onShowMap(job); }} />)}
+      {visibleJobs.map(({ job, nearestPlace }) => <SharedJobCard key={job.id} job={job} nearbyLabel={`${nearestPlace.type === "metro" ? "Ən yaxın metro" : "Ən yaxın universitet"}: ${nearestPlace.name} · ${(nearestPlace.distanceM / 1000).toFixed(1)} km`} onClick={() => ctx.openJobDetail(job.id)} onPrefetch={() => ctx.prefetchJobDetail(job.id)} isFavorite={ctx.favoriteJobIds.has(String(job.id))} onToggleFavorite={(event: MouseEvent<HTMLButtonElement>) => ctx.handleToggleFavorite(job, event)} onShowMap={() => { ctx.setFocusedMapJobId(job.id); onShowMap(job); }} />)}
     </Box> : <Box className={styles.nearbyPlacesEmpty}><BusinessCenterRounded color="disabled" /><Typography fontWeight={700}>5 km radiusda uyğun elan yoxdur</Typography><Typography variant="body2" color="text.secondary">Yalnız xəritədə dəqiq lokasiyası olan elanlar göstərilir.</Typography></Box>}
   </Card>;
 }

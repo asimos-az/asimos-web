@@ -345,7 +345,12 @@ export default function JobCard({
   }, [job?.id, job?.publishedAt, job?.published_at, job?.createdAt, job?.created_at]);
 
   const hasValidLogo = Boolean(logoUrl && !logoFailed);
-  const locationLabel = job?.location?.address || job?.location_address || job?.address || job?.city || "Ünvan qeyd edilməyib";
+  const savedAddress = job?.location?.address || job?.location_address || job?.address || job?.city || "";
+  const isCityOnlyAddress = /^(bak[iı]|baku)(,\s*(azərbaycan|azerbaijan))?$/i.test(savedAddress.trim());
+  const workplaceLabel = job?.workplace || job?.workplace_name || job?.branch || "";
+  const locationLabel = isCityOnlyAddress && workplaceLabel
+    ? `${workplaceLabel}, ${savedAddress}`
+    : savedAddress || workplaceLabel || "Ünvan qeyd edilməyib";
   const publishedAt = job?.publishedAt || job?.published_at || job?.createdAt || job?.created_at;
   const elapsedDays = publishedAt && Number.isFinite(new Date(publishedAt).getTime())
     ? Math.max(0, Math.floor((Date.now() - new Date(publishedAt).getTime()) / 86400000))
