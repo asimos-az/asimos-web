@@ -2,17 +2,11 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
+import { CareerDirectory } from "../../../_career/CareerArticles";
 import { api } from "../../../../lib/api";
 import { useI18n } from "../../../../lib/i18n";
 
-const advice = [
-  ["Müsahibə", "Müsahibəyə necə hazırlaşmalı?", "İlk təəssüratdan düzgün cavablara qədər uğurlu müsahibənin əsas mərhələləri.", "5 dəq"],
-  ["CV", "İşəgötürənin diqqətini çəkən CV", "Təcrübənizi aydın göstərən, qısa və nəticəyönümlü CV hazırlamaq üçün praktiki bələdçi.", "7 dəq"],
-  ["Karyera", "Doğru vakansiyanı necə seçməli?", "Maaşdan əlavə iş mühiti, inkişaf imkanı və lokasiyanı düzgün qiymətləndirin.", "4 dəq"],
-  ["İş axtarışı", "Vakansiyaya müraciətdə 7 səhv", "Namizədlərin tez-tez etdiyi səhvləri tanıyın və müraciətinizi daha güclü edin.", "6 dəq"],
-  ["Uzaqdan iş", "Remote işdə məhsuldarlıq", "Vaxt bölgüsü, fokus və komanda əlaqəsini qorumaq üçün işlək üsullar.", "5 dəq"],
-  ["İnkişaf", "Yeni bacarıqları necə seçməli?", "Bazar tələblərini izləyərək karyeranıza ən çox fayda verən bacarıqlara fokuslanın.", "8 dəq"],
-];
+
 
 function companyName(job) { return job?.companyName || job?.company_name || job?.company || "Asimos şirkəti"; }
 function companyLogo(job) { return job?.companyLogo || job?.company_logo || job?.logoUrl || job?.logo_url || ""; }
@@ -57,13 +51,7 @@ export default function DiscoveryPages({ ctx }) {
     </main>
   );
 
-  if (ctx.activeSection === "career") return (
-    <main className="discovery-page">
-      <section className="discovery-hero career-hero"><span>Karyera mərkəzi</span><h1>Karyeranı inamla qur</h1><p>İş axtarışından müsahibəyə, CV-dən peşəkar inkişafa qədər ehtiyacınız olan praktik məsləhətlər.</p></section>
-      <section className="discovery-shell"><div className="featured-advice"><div><span>Seçilmiş məqalə</span><h2>İş axtarışını sistemli aparmağın 6 addımı</h2><p>Məqsədinizi müəyyənləşdirin, profilinizi tamamlayın və uyğun vakansiyalara daha effektiv müraciət edin.</p><button>Oxumağa başla →</button></div><div className="featured-advice-art"><i>✓</i><b>Planla</b><i>⌕</i><b>Axtar</b><i>↗</i><b>Müraciət et</b></div></div><div className="discovery-heading"><div><small>Faydalı materiallar</small><h2>Karyera məsləhətləri</h2></div></div><div className="advice-directory">{advice.map(([tag,title,text,time], index)=><article key={title}><div className={`advice-visual visual-${index%3}`}><span>{index%3===0?"◎":index%3===1?"▤":"↗"}</span></div><div><small>{tag}</small><h3>{title}</h3><p>{text}</p><footer><span>{time} oxu</span><button aria-label={`${title} məqaləsini aç`}>→</button></footer></div></article>)}</div></section>
-      <section className="discovery-newsletter"><div><small>Yeniliklərdən xəbərdar olun</small><h2>Yeni vakansiyalar və məsləhətlər e-poçtunuza gəlsin</h2></div><form onSubmit={(event) => event.preventDefault()}><input type="email" placeholder="E-poçt ünvanınız"/><button type="submit">Abunə ol</button></form></section>
-    </main>
-  );
+  if (ctx.activeSection === "career") return <CareerDirectory />;
 
   if (ctx.activeSection !== "about") return null;
   return (

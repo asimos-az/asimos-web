@@ -2,6 +2,7 @@
 
 import { useMemo, useState, type ComponentType, type FormEvent, type MouseEvent, type ReactNode } from "react";
 import Link from "next/link";
+import { CareerPreview } from "../../../_career/CareerArticles";
 import Image from "next/image";
 import {
   Alert,
@@ -373,10 +374,7 @@ function Stats({ stats, jobs }: { stats: SiteStats | null; jobs: Job[] }) {
   return <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 5 } }}><Card className={styles.stats}>{values.map(([Icon, value, label]) => <Stack key={label} direction="row" alignItems="center" gap={1.5}><Icon color="secondary" /><Box><Typography variant="h5">{value === null ? "—" : compactNumber(Number(value))}</Typography><Typography variant="body2" color="text.secondary">{label}</Typography></Box></Stack>)}</Card></Container>;
 }
 
-function CareerAdvice() {
-  const cards = [["#eaf8f2", SupportAgentRounded, "Müsahibəyə necə hazırlaşmalı?", "Müsahibədə uğurlu olmaq üçün 7 əsas tövsiyə."], ["#fff2e7", MyLocationRounded, "CV-nizi fərqləndirən 5 məsləhət", "İşəgötürənlərin diqqətini çəkən CV yazın."], ["#eaf4ff", LaptopMacRounded, "Uzaqdan işləyərkən məhsuldarlığı artırın", "Ev şəraitində effektiv işləmək üçün məsləhətlər."] ] as const;
-  return <Container maxWidth="xl" className={styles.advice}><SectionTitle action="Hamısına bax">Karyera məsləhətləri</SectionTitle><Box className={styles.adviceGrid}>{cards.map(([color, Icon, title, text]) => <Card key={title} className={styles.adviceCard}><Box className={styles.adviceArt} sx={{ backgroundColor: color }}><Icon /></Box><Box p={2}><Typography component="h3" fontWeight={800}>{title}</Typography><Typography variant="body2" color="text.secondary">{text}</Typography><Stack direction="row" justifyContent="space-between" mt={1.5}><Typography variant="caption">Karyera • 5 dəq oxu</Typography><ArrowForwardRounded fontSize="small" /></Stack></Box></Card>)}</Box></Container>;
-}
+function CareerAdvice() { return <CareerPreview />; }
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;

@@ -26,6 +26,20 @@ async function getJobsForSitemap() {
   }
 }
 
+async function getCareerRoutes() {
+  const routes = [];
+  try {
+    for (let page = 1; page <= 100; page++) {
+      const res = await fetch(`${API_BASE_URL}/career-articles?limit=50&page=${page}`, { cache: 'no-store', signal: AbortSignal.timeout(10000) });
+      if (!res.ok) break;
+      const data = await res.json();
+      for (const article of data.items || []) routes.push({ url: `${SITE_URL}/karyera-meslehetleri/${encodeURIComponent(article.slug)}`, lastModified: article.updated_at, changeFrequency: 'monthly', priority: 0.7 });
+      if (!data.items?.length || page * 50 >= data.total) break;
+    }
+  } catch { /* Keep the rest of the sitemap available when the API is down. */ }
+  return routes;
+}
+
 export default async function sitemap() {
   const seoRoutes = seoPageList.map((page) => ({
     url: `${SITE_URL}/${page.slug}`,
@@ -49,6 +63,6 @@ export default async function sitemap() {
     },
   ];
 
-  const jobRoutes = await getJobsForSitemap();
-  return [...staticRoutes, ...seoRoutes, ...jobRoutes];
+  const [jobRoutes, careerRoutes] = await Promise.all([getJobsForSitemap(), getCareerRoutes()]);
+  return [...staticRoutes, ...seoRoutes, { url: `${SITE_URL}/karyera-meslehetleri`, changeFrequency: 'weekly', priority: 0.8 }, ...jobRoutes, ...careerRoutes];
 }
