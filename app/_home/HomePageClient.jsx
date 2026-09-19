@@ -1954,11 +1954,19 @@ export default function HomePageClient({ initialSection = "home" }) {
       api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => { });
     } catch { }
 
-    api.getSiteStats()
-      .then((data) => { if (!ignore) setSiteStats(data || null); })
-      .catch(() => { if (!ignore) setSiteStats(null); });
+    let statsRetryTimer;
+    const loadSiteStats = (attempt = 0) => {
+      api.getSiteStats()
+        .then((data) => { if (!ignore) setSiteStats(data || null); })
+        .catch(() => {
+          if (!ignore && attempt < 3) {
+            statsRetryTimer = window.setTimeout(() => loadSiteStats(attempt + 1), 1500 * (attempt + 1));
+          }
+        });
+    };
+    loadSiteStats();
 
-    return () => { ignore = true; };
+    return () => { ignore = true; if (statsRetryTimer) window.clearTimeout(statsRetryTimer); };
   }, []);
 
   if (booting) {
