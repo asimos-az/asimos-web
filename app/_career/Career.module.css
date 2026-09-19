@@ -393,7 +393,8 @@
 .cta h2 {
   font-size:28px;
   letter-spacing:-.8px;
-  margin:0 0 12px}
+  margin:0 0 12px;
+  color:#fff!important}
 .cta p {
   color:#c0cdbb;
   font-size:14px;
@@ -413,23 +414,36 @@
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:23px 28px;
-  gap:20px}
+  padding:24px 28px;
+  gap:20px;
+  min-height:88px}
 .articleNav>a {
   color:#234b36;
   text-decoration:none;
   font-size:14px}
 .brand {
-  font-size:28px!important;
-  letter-spacing:-1px;
-  font-weight:800}
+  display:flex;
+  align-items:center;
+  line-height:0}
+.brand img {
+  display:block;
+  width:150px;
+  height:40px}
+.jobsLink {
+  margin-left:auto}
 .articleHeader {
   max-width:880px;
   margin:0 auto;
   text-align:center;
-  padding:36px 28px 42px}
+  padding:50px 28px 42px}
 .articleHeader .breadcrumb {
-  margin-bottom:35px}
+  display:inline-flex;
+  align-items:center;
+  min-height:24px;
+  margin-bottom:47px;
+  color:#809080}
+.articleHeader .eyebrow {
+  margin-bottom:22px}
 .articleHeader h1 {
   font-size:clamp(33px,4.3vw,56px);
   font-weight:600;
@@ -673,6 +687,9 @@
   gap:12px}
 .articleNav>a {
   font-size:12px}
+.brand img {
+  width:126px;
+  height:auto}
 .articleHeader {
   padding:20px}
 .articleHeader>p {
