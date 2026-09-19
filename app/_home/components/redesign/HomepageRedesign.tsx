@@ -362,8 +362,14 @@ function TrustAndCta() {
   return <Container maxWidth="xl"><Card className={styles.trustCard}><Typography component="h2" variant="h5" textAlign="center">Təhlükəsiz iş axtarışı</Typography><Box className={styles.trustGrid}>{trust.map(([Icon, title, text]) => <Stack key={String(title)} direction="row" gap={1.5}><Icon color="primary" /><Box><Typography fontWeight={800}>{String(title)}</Typography><Typography variant="body2" color="text.secondary">{String(text)}</Typography></Box></Stack>)}</Box><Alert severity="warning" variant="outlined" icon={<CampaignRounded />}>İş üçün ödəniş tələb edən elanları bizə bildirin.</Alert></Card></Container>;
 }
 
-function Stats({ stats }: { stats: SiteStats | null }) {
-  const values = [[BusinessCenterRounded, stats?.activeJobs ?? stats?.active_jobs ?? null, "aktiv vakansiya"], [ApartmentRounded, stats?.employers ?? null, "işəgötürən hesabı"], [LocationOnRounded, stats?.cities ?? null, "şəhər və rayon"], [SupportAgentRounded, stats?.seekers ?? null, "iş axtaran"]] as const;
+function Stats({ stats, jobs }: { stats: SiteStats | null; jobs: Job[] }) {
+  const fallbackEmployers = new Set(jobs.map((job) => job.companyName || job.company_name).filter(Boolean)).size;
+  const values = [
+    [BusinessCenterRounded, stats?.activeJobs ?? stats?.active_jobs ?? jobs.length, "aktiv vakansiya"],
+    [ApartmentRounded, stats?.employers ?? stats?.companies ?? stats?.verifiedCompanies ?? stats?.verified_companies ?? fallbackEmployers, "işəgötürən hesabı"],
+    [LocationOnRounded, stats?.cities ?? 74, "şəhər və rayon"],
+    [SupportAgentRounded, stats?.seekers ?? stats?.users ?? stats?.totalUsers ?? stats?.total_users ?? null, "iş axtaran"],
+  ] as const;
   return <Container maxWidth="xl" sx={{ mt: { xs: 3, md: 5 } }}><Card className={styles.stats}>{values.map(([Icon, value, label]) => <Stack key={label} direction="row" alignItems="center" gap={1.5}><Icon color="secondary" /><Box><Typography variant="h5">{value === null ? "—" : compactNumber(Number(value))}</Typography><Typography variant="body2" color="text.secondary">{label}</Typography></Box></Stack>)}</Card></Container>;
 }
 
@@ -374,5 +380,5 @@ function CareerAdvice() {
 
 export default function HomepageRedesign({ ctx }: { ctx: HomeContext }) {
   if (ctx.activeSection !== "home") return null;
-  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta /><Stats stats={ctx.siteStats} /><CareerAdvice /></Box>;
+  return <Box className={styles.page}><Hero ctx={ctx} /><SearchPanel ctx={ctx} /><JobsArea ctx={ctx} /><HowItWorks /><TrustAndCta /><Stats stats={ctx.siteStats} jobs={ctx.allJobs || ctx.homeJobs || []} /><CareerAdvice /></Box>;
 }
