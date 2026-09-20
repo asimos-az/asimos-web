@@ -132,15 +132,6 @@ textarea::placeholder {
   color: #91a0ba;
 }
 
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none;
-  border-color: #94a3b8;
-  box-shadow: 0 0 0 4px rgba(15, 23, 42, 0.08);
-  background: #fff;
-}
-
 .card {
   background: #ffffff;
   border-radius: 20px;

@@ -207,14 +207,6 @@ textarea,
 input:hover,
 select:hover,
 textarea:hover { border-color: #b8c9da !important; }
-input:focus,
-select:focus,
-textarea:focus {
-  outline: none !important;
-  border-color: #48a992 !important;
-  box-shadow: 0 0 0 4px rgba(17,125,103,.11) !important;
-}
-
 .btn-primary,
 .employer-save-button,
 .seeker-save-button {
