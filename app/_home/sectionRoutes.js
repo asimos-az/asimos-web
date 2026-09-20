@@ -1,6 +1,7 @@
 export const SECTION_ROUTES = Object.freeze({
   home: "/",
   jobs: "/vakansiyalar",
+  map: "/xeritede-is-elanlari",
   daily: "/gundelik-isler",
   about: "/haqqimizda",
   companies: "/sirketler",

@@ -179,7 +179,7 @@ export function AppHeader({ ctx }: { ctx: HomeContext }) {
   const { locale, setLocale, t } = useI18n();
   const go = (section: string) => { ctx.setActiveSection(section); setOpen(false); };
   const navigation = [
-    ["jobs", t("nav_jobs")], ["companies", t("nav_companies")], ["career", t("nav_career")], ["about", t("nav_about")],
+    ["jobs", t("nav_jobs")], ["map", "Xəritə"], ["companies", t("nav_companies")], ["career", t("nav_career")], ["about", t("nav_about")],
   ];
   return (
     <Box component="header" className={styles.header}>

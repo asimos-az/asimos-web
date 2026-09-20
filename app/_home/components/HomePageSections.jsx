@@ -11,14 +11,16 @@ import SupportPageSection from "./home-sections/SupportPageSection";
 import TermsSection from "./home-sections/TermsSection";
 import HomepageRedesign from "./redesign/HomepageRedesign";
 import DiscoveryPages from "./home-sections/DiscoveryPages";
+import MapSection from "./home-sections/MapSection";
 
 export default function HomePageSections({ ctx }) {
   return (
     <>
       <HomepageRedesign ctx={ctx} />
       <DiscoveryPages ctx={ctx} />
-      {ctx.activeSection !== "home" ? <HomeSearchSection ctx={ctx} /> : null}
-      {ctx.activeSection !== "home" ? <HomeLandingSection ctx={ctx} /> : null}
+      {ctx.activeSection === "jobs" ? <HomeSearchSection ctx={ctx} /> : null}
+      {ctx.activeSection === "jobs" ? <HomeLandingSection ctx={ctx} /> : null}
+      <MapSection ctx={ctx} />
       <JobsSection ctx={ctx} />
       <CreateJobSection ctx={ctx} />
       <AlertsSection ctx={ctx} />
