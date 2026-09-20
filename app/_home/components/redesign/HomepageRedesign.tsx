@@ -188,7 +188,7 @@ export function AppHeader({ ctx }: { ctx: HomeContext }) {
           <Image src="/logo.svg" width={124} height={38} alt="Asimos" priority />
         </Link>
         <Stack component="nav" direction="row" className={styles.desktopNav} aria-label="Navigation">
-          {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} color="inherit" onClick={() => go(key)}>{label}</Button>)}
+          {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} color="inherit" className={ctx.activeSection === key ? styles.navItemActive : styles.navItem} onClick={() => go(key)} aria-current={ctx.activeSection === key ? "page" : undefined} aria-label={`Keçid: ${label}`} title={`Keçid: ${label}`}>{label}</Button>)}
         </Stack>
         <Stack direction="row" alignItems="center" gap={1} className={styles.desktopActions}>
           <Select value={locale} onChange={(event) => setLocale(String(event.target.value))} size="small" IconComponent={LanguageRounded} sx={{ minWidth: 76, height: 36, borderRadius: 2, fontWeight: 800 }} aria-label="Language"><MenuItem value="az">AZ</MenuItem><MenuItem value="ru">RU</MenuItem><MenuItem value="en">EN</MenuItem></Select>
@@ -207,7 +207,7 @@ export function AppHeader({ ctx }: { ctx: HomeContext }) {
           <Image src="/logo.svg" width={110} height={34} alt="Asimos" />
           <IconButton onClick={() => setOpen(false)} aria-label={t("close_menu")}><CloseRounded /></IconButton>
         </Stack>
-        {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} onClick={() => go(key)} fullWidth sx={{ justifyContent: "flex-start", mb: 1 }}>{label}</Button>)}
+        {navigation.map(([key, label], index) => <Button key={`${key}-${index}`} onClick={() => go(key)} fullWidth className={ctx.activeSection === key ? styles.mobileNavItemActive : styles.mobileNavItem} sx={{ justifyContent: "flex-start", mb: 1 }} aria-current={ctx.activeSection === key ? "page" : undefined} aria-label={`Keçid: ${label}`} title={`Keçid: ${label}`}>{label}</Button>)}
         <Divider sx={{ my: 2 }} />
         <Select value={locale} onChange={(event) => setLocale(String(event.target.value))} fullWidth size="small" sx={{ mb: 2 }}><MenuItem value="az">Azərbaycan dili</MenuItem><MenuItem value="ru">Русский</MenuItem><MenuItem value="en">English</MenuItem></Select>
         <Button variant="outlined" fullWidth onClick={() => go(ctx.user ? "profile" : "auth")} sx={{ mb: 1 }}>{t("login")}</Button>
