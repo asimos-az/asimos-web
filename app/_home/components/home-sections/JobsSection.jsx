@@ -7,7 +7,7 @@ import pageStyles from "./JobsSection.module.css";
 const radiusOptions = [1000, 3000, 5000, 10000, 25000];
 
 export default function JobsSection({ ctx }) {
-  const { activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, category, setCategory, homeCategoryOptions, jobType, setJobType, jobLevel, setJobLevel, minWage, setMinWage, maxWage, setMaxWage, setAppliedFilters, refreshJobs, shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, user, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, startEditJob, focusedMapJobId, setFocusedMapJobId, JobsMap, effectiveLocation, homeRadiusM, handleHomeRadiusChange } = ctx;
+  const { activeSection, jobsMode, setJobsMode, search, setSearch, city, setCity, cityOptions, loading, category, setCategory, homeCategoryOptions, jobType, setJobType, jobLevel, setJobLevel, minWage, setMinWage, maxWage, setMaxWage, setAppliedFilters, refreshJobs, shownJobs, visibleShownJobs, hasMoreShownJobs, jobsLoadMoreRef, user, seekersOnMap, favoriteJobIds, handleToggleFavorite, openJobDetail, prefetchJobDetail, startEditJob, focusedMapJobId, setFocusedMapJobId, JobsMap, effectiveLocation, homeRadiusM, handleHomeRadiusChange } = ctx;
   useEffect(() => {
     if (activeSection !== "jobs" || typeof window === "undefined") return;
     const mapJobId = new URLSearchParams(window.location.search).get("mapJobId");
@@ -51,7 +51,7 @@ export default function JobsSection({ ctx }) {
     </section>
     <section className={pageStyles.explorer}>
       <div className={pageStyles.results} aria-live="polite">{visibleShownJobs.map((job) => <div key={job.id} onMouseEnter={() => setFocusedMapJobId(job.id)} onFocus={() => setFocusedMapJobId(job.id)}><JobCard job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} showEdit={(job?.createdBy || job?.created_by) === user?.id} onEdit={() => startEditJob(job)} isFavorite={favoriteJobIds.has(String(job.id))} onToggleFavorite={(event) => handleToggleFavorite(job, event)} onShowMap={() => { setFocusedMapJobId(job.id); document.querySelector(`.${pageStyles.mapPanel}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }} /></div>)}{!shownJobs.length && !loading ? <div className={pageStyles.empty}><SearchRounded aria-hidden="true" /><h2>Uyğun vakansiya tapılmadı</h2><p>Radiusu artırın və ya filterləri sıfırlayıb yenidən axtarın.</p><button onClick={resetFilters}>Bütün elanları göstər</button></div> : null}{hasMoreShownJobs ? <div ref={jobsLoadMoreRef} className={pageStyles.loadingMore}>Daha çox vakansiya yüklənir...</div> : null}</div>
-      <aside className={pageStyles.mapPanel}><JobsMap jobs={shownJobs} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} radiusM={Number(homeRadiusM)} /></aside>
+      <aside className={pageStyles.mapPanel}><JobsMap jobs={shownJobs} seekers={user?.role === "employer" ? seekersOnMap : []} showSeekers={user?.role === "employer"} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} radiusM={Number(homeRadiusM)} /></aside>
     </section>
   </main>;
 }

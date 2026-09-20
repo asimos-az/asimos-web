@@ -83,6 +83,7 @@ export default function HomeLandingSection({ ctx }) {
     prefetchJobDetail,
     hasHomeMapJobs,
     homeMapJobs,
+    seekersOnMap,
     focusedMapJobId,
     effectiveLocation,
     JobsMap,
@@ -318,7 +319,7 @@ export default function HomeLandingSection({ ctx }) {
 
           {hasHomeMapJobs ? (
             <div id="home-jobs-map">
-              <JobsMap jobs={homeMapJobs} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
+              <JobsMap jobs={homeMapJobs} seekers={user?.role === "employer" ? seekersOnMap : []} showSeekers={user?.role === "employer"} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
             </div>
           ) : null}
           <AppLaunchPanel />

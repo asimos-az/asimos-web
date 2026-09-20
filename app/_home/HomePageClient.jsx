@@ -1987,13 +1987,16 @@ export default function HomePageClient({ initialSection = "home" }) {
     let ignore = false;
     const sessionKey = "asimos_web_session_id";
     let sessionId = "";
+    let presenceTimer;
     try {
       sessionId = window.localStorage.getItem(sessionKey) || "";
       if (!sessionId) {
         sessionId = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
         window.localStorage.setItem(sessionKey, sessionId);
       }
-      api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => { });
+      const sendPresence = () => api.trackVisit({ path: window.location.pathname, sessionId }).catch(() => { });
+      sendPresence();
+      presenceTimer = window.setInterval(sendPresence, 5 * 60 * 1000);
     } catch { }
 
     let statsRetryTimer;
@@ -2008,7 +2011,11 @@ export default function HomePageClient({ initialSection = "home" }) {
     };
     loadSiteStats();
 
-    return () => { ignore = true; if (statsRetryTimer) window.clearTimeout(statsRetryTimer); };
+    return () => {
+      ignore = true;
+      if (statsRetryTimer) window.clearTimeout(statsRetryTimer);
+      if (presenceTimer) window.clearInterval(presenceTimer);
+    };
   }, []);
 
   if (booting) {
