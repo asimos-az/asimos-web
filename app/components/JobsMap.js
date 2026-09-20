@@ -329,7 +329,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 14,
+          disableClusteringAtZoom: 10,
           iconCreateFunction: (cluster) => L.divIcon({
             className: "jobs-map-cluster-wrap",
             html: `<div class="jobs-map-cluster">${cluster.getChildCount()}</div>`,
@@ -344,7 +344,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 14,
+          disableClusteringAtZoom: 10,
           iconCreateFunction: (cluster) => L.divIcon({
             className: "jobs-map-seeker-cluster-wrap",
             html: `<div class="jobs-map-seeker-cluster">${cluster.getChildCount()}</div>`,
