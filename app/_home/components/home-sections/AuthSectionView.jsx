@@ -247,7 +247,8 @@ export default function AuthSectionView({ ctx }) {
   return (
     <>
       {activeSection === "auth" ? (
-        <AuthSection
+        <>
+          <AuthSection
           registerWhatsapp={ctx.registerWhatsapp}
           setRegisterWhatsapp={ctx.setRegisterWhatsapp}
           otpResendAt={ctx.otpResendAt}
@@ -299,7 +300,10 @@ export default function AuthSectionView({ ctx }) {
             setActiveSection("home");
             setMode("login");
           }}
-        />
+          />
+          {error ? <div className="toast-notice app-toast error" role="alert">{error}</div> : null}
+          {ok ? <div className="toast-notice app-toast success" role="status">{ok}</div> : null}
+        </>
       ) : null}
     </>
   );

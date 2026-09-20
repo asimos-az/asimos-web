@@ -130,7 +130,7 @@ export default function AuthSection({
                   </button>
                 </div>
                 <button type="submit" className="btn-primary" disabled={loading}>
-                  {loading ? "Daxil olunur..." : "Daxil ol"}
+                  {loading ? <><span className="auth-button-spinner" aria-hidden="true" /> Daxil olunur...</> : "Daxil ol"}
                 </button>
               </form>
             ) : null}

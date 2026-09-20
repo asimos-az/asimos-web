@@ -340,3 +340,18 @@
 @media (max-width: 540px) { .auth-page { padding-block: 22px; } .auth-page .auth-form-container { padding: 22px 18px; } }
 
 .auth-page .auth-field-label { display: block; margin-bottom: 7px; font-size: 13px; font-weight: 650; color: #17324d; }
+.auth-button-spinner {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 8px;
+  vertical-align: -3px;
+  border: 2px solid rgba(255, 255, 255, 0.45);
+  border-top-color: #fff;
+  border-radius: 50%;
+  animation: authButtonSpin 0.7s linear infinite;
+}
+
+@keyframes authButtonSpin {
+  to { transform: rotate(360deg); }
+}
