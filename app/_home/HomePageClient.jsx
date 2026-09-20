@@ -680,6 +680,36 @@ export default function HomePageClient({ initialSection = "home" }) {
     return nextJobs;
   }
 
+  useEffect(() => {
+    if (initialSection !== "jobs" || typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    const queryFilters = {
+      search: params.get("q") || "",
+      category: params.get("category") || "",
+      city: params.get("city") || "",
+      jobType: params.get("jobType") || "",
+      jobLevel: params.get("jobLevel") || "",
+      minWage: params.get("minWage") || "",
+      maxWage: params.get("maxWage") || "",
+      radiusM: params.get("radiusM") || "30000",
+    };
+    if (!Object.values(queryFilters).some((value) => value && value !== "30000")) return;
+
+    setSearch(queryFilters.search);
+    setCategory(queryFilters.category);
+    setCity(queryFilters.city);
+    setJobType(queryFilters.jobType);
+    setJobLevel(queryFilters.jobLevel);
+    setMinWage(queryFilters.minWage);
+    setMaxWage(queryFilters.maxWage);
+    setHomeRadiusM(queryFilters.radiusM);
+    setAppliedFilters(queryFilters);
+    setLoading(true);
+    refreshJobs(queryFilters)
+      .catch((error) => setError(error.message || "Elanlar yenilənmədi"))
+      .finally(() => setLoading(false));
+  }, [initialSection]);
+
   async function handleHomeRadiusChange(nextRadiusM) {
     const nextFilters = { ...appliedFilters, radiusM: nextRadiusM };
     setHomeRadiusM(nextRadiusM);
