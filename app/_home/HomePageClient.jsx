@@ -76,6 +76,11 @@ function toJobSlug(value, fallback = "elan") {
   return slug || fallback;
 }
 
+function getInitialUrlFilter(key) {
+  if (typeof window === "undefined") return "";
+  return new URLSearchParams(window.location.search).get(key) || "";
+}
+
 export default function HomePageClient({ initialSection = "home" }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -139,44 +144,51 @@ export default function HomePageClient({ initialSection = "home" }) {
   const [terms, setTerms] = useState("");
   const [unread, setUnread] = useState(0);
 
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(() => getInitialUrlFilter("q"));
   const [searchSurface, setSearchSurface] = useState("global");
   const [focusedMapJobId, setFocusedMapJobId] = useState(null);
-  const [category, setCategory] = useState("");
-  const [city, setCity] = useState("");
+  const [category, setCategory] = useState(() => getInitialUrlFilter("category"));
+  const [city, setCity] = useState(() => getInitialUrlFilter("city"));
   const [cityOptions, setCityOptions] = useState(defaultCityOptions);
-  const [jobType, setJobType] = useState("");
-  const [jobLevel, setJobLevel] = useState("");
+  const [jobType, setJobType] = useState(() => getInitialUrlFilter("jobType"));
+  const [jobLevel, setJobLevel] = useState(() => getInitialUrlFilter("jobLevel"));
   const [activeHomeFilterTab, setActiveHomeFilterTab] = useState("type");
   const [activeCreateFilterTab, setActiveCreateFilterTab] = useState("type");
   const [dailyOnly, setDailyOnly] = useState(false);
   const [jobsMode, setJobsMode] = useState("all");
-  const [minWage, setMinWage] = useState("");
-  const [maxWage, setMaxWage] = useState("");
+  const [minWage, setMinWage] = useState(() => getInitialUrlFilter("minWage"));
+  const [maxWage, setMaxWage] = useState(() => getInitialUrlFilter("maxWage"));
   const [appliedFilters, setAppliedFilters] = useState({
-    search: "",
-    category: "",
-    city: "",
-    jobType: "",
-    jobLevel: "",
-    minWage: "",
-    maxWage: "",
-    radiusM: "30000",
+    search: getInitialUrlFilter("q"),
+    category: getInitialUrlFilter("category"),
+    city: getInitialUrlFilter("city"),
+    jobType: getInitialUrlFilter("jobType"),
+    jobLevel: getInitialUrlFilter("jobLevel"),
+    minWage: getInitialUrlFilter("minWage"),
+    maxWage: getInitialUrlFilter("maxWage"),
+    radiusM: getInitialUrlFilter("radiusM") || "30000",
   });
   const [radiusM, setRadiusM] = useState("0");
-  const [homeRadiusM, setHomeRadiusM] = useState("30000");
+  const [homeRadiusM, setHomeRadiusM] = useState(() => getInitialUrlFilter("radiusM") || "30000");
   const [myJobsStatus, setMyJobsStatus] = useState("open");
   const [jobsVisibleCount, setJobsVisibleCount] = useState(10);
   const [editingJobId, setEditingJobId] = useState(null);
 
-  const setActiveSection = useCallback((section, navigation = "push") => {
+  const setActiveSection = useCallback((section, navigation = "push", queryFilters = null) => {
     const nextSection = section === "daily" ? "jobs" : section;
     if (section === "daily") setJobsMode("daily");
     else if (section === "jobs") setJobsMode("all");
     setActiveSectionState(nextSection);
     const nextRoute = getRouteForSection(section);
-    if (pathname !== nextRoute) {
-      navigation === "replace" ? router.replace(nextRoute) : router.push(nextRoute);
+    const query = queryFilters
+      ? Object.entries(queryFilters).reduce((params, [key, value]) => {
+        if (value !== undefined && value !== null && String(value).trim()) params.set(key === "search" ? "q" : key, String(value));
+        return params;
+      }, new URLSearchParams()).toString()
+      : "";
+    const routeWithQuery = query ? `${nextRoute}?${query}` : nextRoute;
+    if (pathname !== nextRoute || query) {
+      navigation === "replace" ? router.replace(routeWithQuery) : router.push(routeWithQuery);
     }
   }, [pathname, router]);
 
@@ -741,7 +753,7 @@ export default function HomePageClient({ initialSection = "home" }) {
 
       setFocusedMapJobId(null);
       setJobsMode(search.toLowerCase().includes("gündəlik") ? "daily" : "all");
-      setActiveSection("jobs");
+      setActiveSection("jobs", "push", heroFilters);
     } catch (e) {
       setError(e.message || "Axtarış zamanı xəta baş verdi");
     } finally {
