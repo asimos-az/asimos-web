@@ -51,7 +51,7 @@ export default function JobsSection({ ctx }) {
     </section>
     <section className={pageStyles.explorer}>
       <div className={pageStyles.results} aria-live="polite">{visibleShownJobs.map((job) => <div key={job.id} onMouseEnter={() => setFocusedMapJobId(job.id)} onFocus={() => setFocusedMapJobId(job.id)}><JobCard job={job} onClick={() => openJobDetail(job.id)} onPrefetch={() => prefetchJobDetail(job.id)} showEdit={(job?.createdBy || job?.created_by) === user?.id} onEdit={() => startEditJob(job)} isFavorite={favoriteJobIds.has(String(job.id))} onToggleFavorite={(event) => handleToggleFavorite(job, event)} onShowMap={() => { setFocusedMapJobId(job.id); document.querySelector(`.${pageStyles.mapPanel}`)?.scrollIntoView({ behavior: "smooth", block: "center" }); }} /></div>)}{!shownJobs.length && !loading ? <div className={pageStyles.empty}><SearchRounded aria-hidden="true" /><h2>Uyğun vakansiya tapılmadı</h2><p>Radiusu artırın və ya filterləri sıfırlayıb yenidən axtarın.</p><button onClick={resetFilters}>Bütün elanları göstər</button></div> : null}{hasMoreShownJobs ? <div ref={jobsLoadMoreRef} className={pageStyles.loadingMore}>Daha çox vakansiya yüklənir...</div> : null}</div>
-      <aside className={pageStyles.mapPanel}><JobsMap jobs={shownJobs} seekers={user?.role === "employer" ? seekersOnMap : []} showSeekers={user?.role === "employer"} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} radiusM={Number(homeRadiusM)} /></aside>
+      <aside className={pageStyles.mapPanel}><JobsMap jobs={shownJobs} seekers={user ? seekersOnMap : []} showSeekers={Boolean(user)} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} radiusM={Number(homeRadiusM)} /></aside>
     </section>
   </main>;
 }

@@ -638,7 +638,7 @@ export default function HomePageClient({ initialSection = "home" }) {
 
   useEffect(() => {
     let alive = true;
-    if (booting || normalizeRole(user?.role) !== "employer") {
+    if (booting || !user) {
       setSeekersOnMap([]);
       return () => { alive = false; };
     }

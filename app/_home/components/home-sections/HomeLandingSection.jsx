@@ -319,7 +319,7 @@ export default function HomeLandingSection({ ctx }) {
 
           {hasHomeMapJobs ? (
             <div id="home-jobs-map">
-              <JobsMap jobs={homeMapJobs} seekers={user?.role === "employer" ? seekersOnMap : []} showSeekers={user?.role === "employer"} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
+              <JobsMap jobs={homeMapJobs} seekers={user ? seekersOnMap : []} showSeekers={Boolean(user)} focusedJobId={focusedMapJobId} userLocation={effectiveLocation} />
             </div>
           ) : null}
           <AppLaunchPanel />
