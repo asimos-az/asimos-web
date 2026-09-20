@@ -6,6 +6,16 @@ const LEAFLET_CSS_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';
 const LEAFLET_SCRIPT_URL = 'https://unpkg.com/leaflet@1.9.4/dist/leaflet.js';
 const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://asimos-backend.onrender.com').replace(/\/+$/, '');
 
+function ShareIcon() {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.9" aria-hidden="true" className="job-detail-share-icon">
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="m7 9 5-5 5 5" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" />
+    </svg>
+  );
+}
+
 function ensureLeafletAsset(tagName, id, attrs) {
   if (typeof document === 'undefined') return null;
   const existing = document.getElementById(id);
@@ -472,14 +482,11 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
   const expiryRemainingLabel = expiryDate ? formatRemainingTime(expiryDate, now) : 'Qeyd edilməyib';
   const workSchedule = getWorkSchedule(job);
   const workplace = getWorkplace(job);
-  const atsLink = getAtsLink(job);
   const vacancyStartDate = getVacancyStartDate(job);
   const vacancyEndDate = getVacancyEndDate(job);
   const contactVisibilityLabel = formatContactVisibility(job);
   const primaryContactLabel = getPrimaryContactLabel(job);
   const statusLabel = getStatusLabel(job);
-  const applyContact = getVisibleContactItems(job, user).find((item) => item.href);
-  const applyHref = atsLink || applyContact?.href || '';
   const requirements = getTextList(job?.requirements, job?.requirements_text, job?.skills, job?.qualifications);
   const responsibilities = getTextList(job?.responsibilities, job?.duties, job?.tasks);
   const benefits = getTextList(job?.benefits, job?.advantages, job?.perks);
@@ -589,9 +596,8 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
             <div className="job-detail-facts"><span>▣ {jobDate === 'Qeyd edilməyib' ? 'Bu gün yerləşdirilib' : `${jobDate} tarixində yerləşdirilib`}</span><span>◉ {job?.views || job?.view_count || 0} baxış</span><span>◷ {expiryRemainingLabel}</span></div>
           </div>
           <div className="job-detail-hero-actions">
-            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel="noopener noreferrer">⚡ 1 kliklə müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət mümkün deyil</button>}
-            <button type="button" className="job-detail-outline-action">♡ Elanı yadda saxla</button>
-            <button type="button" className={`job-detail-outline-action${copiedShareLink ? ' copied' : ''}`} onClick={copyShareLink}>{copiedShareLink ? '✓ Link kopyalandı' : '⌯ Paylaş'}</button>
+            {user ? <button type="button" className="job-detail-outline-action">♡ Elanı yadda saxla</button> : null}
+            <button type="button" className={`job-detail-outline-action${copiedShareLink ? ' copied' : ''}`} onClick={copyShareLink}>{copiedShareLink ? '✓ Link kopyalandı' : <><ShareIcon /> Paylaş</>}</button>
           </div>
         </div>
         {!isPage ? (
@@ -660,13 +666,13 @@ const JobDetail = ({ job, onClose, mode = 'modal', user = null, userLocation = n
 
         <aside className="job-detail-sidebar">
           <section className="job-detail-card apply-card">
-            <h2>Bu vakansiyaya müraciət et</h2><p>Vakansiya məlumatlarını yoxlayın və uyğun əlaqə kanalı ilə müraciət edin.</p>
-            {applyHref ? <a className="job-detail-apply-button" href={applyHref} target={atsLink || applyContact?.external ? '_blank' : undefined} rel="noopener noreferrer">⚡ 1 kliklə müraciət et</a> : <button className="job-detail-apply-button" type="button" disabled>Müraciət kanalı qeyd edilməyib</button>}
+            <h2>Müraciət əlaqələri</h2><p>Vakansiya məlumatlarını yoxlayın və uyğun əlaqə kanalı ilə müraciət edin.</p>
+            {renderContact()}
             <small className="job-detail-privacy">▣ Məlumatlarınız yalnız işəgötürənlə paylaşılacaq.</small>
           </section>
           {hasLocation ? <section className="job-detail-card job-detail-side-map"><h2>İş yeri</h2><JobDetailMap lat={lat} lng={lng} userLat={userLat} userLng={userLng} hasUserLocation={hasUserLocation} address={getAddress(job)} userAddress={userLocation?.address}/><strong>{getAddress(job)}</strong><p>{hasUserLocation ? 'Seçilmiş lokasiyanızdan marşrut mövcuddur.' : 'Dəqiq ünvan yalnız seçilmiş namizədlərlə paylaşılır.'}</p><a href={mapViewUrl} target="_blank" rel="noopener noreferrer">🗺 Xəritədə göstər</a></section> : null}
           <section className="job-detail-card company-summary-card"><h2>Şirkət haqqında</h2><div className="company-summary-head"><div className="company-summary-logo">{logoUrl ? <img src={logoUrl} alt={`${companyName} loqosu`} /> : companyInitial}</div><div><h2>{companyName} <span className="verified-mark">✓</span></h2><p>{job.category || 'Şirkət'}</p></div></div><p className="company-description">{job?.companyDescription || job?.company_description || `${companyName} şirkətinin aktiv vakansiyası.`}</p><div className="company-summary-row"><span>Elanın statusu</span><strong>{statusLabel}</strong></div><div className="company-summary-row"><span>İş formatı</span><strong>{getJobTypeLabel(job)}</strong></div></section>
-          <section className="job-detail-card job-detail-actions-card"><h2>Əlavə</h2><button type="button">♡ Elanı yadda saxla</button><button type="button" onClick={copyShareLink}>⌯ Paylaş</button><button type="button">△ Elanı şikayət et</button></section>
+          <section className="job-detail-card job-detail-actions-card"><h2>Əlavə</h2>{user ? <button type="button">♡ Elanı yadda saxla</button> : null}<button type="button" onClick={copyShareLink}><ShareIcon /> Paylaş</button><button type="button">△ Elanı şikayət et</button></section>
         </aside>
       </div>
     </div>
