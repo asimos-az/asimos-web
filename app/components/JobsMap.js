@@ -2,8 +2,10 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./JobsMap.css";
+import { BAKU_NEARBY_PLACES } from "../../lib/baku-nearby-places";
 
 const DEFAULT_CENTER = [40.4093, 49.8671];
+const AZERBAIJAN_BOUNDS = [[38.35, 44.7], [41.95, 50.7]];
 
 const LEAFLET_CSS_ID = "leaflet-cdn-styles";
 const LEAFLET_SCRIPT_ID = "leaflet-cdn-script";
@@ -87,6 +89,7 @@ function getJobCoordinates(job) {
   const lng = Number(job?.location?.lng ?? job?.lng ?? job?.lon);
 
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  if (lat < AZERBAIJAN_BOUNDS[0][0] || lat > AZERBAIJAN_BOUNDS[1][0] || lng < AZERBAIJAN_BOUNDS[0][1] || lng > AZERBAIJAN_BOUNDS[1][1]) return null;
 
   return {
     id: job?.id,
@@ -114,6 +117,9 @@ function getSeekerCoordinates(seeker) {
   const lat = Number(seeker?.lat);
   const lng = Number(seeker?.lng);
   if (!Number.isFinite(lat) || !Number.isFinite(lng)) return null;
+  // Reject malformed coordinates before they can move the viewport to another
+  // country or to the Caspian Sea. The backend also validates these values.
+  if (lat < AZERBAIJAN_BOUNDS[0][0] || lat > AZERBAIJAN_BOUNDS[1][0] || lng < AZERBAIJAN_BOUNDS[0][1] || lng > AZERBAIJAN_BOUNDS[1][1]) return null;
   return {
     id: String(seeker?.id || `${lat}-${lng}`),
     lat,
@@ -227,8 +233,19 @@ function createSeekerMarkerIcon(L) {
   });
 }
 
+function createPlaceMarkerIcon(L, type) {
+  const isMetro = type === "metro";
+  return L.divIcon({
+    className: `jobs-map-place-marker-wrap jobs-map-place-marker-wrap--${isMetro ? "metro" : "university"}`,
+    html: `<div class="jobs-map-place-marker" aria-label="${isMetro ? "Metro" : "Universitet"}">${isMetro ? "M" : "U"}</div>`,
+    iconSize: [28, 28],
+    iconAnchor: [14, 14],
+    popupAnchor: [0, -16],
+  });
+}
+
 function buildSeekerPopup(seeker) {
-  return `<div class="jobs-map-popup jobs-map-popup--seeker"><div class="jobs-map-popup__title">İş axtaran</div><div class="jobs-map-popup__meta"><strong>Peşə:</strong> ${escapeHtml(seeker.profession)}</div><div class="jobs-map-popup__meta"><strong>Kateqoriya:</strong> ${escapeHtml(seeker.category)}</div>${seeker.district ? `<div class="jobs-map-popup__meta"><strong>Ərazi:</strong> ${escapeHtml(seeker.district)}</div>` : ""}${seeker.experience ? `<div class="jobs-map-popup__meta"><strong>Təcrübə:</strong> ${escapeHtml(seeker.experience)}</div>` : ""}<div class="jobs-map-popup__meta">Lokasiya təxminidir</div></div>`;
+  return `<div class="jobs-map-popup jobs-map-popup--seeker"><div class="jobs-map-popup__title">İş axtaran</div><div class="jobs-map-popup__meta"><strong>Peşə:</strong> ${escapeHtml(seeker.profession)}</div><div class="jobs-map-popup__meta"><strong>Kateqoriya:</strong> ${escapeHtml(seeker.category)}</div>${seeker.district ? `<div class="jobs-map-popup__meta"><strong>Ərazi:</strong> ${escapeHtml(seeker.district)}</div>` : ""}${seeker.experience ? `<div class="jobs-map-popup__meta"><strong>Təcrübə:</strong> ${escapeHtml(seeker.experience)}</div>` : ""}<div class="jobs-map-popup__meta">Lokasiya istifadəçinin paylaşdığı nöqtədir</div></div>`;
 }
 
 function buildJobPopup(job) {
@@ -279,9 +296,12 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
 
         const map = L.map(mapNodeRef.current, {
           center: DEFAULT_CENTER,
-          zoom: 7,
+          zoom: 10,
+          minZoom: 7,
+          maxBounds: L.latLngBounds(AZERBAIJAN_BOUNDS),
+          maxBoundsViscosity: 0.8,
           preferCanvas: true,
-          scrollWheelZoom: false,
+          scrollWheelZoom: true,
           zoomControl: true,
           attributionControl: false,
         });
@@ -305,11 +325,11 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           chunkInterval: 170,
           // Keep nearby pins grouped at street zoom levels too. Otherwise a
           // dense city turns into an unreadable carpet of overlapping markers.
-          maxClusterRadius: 72,
+          maxClusterRadius: 36,
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 20,
+          disableClusteringAtZoom: 14,
           iconCreateFunction: (cluster) => L.divIcon({
             className: "jobs-map-cluster-wrap",
             html: `<div class="jobs-map-cluster">${cluster.getChildCount()}</div>`,
@@ -320,11 +340,11 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
 
         const seekersLayer = L.markerClusterGroup({
           chunkedLoading: true,
-          maxClusterRadius: 72,
+          maxClusterRadius: 36,
           removeOutsideVisibleBounds: true,
           showCoverageOnHover: false,
           spiderfyOnMaxZoom: true,
-          disableClusteringAtZoom: 20,
+          disableClusteringAtZoom: 14,
           iconCreateFunction: (cluster) => L.divIcon({
             className: "jobs-map-seeker-cluster-wrap",
             html: `<div class="jobs-map-seeker-cluster">${cluster.getChildCount()}</div>`,
@@ -399,6 +419,12 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
       bounds.push([seeker.lat, seeker.lng]);
     });
 
+    BAKU_NEARBY_PLACES.forEach((place) => {
+      L.marker([place.lat, place.lng], { icon: createPlaceMarkerIcon(L, place.type), keyboard: false })
+        .bindPopup(`<div class="jobs-map-popup jobs-map-popup--place"><div class="jobs-map-popup__title">${escapeHtml(place.name)}</div><div class="jobs-map-popup__meta">${place.type === "metro" ? "Metro stansiyası" : "Universitet"}</div></div>`, { maxWidth: 280 })
+        .addTo(contextLayer);
+    });
+
     const userLat = Number(userLocation?.lat);
     const userLng = Number(userLocation?.lng);
 
@@ -457,10 +483,8 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
 
     if (bounds.length === 1) {
       mapRef.current.setView(bounds[0], 13);
-    } else if (bounds.length > 1) {
-      mapRef.current.fitBounds(bounds, { padding: [36, 36], maxZoom: 13 });
     } else {
-      mapRef.current.setView(DEFAULT_CENTER, 7);
+      mapRef.current.setView(DEFAULT_CENTER, 10);
     }
 
     setJobsRendered(true);
@@ -475,7 +499,7 @@ export default function JobsMap({ jobs, seekers = [], showSeekers = false, focus
           <div className="jobs-map-card-icon" aria-hidden="true">🗺️</div>
           <div>
             <h2>📍 {showSeekers ? "Vakansiyalar və iş axtaranlar" : "Kateqoriya üzrə elan xəritəsi"}</h2>
-            <p>{showSeekers ? seekersWithCoordinates.length ? "İş axtaranların təxmini lokasiyaları göstərilir; şəxsi əlaqə məlumatları gizlidir." : "Lokasiyası qeyd edilmiş iş axtaran tapılmadı." : "Yaxınlıqdakı qaynar iş məkanları"}</p>
+            <p>{showSeekers ? seekersWithCoordinates.length ? "İş axtaranların paylaşdığı lokasiyalar göstərilir; şəxsi əlaqə məlumatları gizlidir." : "Lokasiyası qeyd edilmiş iş axtaran tapılmadı." : "Yaxınlıqdakı qaynar iş məkanları"}</p>
           </div>
         </header>
 

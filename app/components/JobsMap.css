@@ -225,6 +225,27 @@
   fill: #fff;
 }
 
+.jobs-map-place-marker-wrap {
+  background: transparent;
+  border: 0;
+}
+
+.jobs-map-place-marker {
+  width: 26px;
+  height: 26px;
+  display: grid;
+  place-items: center;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  color: #fff;
+  font-size: 11px;
+  font-weight: 900;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, .28);
+}
+
+.jobs-map-place-marker-wrap--metro .jobs-map-place-marker { background: #7c3aed; }
+.jobs-map-place-marker-wrap--university .jobs-map-place-marker { background: #d97706; }
+
 .jobs-map-popup--seeker .jobs-map-popup__title {
   color: #315bd6;
 }
